@@ -3,6 +3,7 @@ import { readBody, withHandler } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { currentUser, safeUser, randomToken } from "@/lib/auth";
 import { audit } from "@/lib/rbac-store";
+import { sendEmail, verifyEmailMessage } from "@/lib/email";
 
 const STR = ["name", "displayName", "avatar", "banner", "bio", "phone", "locale", "timezone"] as const;
 
@@ -23,6 +24,8 @@ export const PATCH = withHandler(async (req: Request) => {
     }
     verifyToken = randomToken(8);
     data.email = body.email; data.emailVerified = false; data.verifyToken = verifyToken;
+    const vm = verifyEmailMessage(body.email, verifyToken);
+    await sendEmail({ to: body.email, subject: vm.subject, html: vm.html });
   }
 
   const updated = await prisma.appUser.update({ where: { id: user.id }, data: data as never });

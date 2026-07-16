@@ -10,8 +10,11 @@ export default function AdSlot({ zone = "leaderboard", native = false }: { zone?
 
   useEffect(() => {
     const pool = creatives.filter((c) => (native ? c.kind === "native" : c.kind === "banner"));
-    setCr(pool[Math.floor(Math.random() * pool.length)]);
+    if (pool.length) setCr(pool[Math.floor(Math.random() * pool.length)]);
   }, [native]);
+
+  // No ad to serve → render nothing (no fake advertisers, no empty placeholder box).
+  if (!cr) return null;
 
   const heights: Record<string, string> = { leaderboard: "min-h-[96px]", mpu: "min-h-[250px]", "in-content": "min-h-[96px]" };
 

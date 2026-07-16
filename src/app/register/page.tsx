@@ -41,10 +41,6 @@ export default function RegisterPage() {
           <GoogleRecaptcha onToken={setHuman} />
           <button type="button" onClick={submit} disabled={busy || !consent} className="btn-primary w-full">{busy ? "…" : t("auth.create")}</button>
         </div>
-        <div className="my-4 flex items-center gap-3 text-xs text-black/40"><div className="h-px flex-1 bg-black/10 dark:bg-white/10" />{t("auth.or")}<div className="h-px flex-1 bg-black/10 dark:bg-white/10" /></div>
-        <div className="grid grid-cols-3 gap-2">
-          {["Google", "Telegram", "Apple"].map((p) => <button key={p} className="btn-ghost text-xs" onClick={() => alert(`${p} OAuth — демо-заглушка.`)}>{p}</button>)}
-        </div>
         <p className="mt-4 text-center text-sm text-black/50 dark:text-white/50">{t("auth.haveAccount")} <Link href="/login" className="text-brand dark:text-white">{t("auth.signin")}</Link></p>
       </div>
     </div>

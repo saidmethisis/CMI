@@ -63,7 +63,7 @@ export default function AccountPage() {
       <section>
         {tab === "profile" && <ProfileTab onSaved={refresh} />}
         {tab === "saved" && <SavedTab slugs={saved} />}
-        {tab === "history" && <Panel title="История просмотров"><p className="text-sm text-black/50">Отслеживается локально (демо).</p></Panel>}
+        {tab === "history" && <Panel title="История просмотров"><p className="text-sm text-black/50">Здесь появится история просмотренных материалов.</p></Panel>}
         {tab === "comments" && <MyCommentsTab />}
         {tab === "subs" && <SubsTab />}
         {tab === "notif" && (
@@ -188,7 +188,7 @@ function ProfileTab({ onSaved }: { onSaved: () => void }) {
   const save = async () => {
     const r = await fetch("/api/auth/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
     const j = await r.json();
-    setMsg(r.ok ? (j.verifyToken ? `Сохранено. Код подтверждения email (демо): ${j.verifyToken}` : "Сохранено") : j.error?.message);
+    setMsg(r.ok ? (f.email !== user!.email ? "Сохранено. Проверьте почту для подтверждения нового адреса." : "Сохранено") : j.error?.message);
     onSaved();
   };
   return (

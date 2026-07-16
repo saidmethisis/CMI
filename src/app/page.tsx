@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { listPublished, pinnedArticle, getCategories } from "@/lib/store";
 import StoriesBar from "@/components/StoriesBar";
-import MarketTicker from "@/components/MarketTicker";
-import MarketFutures from "@/components/MarketFutures";
 import VideoRow from "@/components/VideoRow";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
-import AdIntegrations from "@/components/AdIntegrations";
 import BreakingNews from "@/components/BreakingNews";
 import SaveButton from "@/components/SaveButton";
 import NewsTimeline from "@/components/NewsTimeline";
-import BankRates from "@/components/BankRates";
 import WeatherCard from "@/components/WeatherCard";
 import CurrencyWidget from "@/components/CurrencyWidget";
 import CryptoTable from "@/components/CryptoTable";
@@ -39,8 +35,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <MarketTicker />
-
       <div className="container-content pt-4">
         <BreakingNews items={breaking} />
       </div>
@@ -94,9 +88,6 @@ export default async function HomePage() {
             <VideoRow title={<T k="home.video" />} items={videos} />
           </div>
 
-          {/* live currency rates in banks (CBU-backed) */}
-          <div className="mb-8"><BankRates /></div>
-
           <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold"><T k="home.feed" /></h2>
           <FeedWithChips items={feed} />
         </div>
@@ -106,7 +97,6 @@ export default async function HomePage() {
           <div className="no-scrollbar space-y-6 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:overscroll-auto">
             <CurrencyWidget />
             <WeatherCard />
-            <MarketFutures />
             <CryptoTable />
             <AdSlot native />
             <div>
@@ -123,8 +113,6 @@ export default async function HomePage() {
           </div>
         </aside>
       </div>
-
-      <AdIntegrations max={1} />
     </>
   );
 }

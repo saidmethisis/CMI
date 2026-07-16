@@ -6,15 +6,7 @@ import { prisma } from "./prisma";
 import { slugify } from "./slug";
 import { notify } from "./notifications";
 import type { Article, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
-import {
-  seedArticles,
-  categories,
-  stories,
-  instruments,
-  businessAccount,
-  accreditationRequests,
-  adBanners,
-} from "./seed";
+import { categories, stories, instruments } from "./seed";
 
 export { categories, stories, instruments };
 
@@ -34,45 +26,14 @@ async function ensureSeed() {
   return seeding;
 }
 async function doSeed() {
-  if (process.env.AKTIV_NO_SEED === "1") return; // clean production site: no sample content
-  if ((await prisma.article.count()) > 0) return;
-  {
-    for (const a of seedArticles) {
-      await prisma.article.create({
-        data: {
-          id: a.id,
-          slug: a.slug,
-          title: a.title,
-          lead: a.lead,
-          body: a.body,
-          aiSummary: a.aiSummary,
-          cover: a.cover,
-          videoUrl: a.videoUrl ?? "",
-          categorySlug: a.categorySlug,
-          tags: JSON.stringify(a.tags),
-          authorName: a.authorName,
-          authorKind: a.authorKind,
-          company: a.company ?? null,
-          createdAt: new Date(a.createdAt),
-          readingMinutes: a.readingMinutes,
-          premium: a.premium,
-          pinned: a.pinned,
-          status: a.status,
-          views: a.views,
-          comments: { create: a.comments.map((c) => ({ id: c.id, author: c.author, body: c.body, status: c.status, createdAt: new Date(c.createdAt) })) },
-        },
-      });
-    }
-    await prisma.businessAccount.create({ data: businessAccount });
-    await prisma.accreditationRequest.createMany({ data: accreditationRequests });
-    await prisma.adBanner.createMany({ data: adBanners });
-    await prisma.category.createMany({
-      data: categories.map((c) => ({ slug: c.slug, name: c.name, nameUz: c.nameUz ?? "", nameEn: c.nameEn ?? "", color: c.color, order: c.order ?? 0, visible: true })),
-    });
-    await prisma.story.createMany({
-      data: stories.map((s, i) => ({ id: s.id, categorySlug: s.categorySlug, title: s.title, image: s.image, articleSlug: s.articleSlug ?? null, order: i })),
-    });
-  }
+  // Runtime bootstrap ensures ONLY the reference taxonomy (categories) so menus and
+  // filters work on a fresh database. Sample content (articles, stories, business
+  // accounts, ads) is never auto-created — it comes exclusively from the opt-in
+  // `npm run seed:demo` script, keeping a production site clean.
+  if ((await prisma.category.count()) > 0) return;
+  await prisma.category.createMany({
+    data: categories.map((c) => ({ slug: c.slug, name: c.name, nameUz: c.nameUz ?? "", nameEn: c.nameEn ?? "", color: c.color, order: c.order ?? 0, visible: true })),
+  });
 }
 
 // ── taxonomy (categories + stories) ──────────────────────────────────────────

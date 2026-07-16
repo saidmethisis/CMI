@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Category, Story } from "./types";
-import { categories as seedCats, stories as seedStories } from "./seed";
+import { categories as seedCats } from "./seed";
 import { useI18n, type Lang } from "./i18n";
 
 type Ctx = {
@@ -9,11 +9,13 @@ type Ctx = {
   stories: Story[];
   refresh: () => Promise<void>;
 };
-const TaxonomyContext = createContext<Ctx>({ categories: seedCats, stories: seedStories, refresh: async () => {} });
+// Categories fall back to the reference taxonomy (also what the DB is seeded with);
+// stories start empty — only real, admin/author-added stories ever appear.
+const TaxonomyContext = createContext<Ctx>({ categories: seedCats, stories: [], refresh: async () => {} });
 
 export function TaxonomyProvider({ children }: { children: React.ReactNode }) {
   const [categories, setCategories] = useState<Category[]>(seedCats);
-  const [stories, setStories] = useState<Story[]>(seedStories);
+  const [stories, setStories] = useState<Story[]>([]);
 
   const refresh = useCallback(async () => {
     try {

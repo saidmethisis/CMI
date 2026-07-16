@@ -26,6 +26,10 @@ NEXT_PUBLIC_SITE_URL=https://ваш-домен.uz
 DATABASE_URL="file:./prisma/dev.db"        # SQLite (см. §4 про PostgreSQL)
 AUTH_SECRET=<вывод openssl rand -hex 32>
 
+# Первый супер-админ (создаётся автоматически на пустой базе — вход в /admin)
+SUPERADMIN_EMAIL=admin@ваш-домен.uz
+SUPERADMIN_PASSWORD=<ваш надёжный пароль>       # НЕ оставляйте дефолт!
+
 # reCAPTCHA v2 — реальные ключи (иначе капча декоративна)
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=...
 RECAPTCHA_SECRET_KEY=...

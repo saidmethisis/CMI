@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { DEFAULT_ROLES, COMPANY_CAPABILITIES, COMPANY_SECTIONS, AUTHOR_CAPABILITIES } from "./permissions";
+import { DEFAULT_ROLES } from "./permissions";
 import { hashPassword } from "./auth";
 
 import { slugify as translit } from "./slug";
@@ -11,47 +11,24 @@ let seeding: Promise<void> | null = null;
 export async function ensureRbacSeed() {
   if (seeding) return seeding;
   seeding = (async () => {
+    // Always ensure the RBAC roles exist so permissions work on a fresh database.
     if ((await prisma.role.count()) === 0) {
       await prisma.role.createMany({
         data: DEFAULT_ROLES.map((r, i) => ({ id: "role-" + r.slug, slug: r.slug, name: r.name, description: r.description, system: r.system, order: i, permissions: JSON.stringify(r.permissions) })),
       });
     }
-    // clean production site: keep roles + a single super-admin login, skip all demo content
-    if (process.env.AKTIV_NO_SEED === "1") {
-      if ((await prisma.appUser.count()) === 0) {
-        await prisma.appUser.create({ data: { id: "u-super", name: "Суперадмин", displayName: "Суперадмин", email: process.env.SUPERADMIN_EMAIL || "super@aktiv.uz", passwordHash: hashPassword(process.env.SUPERADMIN_PASSWORD || "aktiv12345"), roleSlug: "superadmin", status: "active", emailVerified: true } });
-      }
-      return;
-    }
-    if ((await prisma.company.count()) === 0) {
-      const allSections = COMPANY_SECTIONS.map((s) => s.key);
-      const caps = (on: string[]) => Object.fromEntries(COMPANY_CAPABILITIES.map((c) => [c.key, on.includes(c.key)]));
-      await prisma.company.createMany({
-        data: [
-          { id: "co-neobank", slug: "neo-bank", name: "Neo Bank", active: true, verified: true, premium: true, featured: true, ownerUserId: "u-owner", sections: JSON.stringify(allSections), capabilities: JSON.stringify(caps(["publish_news","publish_press","create_authors","edit_own_only","use_analytics","use_seo"])), profile: JSON.stringify({ shortName: "NeoBank", legalName: "OOO Neo Bank", country: "Узбекистан", city: "Ташкент", email: "press@neobank.uz", website: "https://neobank.uz", description: "Цифровой банк для бизнеса." }) },
-          { id: "co-greentech", slug: "greentech", name: "GreenTech", active: true, verified: false, premium: false, featured: false, sections: JSON.stringify(["dashboard","news","ads","analytics","seo"]), capabilities: JSON.stringify(caps(["place_ads","publish_jobs","publish_events","create_staff","use_analytics","use_seo"])), profile: JSON.stringify({ country: "Узбекистан", city: "Самарканд", description: "Зелёные технологии и ESG." }) },
-        ],
-      });
-    }
-    if ((await prisma.author.count()) === 0) {
-      const caps = (on: string[]) => Object.fromEntries(AUTHOR_CAPABILITIES.map((c) => [c.key, on.includes(c.key)]));
-      await prisma.author.createMany({
-        data: [
-          { id: "au-karimov", slug: "aziz-karimov", firstName: "Азиз", lastName: "Каримов", verifyStatus: "verified", companyId: "co-neobank", capabilities: JSON.stringify(caps(["write","edit_own","upload_photos","use_ai"])), profile: JSON.stringify({ position: "Финансовый обозреватель", country: "Узбекистан", city: "Ташкент", languages: ["uz","ru","en"], specialization: "Финансы, финтех", bio: "Пишет о финтехе и рынках Центральной Азии." }) },
-          { id: "au-yusupova", slug: "malika-yusupova", firstName: "Малика", lastName: "Юсупова", verifyStatus: "verified", capabilities: JSON.stringify(caps(["write","edit_own","publish_self","edit_seo","reply_comments"])), profile: JSON.stringify({ position: "Технологический журналист", country: "Узбекистан", city: "Ташкент", languages: ["uz","ru"], specialization: "Технологии, стартапы", bio: "Освещает стартапы и AI." }) },
-        ],
-      });
-    }
+    // Ensure a single super-admin login so the owner can reach the admin panel on a
+    // fresh install. Credentials come from env (SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD)
+    // — set them in production. No demo companies/authors/readers are created here;
+    // sample content comes exclusively from the opt-in `npm run seed:demo` script.
     if ((await prisma.appUser.count()) === 0) {
-      const pw = hashPassword("aktiv12345"); // demo password for all seeded accounts
-      await prisma.appUser.createMany({
-        data: [
-          { id: "u-super", name: "Суперадмин", email: "super@aktiv.uz", passwordHash: pw, roleSlug: "superadmin", status: "active", emailVerified: true },
-          { id: "u-owner", name: "Владелец Neo Bank", email: "owner@neobank.uz", passwordHash: pw, roleSlug: "company", companyId: "co-neobank", status: "active", emailVerified: true },
-          { id: "u-author", name: "Азиз Каримов", email: "aziz@aktiv.uz", passwordHash: pw, roleSlug: "writer", authorId: "au-karimov", status: "active", emailVerified: true },
-          { id: "u-reader", name: "Читатель", email: "reader@aktiv.uz", passwordHash: pw, roleSlug: "reader", status: "active", emailVerified: true },
-          { id: "u-blocked", name: "Заблокированный", email: "blocked@aktiv.uz", passwordHash: pw, roleSlug: "reader", status: "blocked", emailVerified: true },
-        ],
+      await prisma.appUser.create({
+        data: {
+          id: "u-super", name: "Суперадмин", displayName: "Суперадмин",
+          email: process.env.SUPERADMIN_EMAIL || "super@aktiv.uz",
+          passwordHash: hashPassword(process.env.SUPERADMIN_PASSWORD || "aktiv12345"),
+          roleSlug: "superadmin", status: "active", emailVerified: true,
+        },
       });
     }
   })();

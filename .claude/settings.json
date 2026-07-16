@@ -128,7 +128,22 @@
       "Bash(grep -iE \"^\\\\.env$|\\\\.env\\\\.local|node_modules|prisma/dev\\\\.db|public/uploads/[^.]\")",
       "Bash(git commit *)",
       "Bash(grep -viE \"as const|= \\\\{\\\\};? *//|Record<\")",
-      "Bash(grep -iE \"^\\\\.env$|node_modules|\\\\.next/|prisma/dev\\\\.db|public/uploads/\")"
+      "Bash(grep -iE \"^\\\\.env$|node_modules|\\\\.next/|prisma/dev\\\\.db|public/uploads/\")",
+      "Bash(git check-ignore *)",
+      "Bash(grep -i \"\\\\.env$\")",
+      "Bash(curl -s -o /tmp/resend.json -w 'HTTP %{http_code}\\\\n' https://api.resend.com/domains -H 'Authorization: Bearer re_CTdn9ASD_5Gj7NCYWJB1W4e5xrcmdZBgC')",
+      "Read(//tmp/**)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(PORT=3123 npx next start -p 3123)",
+      "Bash(echo \"starting server \\(pid $!\\)...\")",
+      "Bash(curl -s -o /dev/null -w \"\" http://localhost:3123/api/health)",
+      "Bash(break)",
+      "Bash(curl -s http://localhost:3123/api/health)",
+      "Bash(curl -s -o /dev/null -w \"home HTTP %{http_code}\\\\n\" http://localhost:3123/)",
+      "Bash(curl -s http://localhost:3123/api/taxonomy)",
+      "Bash(curl -s -o /dev/null -w \"roles HTTP %{http_code}\\\\n\" http://localhost:3123/api/admin/roles)",
+      "Bash(curl -s -X POST http://localhost:3123/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"x@x.uz\",\"password\":\"x\",\"recaptchaToken\":\"x\"}' -o /dev/null -w \"login HTTP %{http_code}\\\\n\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.claude\\projects\\c--Users-User-Desktop-CMI\\memory"

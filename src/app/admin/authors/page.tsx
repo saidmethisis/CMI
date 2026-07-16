@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AUTHOR_CAPABILITIES } from "@/lib/permissions";
-import DemoBadge from "@/components/DemoBadge";
 import { useI18n } from "@/lib/i18n";
 
 type Author = {
@@ -55,8 +54,6 @@ export default function AuthorsPage() {
   const setProfile = (k: string, v: string) => setSel((s) => (s ? { ...s, profile: { ...s.profile, [k]: v } } : s));
   const setCap = (k: string, v: boolean) => setSel((s) => (s ? { ...s, capabilities: { ...s.capabilities, [k]: v } } : s));
 
-  // auto stats (mock/derived for demo)
-  const stats = sel ? { articles: 12, views: 48200, subscribers: 340, avgRead: "4:12", last: "3 июл" } : null;
 
   return (
     <div>
@@ -125,18 +122,6 @@ export default function AuthorsPage() {
                 </div>
               </details>
             </div>
-
-            {/* auto stats */}
-            {stats && (
-              <div className="card p-5">
-                <h3 className="mb-3 font-semibold">{t("a.hStats")}<DemoBadge /></h3>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                  {[["Статьи", stats.articles], ["Просмотры", stats.views.toLocaleString("ru-RU")], ["Подписчики", stats.subscribers], ["Ср. время", stats.avgRead], ["Последняя", stats.last]].map(([l, v]) => (
-                    <div key={l as string} className="rounded-xl border border-black/[0.06] p-3 text-center dark:border-white/10"><div className="text-lg font-bold">{v}</div><div className="text-xs text-black/45 dark:text-white/45">{l}</div></div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* capabilities */}
             <div className="card p-5">

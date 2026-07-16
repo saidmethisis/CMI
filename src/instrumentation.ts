@@ -30,6 +30,9 @@ export async function register() {
   if (!process.env.RESEND_API_KEY) {
     warn.push("RESEND_API_KEY is not set — password-reset / verification emails are only logged, not delivered.");
   }
+  if (!process.env.SUPERADMIN_PASSWORD || process.env.SUPERADMIN_PASSWORD === "aktiv12345") {
+    warn.push("SUPERADMIN_PASSWORD is unset or the default — the auto-created admin account has a publicly-known password. Set SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD before first launch.");
+  }
 
   for (const w of warn) console.warn(`[startup:warn] ${w}`);
   if (fail.length) {

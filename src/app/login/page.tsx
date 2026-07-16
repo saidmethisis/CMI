@@ -42,8 +42,7 @@ export default function LoginPage() {
     <div className="container-content grid min-h-[70vh] place-items-center py-10">
       <div className="card w-full max-w-sm p-6">
         <h1 className="font-serif text-2xl font-bold">{t("auth.loginTitle")}</h1>
-        <p className="mt-1 text-sm text-black/50 dark:text-white/50">Демо-вход: <b>reader@aktiv.uz</b> / <b>aktiv12345</b></p>
-        {error && <div className="mt-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down">{error}</div>}
+        {error &&<div className="mt-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down">{error}</div>}
         <div className="mt-5 space-y-3">
           {!twoFA ? (
             <>
@@ -59,10 +58,6 @@ export default function LoginPage() {
             </div>
           )}
           <button type="button" onClick={submit} disabled={busy || (twoFA && code.length < 6)} className="btn-primary w-full">{busy ? "…" : twoFA ? t("auth.confirm") : t("auth.signin")}</button>
-        </div>
-        <div className="my-4 flex items-center gap-3 text-xs text-black/40"><div className="h-px flex-1 bg-black/10 dark:bg-white/10" />{t("auth.or")}<div className="h-px flex-1 bg-black/10 dark:bg-white/10" /></div>
-        <div className="grid grid-cols-3 gap-2">
-          {["Google", "Telegram", "Apple"].map((p) => <button key={p} className="btn-ghost text-xs" onClick={() => alert(`${p} OAuth — демо-заглушка. Требуется настройка провайдера.`)}>{p}</button>)}
         </div>
         <div className="mt-4 flex justify-between text-sm text-black/50 dark:text-white/50">
           <Link href="/forgot" className="hover:text-brand dark:hover:text-white">Забыли пароль?</Link>
