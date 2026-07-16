@@ -1,0 +1,236 @@
+// Asosiy Aktiv — data model (SQLite for zero-setup local dev).
+// Swap `provider = "postgresql"` + DATABASE_URL for production (TZ §12/§14).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id             String    @id
+  slug           String    @unique
+  title          String
+  lead           String
+  body           String
+  aiSummary      String
+  cover          String
+  videoUrl       String    @default("") // lead video (YouTube URL or mp4); non-empty => video-first article
+  categorySlug   String
+  tags           String    @default("[]") // JSON array of strings
+  authorName     String
+  authorUserId   String    @default("") // AppUser.id of the writer who owns it (for edit/delete)
+  authorKind     String // editorial | ugc | pr
+  authorSocials  String    @default("[]") // JSON array of { label, url }
+  company        String?
+  createdAt      DateTime  @default(now())
+  readingMinutes Int       @default(3)
+  premium        Boolean   @default(false)
+  pinned         Boolean   @default(false)
+  status         String // draft | review | returned | published | rejected | unpublished
+  views          Int       @default(0)
+  comments       Comment[]
+
+  @@index([status, createdAt])
+  @@index([categorySlug])
+}
+
+model Comment {
+  id           String    @id @default(cuid())
+  articleId    String
+  article      Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId       String?
+  author       String
+  authorAvatar String    @default("")
+  body         String
+  status       String    @default("approved") // approved | pending | spam | rejected
+  parentId     String?
+  parent       Comment?  @relation("thread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Comment[] @relation("thread")
+  likes        Int       @default(0)
+  dislikes     Int       @default(0)
+  reports      Int       @default(0)
+  pinned       Boolean   @default(false)
+  edited       Boolean   @default(false)
+  moderatorId  String?   // кто менял статус (аудит модерации)
+  moderatedAt  DateTime? // когда менялся статус
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+}
+
+model CommentReaction {
+  id        String @id @default(cuid())
+  commentId String
+  userId    String
+  type      String // like | dislike
+  @@unique([commentId, userId])
+}
+
+model Session {
+  id         String   @id
+  userId     String
+  token      String   @unique
+  userAgent  String   @default("")
+  ip         String   @default("")
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+}
+
+model BusinessAccount {
+  id                String  @id
+  company           String
+  tier              String
+  publicationsLimit Int
+  publicationsUsed  Int
+  verified          Boolean @default(true)
+}
+
+model AccreditationRequest {
+  id     String @id
+  name   String
+  type   String // business | author
+  detail String
+  status String // pending | approved | blocked
+}
+
+model CompanyRequest {
+  id        String   @id
+  companyId String
+  client    String
+  topic     String
+  status    String   @default("new") // new | processing | done | rejected
+  createdAt DateTime @default(now())
+
+  @@index([companyId, createdAt])
+}
+
+model Category {
+  slug    String  @id
+  name    String
+  nameUz  String  @default("")
+  nameEn  String  @default("")
+  color   String  @default("#14314f")
+  order   Int     @default(0)
+  visible Boolean @default(true)
+}
+
+model Story {
+  id           String   @id
+  categorySlug String
+  title        String
+  image        String // URL (файл в /uploads) или data-URI
+  articleSlug  String?
+  order        Int      @default(0)
+  ownerUserId  String   @default("") // кто добавил (писатель/сотрудник)
+  companyId    String   @default("") // от имени компании (если из кабинета компании)
+  createdAt    DateTime @default(now())
+}
+
+// ── RBAC / Companies / Authors / Users (Stages 16-20) ────────────────────────
+model Role {
+  id          String  @id
+  slug        String  @unique
+  name        String
+  description String  @default("")
+  system      Boolean @default(false)
+  order       Int     @default(0)
+  permissions String  @default("[]") // JSON string[] of "module.action" (or ["*"])
+}
+
+model Company {
+  id           String  @id
+  slug         String  @unique
+  name         String
+  active       Boolean @default(true)
+  verified     Boolean @default(false)
+  premium      Boolean @default(false)
+  featured     Boolean @default(false)
+  ownerUserId  String?
+  capabilities String  @default("{}") // JSON { capKey: bool }
+  sections     String  @default("[]") // JSON string[] of enabled cabinet sections
+  profile      String  @default("{}") // JSON: contacts, legal, seo, description, geo, ...
+  createdAt    DateTime @default(now())
+}
+
+model Author {
+  id           String  @id
+  slug         String  @unique
+  firstName    String
+  lastName     String  @default("")
+  avatar       String  @default("")
+  verifyStatus String  @default("pending") // pending | verified | rejected
+  companyId    String?
+  capabilities String  @default("{}") // JSON { capKey: bool }
+  profile      String  @default("{}") // JSON: bio, position, contacts, skills, ...
+  createdAt    DateTime @default(now())
+}
+
+model AppUser {
+  id             String   @id
+  name           String
+  email          String   @unique
+  passwordHash   String   @default("")
+  roleSlug       String   @default("reader")
+  companyId      String?
+  authorId       String?
+  status         String   @default("active") // active | blocked | disabled
+  displayName    String   @default("")
+  avatar         String   @default("")
+  banner         String   @default("")
+  bio            String   @default("")
+  phone          String   @default("")
+  locale         String   @default("ru")
+  timezone       String   @default("Asia/Tashkent")
+  socials        String   @default("[]") // JSON [{label,url}]
+  notifPrefs     String   @default("{}") // JSON
+  privacy        String   @default("{}") // JSON
+  emailVerified  Boolean  @default(false)
+  twoFactor      Boolean  @default(false)
+  twoFactorSecret String  @default("")
+  verifyToken    String   @default("")
+  resetToken     String   @default("")
+  consentAt      DateTime? // дата согласия на обработку персональных данных (ЗРУ-547)
+  createdAt      DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id
+  actor     String
+  action    String
+  target    String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id
+  userId    String
+  type      String   @default("info") // info | reply | status | system
+  title     String
+  body      String   @default("")
+  link      String   @default("")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([userId, read])
+}
+
+model Follow {
+  id         String   @id
+  followerId String // AppUser.id
+  targetType String // "author" | "topic"
+  targetId   String // author slug or category slug
+  createdAt  DateTime @default(now())
+  @@unique([followerId, targetType, targetId])
+  @@index([targetType, targetId])
+}
+
+model AdBanner {
+  id          String  @id
+  slot        String // top | in-article | sidebar
+  title       String
+  url         String
+  active      Boolean @default(true)
+  frequency   Int     @default(3)
+  impressions Int     @default(0)
+}

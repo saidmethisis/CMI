@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --fg: #0e1726;
+}
+.dark {
+  --bg: #0a121f;
+  --surface: #0f1a2b;
+  --fg: #e8ecf4;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-feature-settings: "kern";
+}
+
+/* prevent horizontal page scroll; wide content scrolls in its own container */
+body {
+  overflow-x: hidden;
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-4 sm:px-6;
+  }
+  .card {
+    @apply rounded-2xl border border-black/[0.07] bg-[var(--surface)] shadow-sm transition dark:border-white/10 dark:bg-ink-surface;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:shadow-md;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-white hover:bg-brand-700;
+  }
+  .btn-accent {
+    @apply btn bg-accent text-white hover:brightness-110;
+  }
+  .btn-ghost {
+    @apply btn border border-black/10 bg-transparent hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-black/10 px-3 py-1 text-xs font-medium dark:border-white/15;
+  }
+  .input {
+    @apply w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-sm outline-none ring-brand/30 transition focus:ring-2 dark:border-white/15 dark:bg-white/5;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-black/70 dark:text-white/70;
+  }
+}
+
+.skeleton {
+  @apply relative overflow-hidden bg-black/5 dark:bg-white/10;
+}
+.skeleton::after {
+  content: "";
+  @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/10;
+}
+
+/* hide scrollbar for horizontal rails */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

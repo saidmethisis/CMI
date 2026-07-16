@@ -1,0 +1,14 @@
+{
+  "name": "Asosiy Aktiv",
+  "short_name": "Aktiv",
+  "description": "Next-Gen деловое новостное медиа — бизнес, технологии, дипломатия, политика.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#11294D",
+  "orientation": "portrait-primary",
+  "lang": "ru",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
