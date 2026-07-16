@@ -124,7 +124,11 @@
       "Bash(git config *)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(grep -E \"^\\\\.env$|node_modules|prisma/dev\\\\.db|public/uploads/\")"
+      "Bash(grep -E \"^\\\\.env$|node_modules|prisma/dev\\\\.db|public/uploads/\")",
+      "Bash(grep -iE \"^\\\\.env$|\\\\.env\\\\.local|node_modules|prisma/dev\\\\.db|public/uploads/[^.]\")",
+      "Bash(git commit *)",
+      "Bash(grep -viE \"as const|= \\\\{\\\\};? *//|Record<\")",
+      "Bash(grep -iE \"^\\\\.env$|node_modules|\\\\.next/|prisma/dev\\\\.db|public/uploads/\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.claude\\projects\\c--Users-User-Desktop-CMI\\memory"

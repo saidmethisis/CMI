@@ -32,6 +32,9 @@ npm run build        # prisma generate + next build
 npm run start        # http://localhost:3000
 ```
 
+> **Развёртывание на боевом сервере** (VPS/systemd/nginx+TLS или Docker),
+> секреты, переход на PostgreSQL, бэкапы и чек-лист запуска — см. **[DEPLOY.md](DEPLOY.md)**.
+
 ### ⚠️ Windows: если сборка падает с EPERM
 Файл БД может держать запущенный процесс Node. Перед сборкой:
 ```bash

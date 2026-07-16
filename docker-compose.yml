@@ -1,0 +1,50 @@
+services:
+  web:
+    build:
+      context: .
+      # NEXT_PUBLIC_* must be present at BUILD time (inlined into the client bundle).
+      args:
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}
+        NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION:-}
+        NEXT_PUBLIC_YANDEX_VERIFICATION: ${NEXT_PUBLIC_YANDEX_VERIFICATION:-}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_GTM_ID: ${NEXT_PUBLIC_GTM_ID:-}
+        NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID:-}
+        NEXT_PUBLIC_ORG_NAME: ${NEXT_PUBLIC_ORG_NAME:-Asosiy Aktiv}
+        NEXT_PUBLIC_ORG_FOUNDER: ${NEXT_PUBLIC_ORG_FOUNDER:-}
+        NEXT_PUBLIC_ORG_EDITOR: ${NEXT_PUBLIC_ORG_EDITOR:-}
+        NEXT_PUBLIC_ORG_EMAIL: ${NEXT_PUBLIC_ORG_EMAIL:-}
+        NEXT_PUBLIC_ORG_PHONE: ${NEXT_PUBLIC_ORG_PHONE:-}
+        NEXT_PUBLIC_ORG_ADDRESS: ${NEXT_PUBLIC_ORG_ADDRESS:-}
+        NEXT_PUBLIC_ORG_SMI_CERT: ${NEXT_PUBLIC_ORG_SMI_CERT:-}
+        NEXT_PUBLIC_ORG_PD_REGISTRY: ${NEXT_PUBLIC_ORG_PD_REGISTRY:-}
+        NEXT_PUBLIC_ORG_AGE: ${NEXT_PUBLIC_ORG_AGE:-18+}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # SQLite file lives on the persistent /data volume.
+      DATABASE_URL: "file:/data/dev.db"
+      NODE_ENV: production
+      # ── Fill these in a .env file next to this compose file ──
+      SITE_URL: ${SITE_URL:?set SITE_URL}
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (openssl rand -hex 32)}
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
+      NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+    volumes:
+      - db:/data
+      - uploads:/app/public/uploads
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  db:
+  uploads:
