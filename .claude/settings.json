@@ -143,7 +143,13 @@
       "Bash(curl -s -o /dev/null -w \"home HTTP %{http_code}\\\\n\" http://localhost:3123/)",
       "Bash(curl -s http://localhost:3123/api/taxonomy)",
       "Bash(curl -s -o /dev/null -w \"roles HTTP %{http_code}\\\\n\" http://localhost:3123/api/admin/roles)",
-      "Bash(curl -s -X POST http://localhost:3123/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"x@x.uz\",\"password\":\"x\",\"recaptchaToken\":\"x\"}' -o /dev/null -w \"login HTTP %{http_code}\\\\n\")"
+      "Bash(curl -s -X POST http://localhost:3123/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"x@x.uz\",\"password\":\"x\",\"recaptchaToken\":\"x\"}' -o /dev/null -w \"login HTTP %{http_code}\\\\n\")",
+      "Bash(SITE_URL=\"http://localhost:3123\" NEXT_PUBLIC_SITE_URL=\"http://localhost:3123\" NODE_ENV=production npx next start -p 3123)",
+      "Bash(curl -s -o /dev/null http://localhost:3123/api/health)",
+      "Bash(curl -s -o /dev/null -w \"HTTP :80 -> %{http_code}\\\\n\" --max-time 8 http://45.138.158.238/)",
+      "Bash(curl -s -o /dev/null -w \"HTTPS:443 -> %{http_code}\\\\n\" --max-time 8 https://45.138.158.238/)",
+      "Bash(timeout 8 bash -c 'cat < /dev/null > /dev/tcp/45.138.158.238/22')",
+      "Bash(nslookup asosiy.net)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.claude\\projects\\c--Users-User-Desktop-CMI\\memory"

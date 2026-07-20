@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readBody, withHandler } from "@/lib/api";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword, createSession, SESSION_COOKIE, verifyRecaptcha, safeUser, loginBlocked, recordFail, resetFails, make2faChallenge, verify2faChallenge } from "@/lib/auth";
+import { verifyPassword, createSession, SESSION_COOKIE, sessionCookieOptions, verifyRecaptcha, safeUser, loginBlocked, recordFail, resetFails, make2faChallenge, verify2faChallenge } from "@/lib/auth";
 import { verifyTOTP } from "@/lib/totp";
 import { decryptSecret } from "@/lib/secretbox";
 import { ensureRbacSeed, audit } from "@/lib/rbac-store";
@@ -48,6 +48,6 @@ export const POST = withHandler(async (req: Request) => {
   const token = await createSession(user.id);
   await audit(email, "auth.login");
   const res = NextResponse.json({ data: safeUser(user), twoFactor: user.twoFactor });
-  res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 30 });
+  res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions);
   return res;
 });

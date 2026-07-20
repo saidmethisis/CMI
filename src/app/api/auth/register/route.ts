@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { readBody, withHandler } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, createSession, SESSION_COOKIE, verifyRecaptcha, safeUser, randomToken } from "@/lib/auth";
+import { hashPassword, createSession, SESSION_COOKIE, sessionCookieOptions, verifyRecaptcha, safeUser, randomToken } from "@/lib/auth";
 import { sendEmail, verifyEmailMessage } from "@/lib/email";
 import { ensureRbacSeed, audit } from "@/lib/rbac-store";
 
@@ -38,6 +38,6 @@ export const POST = withHandler(async (req: Request) => {
     exposeInDev ? { data: safeUser(user), verifyToken: verifyTok } : { data: safeUser(user) },
     { status: 201 },
   );
-  res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 30 });
+  res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions);
   return res;
 });

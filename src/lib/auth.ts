@@ -3,6 +3,19 @@ import { cookies, headers } from "next/headers";
 import { prisma } from "./prisma";
 
 export const SESSION_COOKIE = "aktiv_session";
+
+// Session cookie options. `secure` is derived from the actual public scheme, NOT from
+// NODE_ENV: a production build served over plain HTTP (e.g. a bare-IP deploy before
+// TLS is issued) must not set Secure, or the browser silently drops the cookie and
+// login appears to "do nothing". Set SITE_URL to https://… once TLS is in place.
+const SECURE_COOKIES = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "").startsWith("https://");
+export const sessionCookieOptions = {
+  httpOnly: true as const,
+  path: "/" as const,
+  sameSite: "lax" as const,
+  secure: SECURE_COOKIES,
+  maxAge: 60 * 60 * 24 * 30,
+};
 const SECRET = process.env.AUTH_SECRET || "dev-secret-change-me";
 
 // ── password hashing (scrypt) ─────────────────────────────────────────────────

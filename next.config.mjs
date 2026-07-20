@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Self-contained build for VPS/Docker (`.next/standalone`). Comment out for Vercel.
-  output: "standalone",
+  // NOTE: deliberately NOT using output:"standalone" — it is incompatible with
+  // `next start` (the documented run command in DEPLOY.md and the Dockerfile).
   poweredByHeader: false,
   images: {
     remotePatterns: [

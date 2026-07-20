@@ -12,8 +12,12 @@ export function middleware(req: NextRequest) {
     if (origin) {
       try {
         const originHost = new URL(origin).host;
+        // За обратным прокси (nginx) исходный хост может приезжать в X-Forwarded-Host,
+        // поэтому принимаем совпадение с любым из них — иначе все мутации ловят 403.
         const host = req.headers.get("host");
-        if (host && originHost !== host) {
+        const fwdHost = req.headers.get("x-forwarded-host");
+        const allowed = [host, fwdHost].filter(Boolean) as string[];
+        if (allowed.length && !allowed.includes(originHost)) {
           return NextResponse.json({ error: { code: "CSRF", message: "Недопустимый источник запроса." } }, { status: 403 });
         }
       } catch { /* невалидный Origin — не блокируем */ }
