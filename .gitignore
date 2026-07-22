@@ -15,3 +15,7 @@ next-env.d.ts
 
 # runtime-uploaded media
 /public/uploads/
+
+# Секретные handover-файлы с паролями — никогда не коммитить
+BRAI_V2_*HANDOVER*.md
+server-info.md

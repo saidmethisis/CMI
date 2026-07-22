@@ -149,7 +149,25 @@
       "Bash(curl -s -o /dev/null -w \"HTTP :80 -> %{http_code}\\\\n\" --max-time 8 http://45.138.158.238/)",
       "Bash(curl -s -o /dev/null -w \"HTTPS:443 -> %{http_code}\\\\n\" --max-time 8 https://45.138.158.238/)",
       "Bash(timeout 8 bash -c 'cat < /dev/null > /dev/tcp/45.138.158.238/22')",
-      "Bash(nslookup asosiy.net)"
+      "Bash(nslookup asosiy.net)",
+      "Bash(command -v ssh)",
+      "Bash(ssh -V)",
+      "Bash(echo \"ssh: есть \\($\\(ssh -V 2>&1\\)\\)\")",
+      "Bash(command -v sshpass)",
+      "Bash(command -v plink)",
+      "Bash(ssh-keygen -t ed25519 -N '' -C claude-deploy-aktiv -f C:/Users/User/AppData/Local/Temp/claude/c--Users-User-Desktop-CMI/4f3a17c8-fa1c-4ecc-88e7-1641de93c75b/scratchpad/ssh/aktiv_deploy)",
+      "Bash(ls -la ~/.ssh/ 2>/dev/null | head -20 *)",
+      "Read(//c/Users/User/.ssh/**)",
+      "Bash(timeout 10 bash -c 'cat < /dev/null > /dev/tcp/77.83.206.112/666')",
+      "Bash(curl -s -o /dev/null -w \"HTTP :80  -> %{http_code}\\\\n\" --max-time 8 http://77.83.206.112/)",
+      "Bash(curl -s -o /dev/null -w \"HTTPS:443 -> %{http_code}\\\\n\" --max-time 8 https://77.83.206.112/)",
+      "Bash(chmod 600 C:/Users/User/AppData/Local/Temp/claude/c--Users-User-Desktop-CMI/4f3a17c8-fa1c-4ecc-88e7-1641de93c75b/scratchpad/ssh/aktiv_deploy)",
+      "Bash(ssh -i C:/Users/User/AppData/Local/Temp/claude/c--Users-User-Desktop-CMI/4f3a17c8-fa1c-4ecc-88e7-1641de93c75b/scratchpad/ssh/aktiv_deploy -p 666 -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=15 root@77.83.206.112 'echo CONNECTED; hostname; uptime | head -1')",
+      "Bash(perl -i -pe 's/\\(\"w\\\\.weatherNA\": \"Погода временно недоступна\\\\.\", \\)/$1\"w.ratesNA\": \"Курсы временно недоступны.\", /' src/lib/dictionaries.ts)",
+      "Bash(perl -i -pe 's/\\(\"w\\\\.weatherNA\": \"Weather temporarily unavailable\\\\.\", \\)/$1\"w.ratesNA\": \"Rates temporarily unavailable.\", /' src/lib/dictionaries.ts)",
+      "Bash(perl -i -pe 's/\\(\"w\\\\.weatherNA\": \"Ob-havo vaqtincha mavjud emas\\\\.\", \\)/$1\"w.ratesNA\": \"Kurslar vaqtincha mavjud emas.\", /' src/lib/dictionaries.ts)",
+      "Bash(./node_modules/.bin/next --version)",
+      "Read(//c/Users/User/**)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.claude\\projects\\c--Users-User-Desktop-CMI\\memory"

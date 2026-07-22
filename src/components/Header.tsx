@@ -79,7 +79,6 @@ export default function Header() {
           </Link>
           <ThemeToggle onDark />
           <UserMenu />
-          <Link href="/for-companies" className="whitespace-nowrap rounded-md bg-accent px-2.5 py-1.5 text-xs font-semibold text-white hover:brightness-110">{t("header.promo")}</Link>
         </div>
       </div>
 

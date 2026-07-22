@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listPublished, pinnedArticle, getCategories } from "@/lib/store";
 import StoriesBar from "@/components/StoriesBar";
+import RatesBoard from "@/components/RatesBoard";
 import VideoRow from "@/components/VideoRow";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
@@ -87,6 +88,9 @@ export default async function HomePage() {
           <div className="mb-8">
             <VideoRow title={<T k="home.video" />} items={videos} />
           </div>
+
+          {/* Official CBU exchange rates (real data, auto-refreshing) */}
+          <div className="mb-8"><RatesBoard /></div>
 
           <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold"><T k="home.feed" /></h2>
           <FeedWithChips items={feed} />

@@ -31,7 +31,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-[var(--surface)]/95 backdrop-blur md:hidden dark:border-white/10 dark:bg-ink-surface/95"
+      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-black/10 bg-[var(--surface)] shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.25)] md:hidden dark:border-white/15 dark:bg-ink-surface dark:shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.6)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Bottom navigation"
     >
@@ -40,11 +40,12 @@ export default function BottomNav() {
           const active = it.href === "/" ? path === "/" : path.startsWith(it.href);
           const showBadge = it.href === "/notifications" && unread > 0;
           return (
-            <Link key={it.href} href={it.href} className={`relative flex items-center justify-center py-3 text-xs font-semibold ${active ? "text-accent" : "text-black/55 dark:text-white/55"}`}>
-              {active && <span className="absolute inset-x-6 top-0 h-0.5 rounded-b bg-accent" />}
+            <Link key={it.href} href={it.href} className={`relative flex items-center justify-center py-3.5 text-[13px] font-bold ${active ? "text-accent" : "text-black/70 dark:text-white/70"}`}>
+              {active && <span className="absolute inset-x-3 top-0 h-1 rounded-b bg-accent" />}
+              {active && <span className="absolute inset-x-2 inset-y-1.5 -z-10 rounded-xl bg-accent/10" />}
               {t(it.key)}
               {showBadge && (
-                <span className="absolute right-[calc(50%-38px)] top-1.5 grid min-w-[16px] place-items-center rounded-full bg-accent px-1 text-[10px] font-bold leading-4 text-white">{unread > 9 ? "9+" : unread}</span>
+                <span className="absolute right-[calc(50%-38px)] top-1.5 grid min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[10px] font-bold leading-[18px] text-white ring-2 ring-[var(--surface)] dark:ring-ink-surface">{unread > 9 ? "9+" : unread}</span>
               )}
             </Link>
           );
