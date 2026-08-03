@@ -2,8 +2,6 @@ node_modules
 .next
 out
 .git
-.env
-.env*.local
 npm-debug.log*
 *.tsbuildinfo
 prisma/dev.db
@@ -12,3 +10,22 @@ public/uploads
 data
 README.md
 docs
+
+# ── Секреты и данные: НИКОГДА не должны попадать в образ ─────────────────────
+# Dockerfile делает `COPY . .`, поэтому всё, что не исключено здесь, окажется
+# внутри образа и уедет в реестр. Шаблон `.env*` покрывает .env, .env.local,
+# .env.production, .env.staging и любые будущие варианты — переменные окружения
+# передаёт docker compose в рантайме, в образе им делать нечего.
+.env*
+
+# Дампы базы: scripts/backup-db.sh складывает их сюда перед каждым деплоем,
+# то есть свежий дамп боевой базы лежал бы в контексте сборки.
+backups/
+
+# Файлы с паролями (см. .gitignore)
+BRAI_V2_*HANDOVER*.md
+server-info.md
+
+# Ключи и сертификаты — на случай, если окажутся в каталоге проекта
+*.pem
+*.key

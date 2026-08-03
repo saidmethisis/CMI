@@ -167,7 +167,11 @@
       "Bash(perl -i -pe 's/\\(\"w\\\\.weatherNA\": \"Weather temporarily unavailable\\\\.\", \\)/$1\"w.ratesNA\": \"Rates temporarily unavailable.\", /' src/lib/dictionaries.ts)",
       "Bash(perl -i -pe 's/\\(\"w\\\\.weatherNA\": \"Ob-havo vaqtincha mavjud emas\\\\.\", \\)/$1\"w.ratesNA\": \"Kurslar vaqtincha mavjud emas.\", /' src/lib/dictionaries.ts)",
       "Bash(./node_modules/.bin/next --version)",
-      "Read(//c/Users/User/**)"
+      "Read(//c/Users/User/**)",
+      "Bash(curl -s \"https://api.github.com/repos/saidmethisis/CMI\")",
+      "Bash(git reset *)",
+      "Bash(git restore *)",
+      "Bash(printf '\\\\n# Секретные handover-файлы с паролями — никогда не коммитить\\\\nBRAI_V2_*HANDOVER*.md\\\\nserver-info.md\\\\n')"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\.claude\\projects\\c--Users-User-Desktop-CMI\\memory"

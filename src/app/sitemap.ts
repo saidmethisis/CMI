@@ -3,6 +3,11 @@ import { listPublished, getCategories } from "@/lib/store";
 import { listAuthors } from "@/lib/rbac-store";
 import { SITE_URL } from "@/lib/site";
 
+// Читает базу, поэтому рендерится по запросу, а не на этапе сборки:
+// в Docker-образе на момент `next build` базы ещё нет, а для новостной ленты
+// снимок на момент сборки всё равно был бы устаревшим.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const [published, categories, authors] = await Promise.all([listPublished(), getCategories(), listAuthors()]);

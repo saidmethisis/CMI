@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 
 export default function ModerationRow({
-  id, title, lead, kind, author, category,
-}: { id: string; title: string; lead: string; kind: string; author: string; category: string }) {
+  id, slug, title, lead, kind, author, category,
+}: { id: string; slug: string; title: string; lead: string; kind: string; author: string; category: string }) {
   const router = useRouter();
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
@@ -52,6 +52,7 @@ export default function ModerationRow({
           {t("adm.pinTop")}
         </label>
         <div className="ml-auto flex gap-2">
+          <a href={`/article/${slug}?preview=1`} target="_blank" rel="noopener" className="btn-ghost text-xs">{t("wc.preview")}</a>
           <button disabled={busy} onClick={() => act("return")} className="btn-ghost text-xs">{t("adm.return")}</button>
           <button disabled={busy} onClick={() => act("reject")} className="btn-ghost text-xs !text-down">{t("adm.reject")}</button>
           <button disabled={busy} onClick={() => act("approve")} className="btn-primary text-xs">{t("adm.approve")}</button>

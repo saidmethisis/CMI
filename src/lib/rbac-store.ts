@@ -126,13 +126,54 @@ export async function getAuthor(idOrSlug: string) {
 function mapAuthor(a: NonNullable<Awaited<ReturnType<typeof prisma.author.findFirst>>>) {
   return { ...a, capabilities: j(a.capabilities, {}) as Record<string, boolean>, profile: j(a.profile, {}) as Record<string, unknown> };
 }
-export async function createAuthor(input: { firstName: string; lastName?: string; profile?: Record<string, unknown>; companyId?: string | null }) {
+export async function createAuthor(input: { firstName: string; lastName?: string; profile?: Record<string, unknown>; companyId?: string | null; email?: string; password?: string; roleSlug?: string }) {
   await ensureRbacSeed();
   const slug = slugify(`${input.firstName} ${input.lastName ?? ""}`);
   if (await prisma.author.findUnique({ where: { slug } })) return { error: "EXISTS" as const };
-  const a = await prisma.author.create({ data: { id: "au-" + slug + "-" + Date.now().toString(36), slug, firstName: input.firstName, lastName: input.lastName ?? "", companyId: input.companyId ?? null, capabilities: "{}", profile: JSON.stringify(input.profile ?? {}) } });
-  await audit("Суперадмин", "author.create", slug);
-  return { author: mapAuthor(a) };
+  // Если заданы email+пароль — заранее проверяем, что почта свободна, чтобы не создать
+  // «осиротевший» профиль автора без логина.
+  const email = input.email?.trim().toLowerCase();
+  if (email && input.password) {
+    if (await prisma.appUser.findUnique({ where: { email } })) return { error: "EMAIL_EXISTS" as const };
+  }
+  // Профиль и учётку создаём одной транзакцией: если вставка пользователя упадёт
+  // (гонка, дубль почты), автор тоже не сохранится. Иначе в базе оставался бы
+  // профиль без логина, а повторная попытка упиралась бы в занятый slug.
+  const fullName = `${input.firstName} ${input.lastName ?? ""}`.trim();
+  const withLogin = !!(email && input.password);
+  try {
+    const { a, u } = await prisma.$transaction(async (tx) => {
+      const a = await tx.author.create({ data: { id: "au-" + slug + "-" + Date.now().toString(36), slug, firstName: input.firstName, lastName: input.lastName ?? "", companyId: input.companyId ?? null, capabilities: "{}", profile: JSON.stringify(input.profile ?? {}) } });
+      let u: { id: string; email: string } | null = null;
+      if (withLogin) {
+        u = await tx.appUser.create({
+          data: {
+            id: "u-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            name: fullName, displayName: fullName, email: email!,
+            passwordHash: hashPassword(input.password!),
+            roleSlug: input.roleSlug || "writer",
+            companyId: input.companyId ?? null,
+            authorId: a.id,
+            avatar: (input.profile?.avatar as string) || "",
+            emailVerified: true,
+          },
+          select: { id: true, email: true },
+        });
+      }
+      return { a, u };
+    });
+    await audit("Суперадмин", "author.create", slug);
+    if (u) await audit("Суперадмин", "user.create", u.email);
+    return { author: mapAuthor(a), user: u };
+  } catch (e) {
+    // P2002 — нарушение уникальности: почта или slug заняты (проверки выше могли
+    // не поймать это из-за гонки двух одновременных запросов).
+    if ((e as { code?: string }).code === "P2002") {
+      const target = String((e as { meta?: { target?: unknown } }).meta?.target ?? "");
+      return { error: target.includes("email") ? ("EMAIL_EXISTS" as const) : ("EXISTS" as const) };
+    }
+    throw e;
+  }
 }
 export async function updateAuthor(id: string, patch: Partial<{ firstName: string; lastName: string; avatar: string; verifyStatus: string; companyId: string | null; capabilities: Record<string, boolean>; profile: Record<string, unknown> }>) {
   await ensureRbacSeed();
@@ -165,9 +206,11 @@ export async function firstCompany() {
 }
 export async function createUser(input: { name: string; email: string; roleSlug: string; companyId?: string | null; password?: string }) {
   await ensureRbacSeed();
-  if (await prisma.appUser.findUnique({ where: { email: input.email } })) return { error: "EXISTS" as const };
-  const u = await prisma.appUser.create({ data: { id: "u-" + Date.now().toString(36), name: input.name, displayName: input.name, email: input.email, roleSlug: input.roleSlug, companyId: input.companyId ?? null, passwordHash: input.password ? hashPassword(input.password) : "", emailVerified: true } });
-  await audit("Суперадмин", "user.create", input.email);
+  // Регистр почты приводим к нижнему — так же, как при входе и регистрации.
+  const email = (input.email ?? "").trim().toLowerCase();
+  if (await prisma.appUser.findUnique({ where: { email } })) return { error: "EXISTS" as const };
+  const u = await prisma.appUser.create({ data: { id: "u-" + Date.now().toString(36), name: input.name, displayName: input.name, email, roleSlug: input.roleSlug, companyId: input.companyId ?? null, passwordHash: input.password ? hashPassword(input.password) : "", emailVerified: true } });
+  await audit("Суперадмин", "user.create", email);
   return { user: u };
 }
 export async function updateUser(id: string, patch: Partial<{ status: string; roleSlug: string; companyId: string | null; name: string }>) {

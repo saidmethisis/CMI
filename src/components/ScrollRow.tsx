@@ -1,10 +1,12 @@
 "use client";
 import { useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 
 // Horizontal scroll row with prev/next arrows (desktop) — content still swipes on touch.
 export default function ScrollRow({ children, className = "", gap = "gap-4", arrowsOn = "surface" }: {
   children: React.ReactNode; className?: string; gap?: string; arrowsOn?: "surface" | "accent";
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const by = (d: number) => {
     const el = ref.current;
@@ -17,8 +19,8 @@ export default function ScrollRow({ children, className = "", gap = "gap-4", arr
     <div className="relative">
       <div ref={ref} className={`no-scrollbar flex ${gap} overflow-x-auto scroll-smooth ${className}`}>{children}</div>
       <div className="pointer-events-none absolute inset-y-0 right-0 hidden items-center gap-1 pl-8 md:flex">
-        <button onClick={() => by(-1)} aria-label="Назад" className={`pointer-events-auto grid h-7 w-7 place-items-center rounded-full border text-base leading-none shadow-sm transition ${btn}`}>‹</button>
-        <button onClick={() => by(1)} aria-label="Далее" className={`pointer-events-auto grid h-7 w-7 place-items-center rounded-full border text-base leading-none shadow-sm transition ${btn}`}>›</button>
+        <button onClick={() => by(-1)} aria-label={t("a11y.prev")} className={`pointer-events-auto grid h-7 w-7 place-items-center rounded-full border text-base leading-none shadow-sm transition ${btn}`}>‹</button>
+        <button onClick={() => by(1)} aria-label={t("a11y.next")} className={`pointer-events-auto grid h-7 w-7 place-items-center rounded-full border text-base leading-none shadow-sm transition ${btn}`}>›</button>
       </div>
     </div>
   );

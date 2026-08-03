@@ -8,8 +8,13 @@ import { ensureRbacSeed, audit } from "@/lib/rbac-store";
 // Stage 22/24: ONLY readers (subscriber) may self-register.
 export const POST = withHandler(async (req: Request) => {
   await ensureRbacSeed();
-  const { name, email, password, human, consent } = await readBody(req);
-  if (!name?.trim() || !email?.trim() || !password) {
+  const body = await readBody(req);
+  const { name, password, human, consent } = body;
+  // Регистр почты нормализуем при регистрации, иначе один и тот же адрес,
+  // введённый по-разному, создаст два аккаунта (в PostgreSQL сравнение
+  // регистрозависимое, и уникальный индекс их не остановит).
+  const email: string = (body.email ?? "").trim().toLowerCase();
+  if (!name?.trim() || !email || !password) {
     return NextResponse.json({ error: { message: "Заполните имя, email и пароль." } }, { status: 422 });
   }
   if (!consent) {

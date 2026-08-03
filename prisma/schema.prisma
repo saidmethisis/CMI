@@ -1,11 +1,12 @@
-// Asosiy Aktiv — data model (SQLite for zero-setup local dev).
-// Swap `provider = "postgresql"` + DATABASE_URL for production (TZ §12/§14).
+// Asosiy Aktiv — data model.
+// PostgreSQL во всех окружениях (local / staging / production), чтобы поведение БД
+// нигде не расходилось. Локальная база поднимается одной командой: `npm run db:up`.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,6 +16,9 @@ model Article {
   title          String
   lead           String
   body           String
+  // Переводы заголовка/лида/текста по языкам: JSON { uz?: {title,lead,body}, en?: {...}, ru?: {...} }.
+  // Базовые title/lead/body — язык по умолчанию (фолбэк, если перевод не заполнен).
+  translations   String    @default("{}")
   aiSummary      String
   cover          String
   videoUrl       String    @default("") // lead video (YouTube URL or mp4); non-empty => video-first article

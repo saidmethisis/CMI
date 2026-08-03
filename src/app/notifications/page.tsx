@@ -46,7 +46,8 @@ export default function NotificationsPage() {
               <div className={`card flex items-start gap-3 p-4 ${!n.read ? "border-l-4 border-l-accent" : ""}`}>
                 <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-accent"}`} />
                 <div className="min-w-0 flex-1">
-                  <p className={`text-sm ${n.read ? "font-medium" : "font-semibold"}`}>{n.title}</p>
+                  {/* title — i18n-ключ; у старых записей там русский текст, t() вернёт его как есть */}
+                  <p className={`text-sm ${n.read ? "font-medium" : "font-semibold"}`}>{t(n.title)}</p>
                   {n.body && <p className="mt-0.5 line-clamp-2 text-sm text-black/55 dark:text-white/55">{n.body}</p>}
                   <p className="mt-1 text-xs text-black/40 dark:text-white/40">{new Date(n.createdAt).toLocaleString(loc)}</p>
                 </div>

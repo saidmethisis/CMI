@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 
-type A = { id: string; slug: string; title: string; lead: string; body: string; categorySlug: string; status: string; createdAt: string; views: number };
+type LangFields = { title: string; lead: string; body: string };
+type A = {
+  id: string; slug: string; title: string; lead: string; body: string; categorySlug: string;
+  status: string; createdAt: string; views: number;
+  translations?: Partial<Record<"ru" | "uz" | "en", LangFields>>;
+};
 type Todo = { id: string; text: string; done: boolean };
 
 const NAV = ["create", "all", "draft", "published", "review", "archived", "comments", "media"];

@@ -36,7 +36,9 @@ export default function WriterNotifications() {
               <div className={`flex items-start gap-3 py-3 ${!n.read ? "font-semibold" : ""}`}>
                 <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-accent"}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm">{n.title}</p>
+                  {/* В title лежит i18n-ключ. У старых уведомлений там готовый русский
+                      текст — t() вернёт его без изменений, поэтому они не ломаются. */}
+                  <p className="text-sm">{t(n.title)}</p>
                   {n.body && <p className="mt-0.5 line-clamp-2 text-sm font-normal text-black/55 dark:text-white/55">{n.body}</p>}
                   <p className="mt-1 text-xs font-normal text-black/40 dark:text-white/40">{new Date(n.createdAt).toLocaleString(loc)}</p>
                 </div>

@@ -1,49 +1,54 @@
 import LegalShell from "@/components/LegalShell";
 import { ORG } from "@/lib/org";
+import { serverT } from "@/lib/i18n-server";
 
-export const metadata = { title: "Пользовательское соглашение" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("lg.termsTitle") };
+}
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const { t } = await serverT();
   return (
-    <LegalShell title="Пользовательское соглашение" updated="__.__.2026">
+    <LegalShell title={t("lg.termsTitle")} updated="__.__.2026" updatedLabel={t("ui.updatedOn")}>
       {process.env.NODE_ENV !== "production" && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
-          Черновик (виден только в dev): заполните реквизиты и согласуйте с юристом перед публикацией.
+          {t("lg.termsDraft")}
         </div>
       )}
 
-      <p>Настоящее Соглашение регулирует отношения между {ORG.name} (далее — «Администрация») и пользователем сайта. Использование Сайта означает согласие с условиями.</p>
+      <p>{t("lg.termsIntroA")} {ORG.name} {t("lg.termsIntroB")}</p>
 
-      <h2>1. Термины</h2>
-      <p>Сайт — интернет-ресурс {ORG.name}. Пользователь — лицо, использующее Сайт. Контент — материалы, размещённые на Сайте.</p>
+      <h2>{t("lg.termsH1")}</h2>
+      <p>{t("lg.termsDefA")} {ORG.name}{t("lg.termsDefB")}</p>
 
-      <h2>2. Регистрация и аккаунт</h2>
+      <h2>{t("lg.termsH2")}</h2>
       <ul>
-        <li>пользователь предоставляет достоверные данные и отвечает за сохранность пароля;</li>
-        <li>регистрируясь, пользователь даёт согласие на обработку персональных данных (см. <a href="/privacy">Политику конфиденциальности</a>).</li>
+        <li>{t("lg.termsReg1")}</li>
+        <li>{t("lg.termsReg2")} <a href="/privacy">{t("lg.privacyPolicyLink")}</a>).</li>
       </ul>
 
-      <h2>3. Правила поведения</h2>
-      <p>Запрещается размещать материалы, нарушающие законодательство Республики Узбекистан, в том числе: экстремистские, порнографические, оскорбляющие честь и достоинство, разжигающие рознь, недостоверные и вводящие в заблуждение, нарушающие права третьих лиц и авторские права.</p>
+      <h2>{t("lg.termsH3")}</h2>
+      <p>{t("lg.termsConduct")}</p>
 
-      <h2>4. Контент пользователей (комментарии, материалы)</h2>
+      <h2>{t("lg.termsH4")}</h2>
       <ul>
-        <li>ответственность за размещённый контент несёт пользователь;</li>
-        <li>Администрация вправе модерировать, отклонять и удалять контент, нарушающий правила;</li>
-        <li>пользовательские материалы проходят предварительную модерацию.</li>
+        <li>{t("lg.termsUgc1")}</li>
+        <li>{t("lg.termsUgc2")}</li>
+        <li>{t("lg.termsUgc3")}</li>
       </ul>
 
-      <h2>5. Интеллектуальная собственность</h2>
-      <p>Материалы Сайта охраняются законом. Копирование допускается со ссылкой на источник, если иное не указано.</p>
+      <h2>{t("lg.termsH5")}</h2>
+      <p>{t("lg.termsIp")}</p>
 
-      <h2>6. Возрастное ограничение</h2>
-      <p>Рекомендуемая возрастная категория: {ORG.age}.</p>
+      <h2>{t("lg.termsH6")}</h2>
+      <p>{t("lg.termsAge")} {ORG.age}.</p>
 
-      <h2>7. Ответственность и изменения</h2>
-      <p>Сервис предоставляется «как есть». Администрация вправе изменять условия, публикуя новую редакцию на этой странице.</p>
+      <h2>{t("lg.termsH7")}</h2>
+      <p>{t("lg.termsLiability")}</p>
 
-      <h2>8. Реквизиты</h2>
-      <p>{ORG.name}. Учредитель: {ORG.founder}. Контакты: {ORG.email}, {ORG.phone}.</p>
+      <h2>{t("lg.termsH8")}</h2>
+      <p>{ORG.name}. {t("lg.founderLabel")} {ORG.founder}. {t("lg.termsContactsLabel")} {ORG.email}, {ORG.phone}.</p>
     </LegalShell>
   );
 }

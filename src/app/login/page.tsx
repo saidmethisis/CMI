@@ -17,7 +17,7 @@ export default function LoginPage() {
 
   const submit = async () => {
     setError("");
-    if (!twoFA && !human) { setError("Подтвердите, что вы не робот."); return; }
+    if (!twoFA && !human) { setError(t("au.notRobot")); return; }
     setBusy(true);
     const r = await fetch("/api/auth/login", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -32,7 +32,7 @@ export default function LoginPage() {
         setTwoFA(true);
         return;
       }
-      setError(j.error?.message || "Ошибка"); setHuman(null); return;
+      setError(j.error?.message || t("au.error")); setHuman(null); return;
     }
     const next = new URLSearchParams(window.location.search).get("next") || "/account";
     window.location.href = next.startsWith("/") ? next : "/account";
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <button type="button" onClick={submit} disabled={busy || (twoFA && code.length < 6)} className="btn-primary w-full">{busy ? "…" : twoFA ? t("auth.confirm") : t("auth.signin")}</button>
         </div>
         <div className="mt-4 flex justify-between text-sm text-black/50 dark:text-white/50">
-          <Link href="/forgot" className="hover:text-brand dark:hover:text-white">Забыли пароль?</Link>
+          <Link href="/forgot" className="hover:text-brand dark:hover:text-white">{t("au.forgotQ")}</Link>
           <Link href="/register" className="text-brand dark:text-white">{t("auth.register")}</Link>
         </div>
       </div>

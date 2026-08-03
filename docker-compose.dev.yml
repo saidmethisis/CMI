@@ -1,0 +1,28 @@
+# Локальная база для разработки. Только PostgreSQL — сам сайт запускается
+# как обычно через `npm run dev`, чтобы работал hot-reload.
+#
+#   npm run db:up     — поднять базу
+#   npm run db:down   — остановить (данные сохраняются)
+#
+# Порт 5433, а не 5432: чтобы не конфликтовать с уже установленным на машине
+# PostgreSQL, если он есть.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aktiv
+      POSTGRES_PASSWORD: aktiv
+      POSTGRES_DB: aktiv_dev
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aktiv -d aktiv_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  pgdata_dev:

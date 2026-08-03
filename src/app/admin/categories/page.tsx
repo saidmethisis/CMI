@@ -3,7 +3,10 @@ import { serverT } from "@/lib/i18n-server";
 import CategoryManager from "./CategoryManager";
 import StoryManager from "./StoryManager";
 
-export const metadata = { title: "Admin — Категории" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("meta.adminCategories") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategories() {

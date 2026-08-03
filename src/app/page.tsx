@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { listPublished, pinnedArticle, getCategories } from "@/lib/store";
+import { listPublished, pinnedArticle, getCategories, localizeList, localizedArticle } from "@/lib/store";
 import StoriesBar from "@/components/StoriesBar";
 import RatesBoard from "@/components/RatesBoard";
+import BankRates from "@/components/BankRates";
+import { getBankRates } from "@/lib/bank-rates";
 import VideoRow from "@/components/VideoRow";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
@@ -21,9 +23,24 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const { t, lang } = await serverT();
-  const categories = await getCategories();
-  const pinned = await pinnedArticle();
-  const all = await listPublished();
+
+  // Главная не должна падать целиком, если база на секунду недоступна: раньше
+  // любая ошибка Prisma превращала весь сайт в HTTP 500. Теперь шапка, меню,
+  // курсы валют и футер остаются на месте, а лента просто пустая.
+  const soft = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
+    try { return await fn(); } catch (e) {
+      console.error("Главная: не удалось получить данные —", (e as Error).message);
+      return fallback;
+    }
+  };
+
+  const categories = await soft(getCategories, []);
+  // курсы банков тянем на сервере (кэш 1 час) — блок виден сразу, без «прыжка» после гидрации
+  const bankRates = await soft(getBankRates, { data: {}, updatedAt: "", source: "unavailable" });
+  const pinnedRaw = await soft(pinnedArticle, undefined);
+  // тексты — на языке интерфейса, с фолбэком на язык оригинала
+  const pinned = pinnedRaw ? { ...pinnedRaw, ...localizedArticle(pinnedRaw, lang) } : pinnedRaw;
+  const all = localizeList(await soft(listPublished, []), lang);
   // separate video-first articles from photo-first articles
   const videos = all.filter((a) => a.videoUrl && a.slug !== pinned?.slug).slice(0, 6);
   const feed = all.filter((a) => !a.videoUrl && a.slug !== pinned?.slug);
@@ -38,6 +55,12 @@ export default async function HomePage() {
     <>
       <div className="container-content pt-4">
         <BreakingNews items={breaking} />
+      </div>
+
+      {/* Официальный курс ЦБ — компактной строкой сразу под срочными новостями.
+          Таблица банков стоит ниже, прямо над лентой (см. основную колонку). */}
+      <div className="container-content pt-4">
+        <RatesBoard />
       </div>
 
       <div className="container-content py-4">
@@ -89,8 +112,8 @@ export default async function HomePage() {
             <VideoRow title={<T k="home.video" />} items={videos} />
           </div>
 
-          {/* Official CBU exchange rates (real data, auto-refreshing) */}
-          <div className="mb-8"><RatesBoard /></div>
+          {/* Курсы валют в банках — прямо над лентой, под ними начинается лента */}
+          <div className="mb-8"><BankRates initial={bankRates} /></div>
 
           <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold"><T k="home.feed" /></h2>
           <FeedWithChips items={feed} />

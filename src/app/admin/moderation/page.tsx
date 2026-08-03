@@ -3,7 +3,10 @@ import { categories } from "@/lib/seed";
 import { serverT } from "@/lib/i18n-server";
 import ModerationRow from "./ModerationRow";
 
-export const metadata = { title: "Admin — Модерация" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("meta.adminModeration") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function ModerationPage() {
@@ -24,6 +27,7 @@ export default async function ModerationPage() {
             <ModerationRow
               key={a.id}
               id={a.id}
+              slug={a.slug}
               title={a.title}
               lead={a.lead}
               kind={a.authorKind}

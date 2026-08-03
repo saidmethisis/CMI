@@ -41,7 +41,7 @@ export default function CryptoTable() {
         <tbody>
           {data.length === 0
             ? (err
-                ? <tr><td colSpan={3} className="px-4 py-4 text-center text-xs text-black/45 dark:text-white/45">Данные временно недоступны.</td></tr>
+                ? <tr><td colSpan={3} className="px-4 py-4 text-center text-xs text-black/45 dark:text-white/45">{t("w.dataNA")}</td></tr>
                 : Array.from({ length: 6 }).map((_, i) => <tr key={i}><td className="px-4 py-2.5" colSpan={3}><div className="skeleton h-4 w-full rounded" /></td></tr>))
             : data.map((c) => {
                 const up = c.changePct >= 0;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import CompanyRequests from "./CompanyRequests";
 import StoryUploader from "@/components/StoryUploader";
 import type { CompanyComment } from "@/lib/store";
+import type { Lang } from "@/lib/dictionaries";
 
 type T = (k: string) => string;
 type Art = { slug: string; title: string; views: number; status: string };
@@ -21,8 +22,6 @@ const TONE: Record<string, string> = {
   published: "bg-up/12 text-up", review: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   returned: "bg-down/12 text-down", draft: "bg-black/8 text-black/55 dark:bg-white/10 dark:text-white/60",
 };
-const nf = (n: number) => n.toLocaleString("ru-RU");
-const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
 const th = "px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-black/40 dark:text-white/40";
 const td = "px-3 py-2.5 border-t border-black/[0.04] dark:border-white/[0.06]";
 
@@ -39,15 +38,18 @@ function Empty({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-black/50 dark:text-white/50">{children}</p>;
 }
 
-export default function CompanyDemoSections({ keys, t, comments, companyId, data }: { keys: string[]; t: T; comments: CompanyComment[]; companyId: string; data: Data }) {
+export default function CompanyDemoSections({ keys, t, lang, comments, companyId, data }: { keys: string[]; t: T; lang: Lang; comments: CompanyComment[]; companyId: string; data: Data }) {
   const has = (k: string) => keys.includes(k);
   const maxCatViews = Math.max(1, ...data.catBreakdown.map((c) => c.views));
+  const loc = lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU";
+  const nf = (n: number) => n.toLocaleString(loc);
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(loc, { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <>
       {has("press") && (
         <Panel id="press" title={t("co.press")}>
-          {data.press.length === 0 ? <Empty>Пока нет публикаций компании.</Empty> : (
+          {data.press.length === 0 ? <Empty>{t("cds.pressEmpty")}</Empty> : (
             <div className="divide-y divide-black/5 dark:divide-white/10">
               {data.press.map((r) => (
                 <div key={r.slug} className="flex flex-wrap items-center gap-3 py-2.5 text-sm">
@@ -64,19 +66,19 @@ export default function CompanyDemoSections({ keys, t, comments, companyId, data
       {has("media") && (
         <Panel id="media" title={t("co.media")}>
           <div className="mb-5">
-            <h3 className="mb-1 text-sm font-bold">Добавить стори</h3>
-            <p className="mb-3 text-xs text-black/45 dark:text-white/45">Вертикальная стори появится в ленте сторис на главной от имени компании.</p>
+            <h3 className="mb-1 text-sm font-bold">{t("cds.addStory")}</h3>
+            <p className="mb-3 text-xs text-black/45 dark:text-white/45">{t("cds.addStoryNote")}</p>
             <StoryUploader />
           </div>
-          <h3 className="mb-1 text-sm font-bold">Медиатека файлов</h3>
-          <Empty>Хранилище документов и изображений подключается отдельно. Пока доступна загрузка сторис и обложек прямо в материалах.</Empty>
+          <h3 className="mb-1 text-sm font-bold">{t("cds.mediaLibrary")}</h3>
+          <Empty>{t("cds.mediaLibraryNote")}</Empty>
         </Panel>
       )}
 
       {has("authors") && (
         <Panel id="authors" title={t("co.authors")}>
           {data.authors.length === 0 ? (
-            <Empty>У компании пока нет прикреплённых авторов. Добавить их можно в админ-панели → Авторы.</Empty>
+            <Empty>{t("cds.authorsEmpty")}</Empty>
           ) : (
             <div className="divide-y divide-black/5 dark:divide-white/10">
               {data.authors.map((a) => (
@@ -84,7 +86,7 @@ export default function CompanyDemoSections({ keys, t, comments, companyId, data
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-xs font-bold text-white">{a.name.charAt(0)}</span>
                   <Link href={`/author/${a.slug}`} className="flex-1 font-medium hover:text-accent">{a.name}</Link>
                   {a.position && <span className="text-xs text-black/50 dark:text-white/50">{a.position}</span>}
-                  {a.verified && <span className="chip !py-0 text-[10px] !border-up/40 text-up">проверен</span>}
+                  {a.verified && <span className="chip !py-0 text-[10px] !border-up/40 text-up">{t("cds.verified")}</span>}
                 </div>
               ))}
             </div>
@@ -95,7 +97,7 @@ export default function CompanyDemoSections({ keys, t, comments, companyId, data
       {has("statistics") && (
         <Panel id="statistics" title={t("co.statistics")}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[["Всего материалов", nf(data.stats.total)], ["Опубликовано", nf(data.stats.published)], ["На проверке", nf(data.stats.review)], ["Суммарные просмотры", nf(data.stats.views)]].map(([l, v]) => (
+            {[[t("cds.statTotal"), nf(data.stats.total)], [t("cds.statPublished"), nf(data.stats.published)], [t("cds.statReview"), nf(data.stats.review)], [t("cds.statViews"), nf(data.stats.views)]].map(([l, v]) => (
               <div key={l} className="rounded-xl border border-black/5 p-4 dark:border-white/10"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/45 dark:text-white/45">{l}</div></div>
             ))}
           </div>
@@ -104,21 +106,21 @@ export default function CompanyDemoSections({ keys, t, comments, companyId, data
 
       {has("analytics") && (
         <Panel id="analytics" title={t("co.analytics")}>
-          {data.catBreakdown.length === 0 ? <Empty>Недостаточно данных для аналитики.</Empty> : (
+          {data.catBreakdown.length === 0 ? <Empty>{t("cds.analyticsEmpty")}</Empty> : (
             <>
-              <h3 className="mb-2 text-sm font-bold">Просмотры по рубрикам</h3>
+              <h3 className="mb-2 text-sm font-bold">{t("cds.viewsByCat")}</h3>
               <div className="mb-5 space-y-2.5">
                 {data.catBreakdown.map((c) => (
                   <div key={c.name}>
-                    <div className="mb-1 flex items-center justify-between text-xs"><span className="font-medium">{c.name}</span><span className="tabular-nums text-black/50 dark:text-white/50">{nf(c.views)} · {c.count} мат.</span></div>
+                    <div className="mb-1 flex items-center justify-between text-xs"><span className="font-medium">{c.name}</span><span className="tabular-nums text-black/50 dark:text-white/50">{nf(c.views)} · {c.count} {t("cds.matAbbr")}</span></div>
                     <div className="h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(4, (c.views / maxCatViews) * 100)}%` }} /></div>
                   </div>
                 ))}
               </div>
-              <h3 className="mb-2 text-sm font-bold">Топ материалы</h3>
+              <h3 className="mb-2 text-sm font-bold">{t("cds.topMaterials")}</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead><tr><th className={th}>Материал</th><th className={`${th} text-right`}>Просмотры</th></tr></thead>
+                  <thead><tr><th className={th}>{t("cds.colMaterial")}</th><th className={`${th} text-right`}>{t("cds.colViews")}</th></tr></thead>
                   <tbody>{data.topArts.map((a) => <tr key={a.slug}><td className={td}><Link href={`/article/${a.slug}`} className="hover:text-accent">{a.title}</Link></td><td className={`${td} text-right tabular-nums`}>{nf(a.views)}</td></tr>)}</tbody>
                 </table>
               </div>
@@ -129,19 +131,19 @@ export default function CompanyDemoSections({ keys, t, comments, companyId, data
 
       {has("ads") && (
         <Panel id="ads" title={t("co.ads")}>
-          <Empty>Рекламные кампании подключаются через редакцию. Оставьте заявку в разделе «Заявки» или напишите менеджеру — здесь появится статистика ваших размещений.</Empty>
+          <Empty>{t("cds.adsNote")}</Empty>
         </Panel>
       )}
 
       {has("seo") && (
         <Panel id="seo" title={t("co.seo")}>
-          <Empty>SEO-статистика (позиции по запросам, трафик из поиска) подключается через интеграцию с поисковыми сервисами. Пока не подключено.</Empty>
+          <Empty>{t("cds.seoNote")}</Empty>
         </Panel>
       )}
 
       {has("comments") && (
         <Panel id="comments" title={t("co.comments")}>
-          {comments.length === 0 && <Empty>Пока нет комментариев к материалам компании.</Empty>}
+          {comments.length === 0 && <Empty>{t("cds.commentsEmpty")}</Empty>}
           <div className="divide-y divide-black/5 dark:divide-white/10">
             {comments.map((c) => (
               <div key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3 text-sm">
@@ -167,7 +169,7 @@ export default function CompanyDemoSections({ keys, t, comments, companyId, data
       {/* прочие включённые разделы без спец-обработки */}
       {keys.filter((k) => !["dashboard", "news", "press", "media", "authors", "statistics", "analytics", "ads", "seo", "comments", "requests", "settings"].includes(k)).map((k) => (
         <Panel key={k} id={k} title={t(`co.${k}`)}>
-          <Empty>Раздел доступен этой компании.</Empty>
+          <Empty>{t("cds.sectionAvailable")}</Empty>
         </Panel>
       ))}
     </>

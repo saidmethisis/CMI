@@ -1,6 +1,9 @@
 import { serverT } from "@/lib/i18n-server";
 
-export const metadata = { title: "Офлайн" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("meta.offline") };
+}
 
 export default async function OfflinePage() {
   const { t } = await serverT();

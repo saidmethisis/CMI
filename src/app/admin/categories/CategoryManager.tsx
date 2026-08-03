@@ -33,21 +33,21 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
     try {
       const r = await fetch("/api/admin/categories", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: editSlug, name: eName, nameUz: eNameUz, nameEn: eNameEn, color: eColor }) });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error?.message || "Ошибка");
+      if (!r.ok) throw new Error(j.error?.message || t("ad2.error"));
       setEditSlug(null); await refresh(); router.refresh();
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   };
   const del = async (c: Category) => {
-    if (!confirm(`Скрыть категорию «${c.name}»? Она исчезнет из меню и фильтров.`)) return;
+    if (!confirm(t("ad2.confirmHideCat").replace("{name}", c.name))) return;
     const r = await fetch("/api/admin/categories", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: c.slug }) });
     const j = await r.json();
-    if (!r.ok) { setError(j.error?.message || "Ошибка"); return; }
+    if (!r.ok) { setError(j.error?.message || t("ad2.error")); return; }
     await refresh(); router.refresh();
   };
 
   const add = async () => {
     setError("");
-    if (!name.trim()) { setError("Введите название."); return; }
+    if (!name.trim()) { setError(t("ad2.enterName")); return; }
     setBusy(true);
     try {
       const r = await fetch("/api/admin/categories", {
@@ -56,7 +56,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
         body: JSON.stringify({ name, nameUz, nameEn, color }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error?.message || "Ошибка");
+      if (!r.ok) throw new Error(j.error?.message || t("ad2.error"));
       setName(""); setNameUz(""); setNameEn(""); setOpen(false);
       await refresh();       // update header/footer/menus everywhere
       router.refresh();      // update this admin list
@@ -79,7 +79,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
         <div className="mb-4 rounded-xl border border-black/10 p-3 dark:border-white/10">
           {error && <div className="mb-2 text-xs text-down">{error}</div>}
           <div className="grid gap-2 sm:grid-cols-3">
-            <input className="input" placeholder="Название (RU)" value={name} onChange={(e) => setName(e.target.value)} />
+            <input className="input" placeholder={t("ad2.nameRu")} value={name} onChange={(e) => setName(e.target.value)} />
             <input className="input" placeholder="Nomi (UZ)" value={nameUz} onChange={(e) => setNameUz(e.target.value)} />
             <input className="input" placeholder="Name (EN)" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
           </div>
@@ -100,7 +100,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
             {editSlug === c.slug ? (
               <div className="flex-1">
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <input className="input" placeholder="Название (RU)" value={eName} onChange={(e) => setEName(e.target.value)} />
+                  <input className="input" placeholder={t("ad2.nameRu")} value={eName} onChange={(e) => setEName(e.target.value)} />
                   <input className="input" placeholder="Nomi (UZ)" value={eNameUz} onChange={(e) => setENameUz(e.target.value)} />
                   <input className="input" placeholder="Name (EN)" value={eNameEn} onChange={(e) => setENameEn(e.target.value)} />
                 </div>
@@ -116,7 +116,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
               <>
                 <div className="flex-1">
                   <div className="font-medium">{c.name}</div>
-                  <div className="text-xs text-black/40 dark:text-white/40">/{c.slug} · {counts[c.slug] ?? 0} мат.</div>
+                  <div className="text-xs text-black/40 dark:text-white/40">/{c.slug} · {counts[c.slug] ?? 0} {t("dash.materials")}</div>
                 </div>
                 <button className="btn-ghost text-xs" onClick={() => startEdit(c)}>{t("a.edit")}</button>
                 <button className="btn-ghost text-xs !text-down" onClick={() => del(c)}>{t("a.hide")}</button>
@@ -125,7 +125,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs text-black/40 dark:text-white/40">Новая категория сразу появляется в меню, футере и фильтрах.</p>
+      <p className="mt-3 text-xs text-black/40 dark:text-white/40">{t("ad2.catNote")}</p>
     </div>
   );
 }

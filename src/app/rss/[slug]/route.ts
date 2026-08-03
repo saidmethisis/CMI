@@ -2,7 +2,10 @@ import { listPublished, getCategories } from "@/lib/store";
 import { buildRss, rssResponse, type RssItem } from "@/lib/rss";
 import { SITE_NAME } from "@/lib/site";
 
-export const revalidate = 600;
+// Читает базу, поэтому рендерится по запросу, а не на этапе сборки:
+// в Docker-образе на момент `next build` базы ещё нет, а для новостной ленты
+// снимок на момент сборки всё равно был бы устаревшим.
+export const dynamic = "force-dynamic";
 
 // Category / "news" RSS feed:  /rss/<categorySlug>  or  /rss/news
 export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {

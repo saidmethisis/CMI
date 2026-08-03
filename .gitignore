@@ -6,6 +6,14 @@ out
 *.tsbuildinfo
 next-env.d.ts
 
+# Env-файлы окружений — содержат боевые пароли и секреты.
+# В репозитории живут только *.example, реальные создаются на сервере.
+.env.production
+.env.staging
+
+# Дампы базы, которые делает scripts/backup-db.sh перед каждым деплоем
+/backups/
+
 # Prisma / SQLite
 /prisma/dev.db
 /prisma/dev.db-journal

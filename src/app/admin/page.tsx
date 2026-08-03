@@ -1,7 +1,11 @@
 import { adminMetrics, listPublished, getCategories } from "@/lib/store";
 import CampaignBoard from "@/components/CampaignBoard";
+import { serverT } from "@/lib/i18n-server";
 
-export const metadata = { title: "Admin — Дашборд" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("meta.adminDashboard") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {

@@ -26,7 +26,7 @@ export default function CurrencyWidget() {
       <ul className="divide-y divide-black/[0.05] dark:divide-white/[0.06]">
         {show.length === 0
           ? (err
-              ? <li className="py-2 text-xs text-black/45 dark:text-white/45">Курсы временно недоступны.</li>
+              ? <li className="py-2 text-xs text-black/45 dark:text-white/45">{t("w.ratesNA")}</li>
               : Array.from({ length: 3 }).map((_, i) => <li key={i} className="py-2"><div className="skeleton h-4 w-full rounded" /></li>))
           : show.map((r) => {
               const up = r.diff >= 0;

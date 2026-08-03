@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { uploadDataUrl } from "@/lib/upload";
+import { useI18n } from "@/lib/i18n";
 
 const OK = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
@@ -23,16 +24,17 @@ export default function ImageUpload({
 }: {
   value: string; onChange: (v: string) => void; label?: string; variant?: "avatar" | "banner"; maxW?: number;
 }) {
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
   const pick = async (file?: File) => {
     setErr("");
     if (!file) return;
-    if (!OK.includes(file.type)) { setErr("Поддерживаются JPG, PNG, WEBP"); return; }
-    if (file.size > 20 * 1024 * 1024) { setErr("Файл больше 20 МБ"); return; }
+    if (!OK.includes(file.type)) { setErr(t("acc.imgFormats")); return; }
+    if (file.size > 20 * 1024 * 1024) { setErr(t("acc.imgTooBig")); return; }
     setBusy(true);
-    try { onChange(await uploadDataUrl(await compress(file, maxW))); } catch { setErr("Не удалось обработать изображение"); } finally { setBusy(false); }
+    try { onChange(await uploadDataUrl(await compress(file, maxW))); } catch { setErr(t("acc.imgFailed")); } finally { setBusy(false); }
   };
 
   return (
@@ -50,13 +52,13 @@ export default function ImageUpload({
         )}
         <div className="flex flex-col gap-1.5">
           <label className="btn-ghost cursor-pointer text-xs">
-            {value ? "Заменить" : "Загрузить с устройства"}
+            {value ? t("acc.replace") : t("acc.uploadFromDevice")}
             <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
-          {value && <button type="button" className="text-left text-xs text-down" onClick={() => onChange("")}>Удалить</button>}
+          {value && <button type="button" className="text-left text-xs text-down" onClick={() => onChange("")}>{t("a.delete")}</button>}
         </div>
       </div>
-      {busy && <p className="mt-1 text-xs text-black/40 dark:text-white/40">Сжатие…</p>}
+      {busy && <p className="mt-1 text-xs text-black/40 dark:text-white/40">{t("acc.compressing")}</p>}
       {err && <p className="mt-1 text-xs text-down">{err}</p>}
     </div>
   );

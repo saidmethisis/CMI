@@ -1,13 +1,18 @@
 import { Suspense } from "react";
-import { listPublished } from "@/lib/store";
+import { listPublished, localizeList } from "@/lib/store";
+import { serverT } from "@/lib/i18n-server";
 import SearchClient from "./SearchClient";
 
-export const metadata = { title: "Поиск" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("nav.search") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function SearchPage() {
+  const { t, lang } = await serverT();
   // pass a lightweight index to the client for instant filtering
-  const index = (await listPublished()).map((a) => ({
+  const index = localizeList(await listPublished(), lang).map((a) => ({
     slug: a.slug,
     title: a.title,
     lead: a.lead,
@@ -19,7 +24,7 @@ export default async function SearchPage() {
     createdAt: a.createdAt,
   }));
   return (
-    <Suspense fallback={<div className="container-content py-10 text-center text-black/50">Загрузка…</div>}>
+    <Suspense fallback={<div className="container-content py-10 text-center text-black/50">{t("misc.loading")}</div>}>
       <SearchClient index={index} />
     </Suspense>
   );

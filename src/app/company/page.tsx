@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { getUserById, getCompany, firstCompany } from "@/lib/rbac-store";
-import { COMPANY_SECTIONS, COMPANY_CAPABILITIES } from "@/lib/permissions";
+import { getCompany, firstCompany } from "@/lib/rbac-store";
+import { COMPANY_SECTIONS, COMPANY_CAPABILITIES, canAccessAdmin } from "@/lib/permissions";
 import { articlesByCompany, commentsByCompany, companyAuthors, getCategories } from "@/lib/store";
 import { requirePermission } from "@/lib/guard";
 import { serverT } from "@/lib/i18n-server";
@@ -9,34 +8,36 @@ import CompanyDemoSections from "./CompanyDemoSections";
 import CompanyNav from "./CompanyNav";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Кабинет компании" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("menu.cabCompany") };
+}
 
-async function resolveCompany(userCompanyId: string | null) {
-  // 1) admin «войти как» — импёрсонация конкретной компании
-  const c = await cookies();
-  const imp = c.get("aktiv_impersonate")?.value;
-  if (imp) {
-    try {
-      const { userId } = JSON.parse(imp);
-      const u = userId ? await getUserById(userId) : null;
-      if (u?.companyId) { const co = await getCompany(u.companyId); if (co) return co; }
-    } catch { /* */ }
-  }
-  // 2) собственная компания пользователя
+// Какой кабинет показывать. Определяется ТОЛЬКО серверными данными сессии.
+//
+// Раньше здесь читалась cookie `aktiv_impersonate` и по её userId выбиралась компания.
+// Cookie не httpOnly, то есть её мог подставить любой пользователь из консоли браузера
+// и открыть кабинет чужой компании вместе с её неопубликованными материалами.
+// Теперь имперсонализация выдаёт настоящую сессию (см. /api/admin/login-as), поэтому
+// currentUser() уже возвращает нужного пользователя и его companyId — подмена не нужна.
+async function resolveCompany(userCompanyId: string | null, isAdmin: boolean) {
   if (userCompanyId) { const co = await getCompany(userCompanyId); if (co) return co; }
-  // 3) фолбэк (напр. суперадмин без импёрсонации) — первая компания
-  return firstCompany();
+  // Фолбэк на «первую компанию» — только для админа (например, суперадмин
+  // заглядывает в кабинет). Обычный пользователь без своей компании не должен
+  // проваливаться в чужую.
+  return isAdmin ? firstCompany() : null;
 }
 
 export default async function CompanyCabinet() {
-  const { user } = await requirePermission("ads.view", "/company");
-  const { t } = await serverT();
-  const company = await resolveCompany(user?.companyId ?? null);
+  const { user, perms } = await requirePermission("ads.view", "/company");
+  const { t, lang } = await serverT();
+  const company = await resolveCompany(user?.companyId ?? null, canAccessAdmin(perms));
   if (!company) {
-    return <div className="container-content py-10 text-center text-black/50">Компания не найдена. Создайте её в админ-панели.</div>;
+    return <div className="container-content py-10 text-center text-black/50">{t("misc.companyNotFound")}</div>;
   }
   const sections = COMPANY_SECTIONS.filter((s) => company.sections.includes(s.key));
-  const secLabel = (key: string, fallback: string) => { const v = t(`co.${key}`); return v === `co.${key}` ? fallback : v; };
+  // COMPANY_SECTIONS labels are i18n keys (see src/lib/permissions.ts) — translate them.
+  const secLabel = (key: string, fallback: string) => { const v = t(`co.${key}`); return v === `co.${key}` ? t(fallback) : v; };
   const sectionKeys = sections.map((s) => s.key);
   const enabledCaps = COMPANY_CAPABILITIES.filter((c) => company.capabilities[c.key]);
   const news = await articlesByCompany(company.name);
@@ -111,7 +112,7 @@ export default async function CompanyCabinet() {
         )}
 
         {/* sample/demo content for every other enabled section */}
-        <CompanyDemoSections keys={sectionKeys} t={t} comments={comments} companyId={company.id} data={companyData} />
+        <CompanyDemoSections keys={sectionKeys} t={t} lang={lang} comments={comments} companyId={company.id} data={companyData} />
 
         <div className="card p-5">
           <h2 className="mb-2 font-semibold">{t("co.profile")}</h2>

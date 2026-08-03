@@ -38,5 +38,18 @@ export function subsectionsFor(lang: Lang): Record<string, string[]> {
   return SUBS[lang] ?? SUBS.ru;
 }
 
+// Пара «значение для фильтра» + «подпись на языке интерфейса».
+//
+// Фильтр ищет по тексту статей, а статьи пишутся на своём языке — поэтому
+// в ссылку идёт КАНОНИЧЕСКОЕ русское значение, а пользователю показывается перевод.
+// Раньше в запрос уходила переведённая подпись («Mortgage»), и на английском
+// интерфейсе все чипы подрубрик не находили ничего.
+export type Subsection = { value: string; label: string };
+export function subsectionPairs(lang: Lang, categorySlug: string): Subsection[] {
+  const ru = SUBS.ru[categorySlug] ?? [];
+  const loc = (SUBS[lang] ?? SUBS.ru)[categorySlug] ?? [];
+  return ru.map((value, i) => ({ value, label: loc[i] ?? value }));
+}
+
 // Обратная совместимость (RU по умолчанию).
 export const subsections = SUBS.ru;

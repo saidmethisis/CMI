@@ -11,6 +11,9 @@ export const PATCH = withHandler(async (req: Request) => {
   if (!id) return NextResponse.json({ error: { message: "id обязателен" } }, { status: 422 });
   const res = await updateOwnArticle(id, g.user.id, patch);
   if ("error" in res) {
+    if (res.error === "EMPTY") {
+      return NextResponse.json({ error: { message: "Заполните заголовок, лид и текст хотя бы на одном языке." } }, { status: 422 });
+    }
     const msg = res.error === "FORBIDDEN" ? "Можно редактировать только свои статьи." : "Статья не найдена.";
     return NextResponse.json({ error: { message: msg } }, { status: res.error === "FORBIDDEN" ? 403 : 404 });
   }

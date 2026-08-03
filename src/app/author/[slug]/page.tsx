@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAuthor, getCompany } from "@/lib/rbac-store";
 import { followerCount } from "@/lib/follow";
-import { listPublished } from "@/lib/store";
+import { listPublished, localizeList } from "@/lib/store";
 import { serverT } from "@/lib/i18n-server";
 import FollowButton from "@/components/FollowButton";
 
@@ -11,19 +11,20 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const { t } = await serverT();
   const a = await getAuthor(slug);
-  return { title: a ? `${a.firstName} ${a.lastName}` : "Автор" };
+  return { title: a ? `${a.firstName} ${a.lastName}` : t("misc.author") };
 }
 
 export default async function AuthorPage({ params }: Props) {
   const { slug } = await params;
   const a = await getAuthor(slug);
   if (!a) notFound();
-  const { t } = await serverT();
+  const { t, lang } = await serverT();
   const company = a.companyId ? await getCompany(a.companyId) : null;
   const p = a.profile as Record<string, string>;
   const [subs, published] = await Promise.all([followerCount("author", a.id), listPublished()]);
-  const mine = published.filter((x) => x.authorName === `${a.firstName} ${a.lastName}`);
+  const mine = localizeList(published, lang).filter((x) => x.authorName === `${a.firstName} ${a.lastName}`);
   const views = mine.reduce((s, x) => s + x.views, 0);
   const stats = [[t("ap.articles"), String(mine.length)], [t("ap.views"), views.toLocaleString("ru-RU")], [t("ap.subs"), subs.toLocaleString("ru-RU")], [t("ap.avgRead"), "4:12"]];
   const chips = (v?: string) => (v ? v.split(/[,;]/).map((x) => x.trim()).filter(Boolean) : []);

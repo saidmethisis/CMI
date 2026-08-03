@@ -5,6 +5,7 @@ import type { Category, Story } from "@/lib/types";
 import Icon from "@/components/Icon";
 import { useTaxonomy } from "@/lib/taxonomy";
 import { uploadDataUrl } from "@/lib/upload";
+import { useI18n } from "@/lib/i18n";
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(file); });
@@ -13,6 +14,7 @@ function fileToDataUrl(file: File): Promise<string> {
 export default function StoryManager({ stories, categories }: { stories: Story[]; categories: Category[] }) {
   const router = useRouter();
   const { refresh } = useTaxonomy();
+  const { t } = useI18n();
   const [title, setTitle] = useState("");
   const [categorySlug, setCategorySlug] = useState(categories[0]?.slug ?? "tech");
   const [articleSlug, setArticleSlug] = useState("");
@@ -24,7 +26,7 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
 
   const add = async () => {
     setError("");
-    if (!title.trim() || !image) { setError("Нужны заголовок и изображение."); return; }
+    if (!title.trim() || !image) { setError(t("ad2.storyNeed")); return; }
     setBusy(true);
     try {
       const r = await fetch("/api/admin/stories", {
@@ -33,7 +35,7 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
         body: JSON.stringify({ title, categorySlug, image, articleSlug: articleSlug || undefined }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error?.message || "Ошибка");
+      if (!r.ok) throw new Error(j.error?.message || t("ad2.error"));
       setTitle(""); setArticleSlug(""); setImage("");
       await refresh();
       router.refresh();
@@ -56,19 +58,19 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
               // eslint-disable-next-line @next/next/no-img-element
               <img src={image} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="flex flex-col items-center gap-1 text-[10px] text-black/40 dark:text-white/40"><Icon name="upload" size={16} /> фото</span>
+              <span className="flex flex-col items-center gap-1 text-[10px] text-black/40 dark:text-white/40"><Icon name="upload" size={16} /> {t("ad2.photo")}</span>
             )}
             <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
           <div className="flex-1 space-y-2">
-            <input className="input" placeholder="Заголовок стори" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input className="input" placeholder={t("ad2.storyTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="grid grid-cols-2 gap-2">
               <select className="input" value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}>
                 {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
               </select>
-              <input className="input" placeholder="slug статьи (опц.)" value={articleSlug} onChange={(e) => setArticleSlug(e.target.value)} />
+              <input className="input" placeholder={t("ad2.storySlugPh")} value={articleSlug} onChange={(e) => setArticleSlug(e.target.value)} />
             </div>
-            <button className="btn-primary w-full text-xs" disabled={busy} onClick={add}>{busy ? "Загрузка…" : "Добавить стори"}</button>
+            <button className="btn-primary w-full text-xs" disabled={busy} onClick={add}>{busy ? t("author.uploading") : t("ad2.addStory")}</button>
           </div>
         </div>
       </div>

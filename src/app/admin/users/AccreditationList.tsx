@@ -17,7 +17,7 @@ export default function AccreditationList({ initial }: { initial: AccreditationR
       if (!r.ok) { const j = await r.json(); throw new Error(j.error?.message); }
     } catch (e) {
       setRows(prev); // откат при ошибке
-      setMsg((e as Error).message || "Ошибка сохранения."); setTimeout(() => setMsg(""), 3000);
+      setMsg((e as Error).message || t("misc.saveErr")); setTimeout(() => setMsg(""), 3000);
     } finally {
       setBusy(null);
     }
@@ -34,7 +34,7 @@ export default function AccreditationList({ initial }: { initial: AccreditationR
           </span>
           <div className="flex-1">
             <div className="font-medium">{r.name}</div>
-            <div className="text-xs text-black/50 dark:text-white/50">{r.type === "business" ? "Бизнес" : "Автор"} · {r.detail}</div>
+            <div className="text-xs text-black/50 dark:text-white/50">{r.type === "business" ? t("misc.typeBusiness") : t("misc.author")} · {r.detail}</div>
           </div>
           {r.status === "pending" ? (
             <div className="flex gap-2">

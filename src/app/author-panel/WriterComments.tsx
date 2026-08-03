@@ -34,14 +34,14 @@ export default function WriterComments() {
     const prev = rows;
     setRows((p) => p.map((c) => (c.id === id ? { ...c, status } : c)));
     const r = await fetch("/api/author/comments", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) });
-    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || "Ошибка."); }
+    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || t("misc.errorDot")); }
   };
   const del = async (id: string) => {
     if (!confirm(t("comments.confirmDelete"))) return;
     const prev = rows;
     setRows((p) => p.filter((c) => c.id !== id));
     const r = await fetch("/api/author/comments", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
-    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || "Ошибка."); }
+    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || t("misc.errorDot")); }
   };
 
   const counts = useMemo(() => {
