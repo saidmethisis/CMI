@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { readBody, withHandler } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
-import { currentUser, safeUser, randomToken } from "@/lib/auth";
+import { currentUser, safeUser, randomToken, verifyPassword } from "@/lib/auth";
 import { audit } from "@/lib/rbac-store";
 import { sendEmail, verifyEmailMessage } from "@/lib/email";
 
@@ -18,14 +18,29 @@ export const PATCH = withHandler(async (req: Request) => {
   if (body.privacy && typeof body.privacy === "object") data.privacy = JSON.stringify(body.privacy);
 
   let verifyToken: string | undefined;
-  if (typeof body.email === "string" && body.email !== user.email) {
-    if (await prisma.appUser.findUnique({ where: { email: body.email } })) {
+  // Смена почты — как в нижнем регистре, так и с проверкой пароля.
+  const newEmail = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  if (newEmail && newEmail !== user.email) {
+    // Требуем текущий пароль. Без этого угнанная сессия превращалась в
+    // безвозвратный захват: злоумышленник менял почту на свою и дальше
+    // восстанавливал пароль уже на неё.
+    if (!user.passwordHash || typeof body.currentPassword !== "string" || !verifyPassword(body.currentPassword, user.passwordHash)) {
+      return NextResponse.json({ error: { message: "Для смены e-mail введите текущий пароль." } }, { status: 403 });
+    }
+    if (await prisma.appUser.findUnique({ where: { email: newEmail } })) {
       return NextResponse.json({ error: { message: "Email уже занят." } }, { status: 409 });
     }
     verifyToken = randomToken(8);
-    data.email = body.email; data.emailVerified = false; data.verifyToken = verifyToken;
-    const vm = verifyEmailMessage(body.email, verifyToken);
-    await sendEmail({ to: body.email, subject: vm.subject, html: vm.html });
+    data.email = newEmail; data.emailVerified = false; data.verifyToken = verifyToken;
+    const vm = verifyEmailMessage(newEmail, verifyToken);
+    await sendEmail({ to: newEmail, subject: vm.subject, html: vm.html });
+    // Предупреждаем старый адрес: владелец должен узнать о смене, даже если
+    // доступ к аккаунту уже потерян.
+    await sendEmail({
+      to: user.email,
+      subject: "E-mail вашего аккаунта изменён",
+      html: `<p>E-mail аккаунта на Asosiy Aktiv изменён на <b>${newEmail}</b>.</p><p>Если это были не вы — немедленно свяжитесь с редакцией.</p>`,
+    }).catch(() => { /* уведомление не должно ломать саму операцию */ });
   }
 
   const updated = await prisma.appUser.update({ where: { id: user.id }, data: data as never });

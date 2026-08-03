@@ -3,6 +3,7 @@ import { readBody, withHandler } from "@/lib/api";
 import { currentUser } from "@/lib/auth";
 import { getCommentsTree, addComment } from "@/lib/comments";
 import { audit } from "@/lib/rbac-store";
+import { guardRate } from "@/lib/rate-limit";
 
 // Предел длины комментария. 5000 символов — заведомо больше любого осмысленного
 // отзыва и заведомо меньше того, чем можно засорить базу или сломать страницу.
@@ -19,6 +20,7 @@ export const GET = withHandler(async (req: Request) => {
 export const POST = withHandler(async (req: Request) => {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: { message: "Только зарегистрированные пользователи могут комментировать." } }, { status: 401 });
+  const rl = await guardRate("comment", user.id); if (rl) return rl;
   const { articleId, body, parentId } = await readBody(req);
   if (!articleId || !body?.trim()) return NextResponse.json({ error: { message: "Пустой комментарий." } }, { status: 422 });
   // Ограничение длины: без него принимался комментарий на сотни тысяч символов —

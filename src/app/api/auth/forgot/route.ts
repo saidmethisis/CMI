@@ -4,13 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { randomToken } from "@/lib/auth";
 import { sendEmail, resetEmail } from "@/lib/email";
 import { ensureRbacSeed } from "@/lib/rbac-store";
+import { guardRate } from "@/lib/rate-limit";
 
 // Восстановление пароля. В проде токен уходит на email; в ответе НЕ возвращается,
 // иначе любой мог бы получить чужой reset-токен. В dev — отдаём для удобства тестов.
 export async function POST(req: Request) {
   try {
     await ensureRbacSeed();
-    const { email } = await readBody(req);
+    const rl = await guardRate("forgot"); if (rl) return rl;
+  const { email } = await readBody(req);
     const user = await prisma.appUser.findUnique({ where: { email } });
     if (!user) return NextResponse.json({ data: { ok: true } }); // не раскрываем существование
     const token = `${randomToken(16)}.${Date.now() + 30 * 60 * 1000}`; // TTL 30 минут

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { generatePR, type PRInput } from "@/lib/ai";
 import { apiGuard } from "@/lib/api-guard";
+import { guardRate } from "@/lib/rate-limit";
 
 // Real OpenAI (GPT-4o) when OPENAI_API_KEY is set; deterministic mock otherwise.
 async function generateWithOpenAI(input: PRInput) {
@@ -44,12 +45,27 @@ async function generateWithOpenAI(input: PRInput) {
   return { title: String(parsed.title), lead: String(parsed.lead || ""), body: String(parsed.body) };
 }
 
+// Предел длины «фактов»: текст уходит в промпт OpenAI, и без ограничения один
+// запрос мог сжечь произвольное количество токенов (то есть ваших денег).
+const FACTS_MAX = 5000;
+
 export async function POST(req: Request) {
   const g = await apiGuard("news.create"); if (g.error) return g.error;
-  const body = (await req.json()) as PRInput;
+  // Не более 10 генераций в час на пользователя — та же причина.
+  const rl = await guardRate("ai", g.user.id); if (rl) return rl;
+  // req.json() на битом теле выбрасывал 500 с пустым ответом — этот маршрут
+  // единственный не обёрнут в withHandler.
+  let body: PRInput | null = null;
+  try { body = (await req.json()) as PRInput; } catch { body = null; }
   if (!body?.company || !body?.facts) {
     return NextResponse.json(
       { error: { code: "VALIDATION_ERROR", message: "Заполните компанию и факты." } },
+      { status: 422 }
+    );
+  }
+  if (String(body.facts).length > FACTS_MAX) {
+    return NextResponse.json(
+      { error: { code: "VALIDATION_ERROR", message: `Факты длиннее ${FACTS_MAX} символов.` } },
       { status: 422 }
     );
   }

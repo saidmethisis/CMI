@@ -132,6 +132,16 @@ export async function addStory(input: { categorySlug: string; title: string; ima
   return { story: s as Story };
 }
 
+// Удаление стори: автор убирает свою, модератор — любую.
+export async function deleteOwnStory(id: string, userId: string, isModerator = false) {
+  await ensureSeed();
+  const s = await prisma.story.findUnique({ where: { id }, select: { ownerUserId: true } });
+  if (!s) return { error: "NOT_FOUND" as const };
+  if (!isModerator && s.ownerUserId !== userId) return { error: "FORBIDDEN" as const };
+  await prisma.story.delete({ where: { id } });
+  return { ok: true };
+}
+
 // ── mappers ──────────────────────────────────────────────────────────────────
 type Row = Awaited<ReturnType<typeof prisma.article.findFirst>> & { comments?: unknown[] };
 function toArticle(r: NonNullable<Row>): Article {

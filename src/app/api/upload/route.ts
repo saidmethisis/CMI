@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { readBody, apiError } from "@/lib/api";
 import { currentUser } from "@/lib/auth";
+import { apiGuard } from "@/lib/api-guard";
+import { guardRate } from "@/lib/rate-limit";
 import { randomUUID } from "node:crypto";
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
@@ -18,6 +20,14 @@ const EXT: Record<string, string> = {
 export async function POST(req: Request) {
   const user = await currentUser();
   if (!user) return apiError("Не авторизован", 401);
+  // Загрузка — право media.upload, а не «любой зарегистрированный». Раньше
+  // достаточно было самому зарегистрироваться читателем, чтобы лить на диск
+  // файлы по 30 МБ без ограничений. Право есть у автора и компании.
+  const g = await apiGuard("media.upload");
+  if (g.error) return g.error;
+  // И квота: не более 30 файлов в час на пользователя.
+  const rl = await guardRate("upload", user.id);
+  if (rl) return rl;
   const { dataUrl } = await readBody(req);
   if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:")) return apiError("Ожидается data-URL.", 422);
   const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/s);
