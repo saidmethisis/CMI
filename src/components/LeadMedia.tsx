@@ -29,5 +29,7 @@ export default function LeadMedia({ cover, videoUrl, title, noVideoLabel }: { co
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
+  // Пустая обложка → нейтральный блок вместо значка «битая картинка».
+  if (!cover) return <div className="mb-6 grid aspect-[16/9] w-full place-items-center rounded-2xl bg-black/[0.06] font-serif text-6xl font-bold text-black/15 dark:bg-white/[0.08] dark:text-white/15">A</div>;
   return <img src={cover} alt={title} className="mb-6 aspect-[16/9] w-full rounded-2xl object-cover" />;
 }

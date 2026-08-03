@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { getArticle, listPublished, getCategories, localizedArticle, localizeList, bumpViews } from "@/lib/store";
+import { getArticle, listPublished, listPopular, getCategories, localizedArticle, localizeList, bumpViews } from "@/lib/store";
 import { serverT, getLang } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 import { getAuth } from "@/lib/guard";
@@ -83,7 +83,9 @@ export default async function ArticlePage({ params, searchParams }: Props) {
   const byAuthor = isNamedAuthor
     ? all.filter((x) => x.slug !== a.slug && x.authorName === a.authorName && !related.some((r) => r.slug === x.slug)).slice(0, 3)
     : [];
-  const popular = [...all].sort((x, y) => y.views - x.views);
+  // «Самое читаемое» берём отдельным запросом с сортировкой в базе, а не
+  // пересортировкой всего архива в памяти на каждый просмотр статьи.
+  const popular = localizeList(await listPopular(5), lang);
   // queue for infinite article-to-article scroll (recent, excluding current)
   const nextSlugs = all.filter((x) => x.slug !== a.slug).slice(0, 8).map((x) => x.slug);
 
@@ -176,7 +178,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
             <div className="card p-4">
               <h3 className="mb-3 font-semibold">{t("home.mostRead")}</h3>
               <ol className="space-y-3">
-                {popular.slice(0, 5).map((r, i) => (
+                {popular.map((r, i) => (
                   <li key={r.id} className="flex gap-3 text-sm">
                     <span className="font-serif text-xl font-bold text-black/20 dark:text-white/20">{i + 1}</span>
                     <Link href={`/article/${r.slug}`} className="hover:text-brand dark:hover:text-white">{r.title}</Link>

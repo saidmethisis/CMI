@@ -67,7 +67,7 @@ export default function SearchClient({ index }: { index: Row[] }) {
               <li key={r.slug}>
                 <Link href={`/article/${r.slug}`} className="card card-hover flex gap-4 overflow-hidden p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={r.cover} alt="" className="h-20 w-28 shrink-0 rounded-lg object-cover" />
+                  {r.cover && <img src={r.cover} alt="" loading="lazy" className="h-20 w-28 shrink-0 rounded-lg object-cover" />}
                   <div>
                     <span className="text-xs font-semibold" style={{ color: c?.color }}>{c ? catName(c) : ""}</span>
                     <h3 className="font-serif font-bold leading-snug">{highlight(r.title, q.trim())}</h3>

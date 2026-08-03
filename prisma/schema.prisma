@@ -53,6 +53,7 @@ model Comment {
   parentId     String?
   parent       Comment?  @relation("thread", fields: [parentId], references: [id], onDelete: Cascade)
   replies      Comment[] @relation("thread")
+  reactions    CommentReaction[]
   likes        Int       @default(0)
   dislikes     Int       @default(0)
   reports      Int       @default(0)
@@ -62,14 +63,25 @@ model Comment {
   moderatedAt  DateTime? // когда менялся статус
   createdAt    DateTime  @default(now())
   updatedAt    DateTime? @updatedAt
+
+  // Без этих индексов каждый показ статьи сканировал таблицу комментариев целиком:
+  // PostgreSQL не индексирует внешние ключи автоматически.
+  @@index([articleId, createdAt])
+  @@index([userId])
+  @@index([status])
 }
 
 model CommentReaction {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   commentId String
+  // Связь с комментарием: раньше её не было, и реакции оставались в базе
+  // навсегда после удаления комментария, а «лайк» несуществующего id
+  // спокойно записывался.
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   userId    String
   type      String // like | dislike
   @@unique([commentId, userId])
+  @@index([commentId])
 }
 
 model Session {

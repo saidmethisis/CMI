@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { t, lang } = await serverT();
   const c = (await getCategories()).find((x) => x.slug === slug);
-  return { title: c ? localizeName(lang, c) : t("misc.category") };
+  return { title: c ? localizeName(lang, c) : t("misc.category"), alternates: { canonical: `/category/${slug}` } };
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {

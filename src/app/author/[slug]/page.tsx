@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { t } = await serverT();
   const a = await getAuthor(slug);
-  return { title: a ? `${a.firstName} ${a.lastName}` : t("misc.author") };
+  return { title: a ? `${a.firstName} ${a.lastName}` : t("misc.author"), alternates: { canonical: `/author/${slug}` } };
 }
 
 export default async function AuthorPage({ params }: Props) {

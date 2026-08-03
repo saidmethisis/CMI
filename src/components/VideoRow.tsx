@@ -16,7 +16,7 @@ export default function VideoRow({ title, items }: { title: React.ReactNode; ite
           <Link key={a.id} href={`/article/${a.slug}`} className="group">
             <div className="relative aspect-video overflow-hidden rounded-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={a.cover} alt={a.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+              {a.cover && <img src={a.cover} alt={a.title} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
               <span className="absolute inset-0 grid place-items-center">
                 <span className="grid h-12 w-12 place-items-center rounded-full bg-black/55 ring-2 ring-white/80">
                   {/* pure-CSS play triangle */}

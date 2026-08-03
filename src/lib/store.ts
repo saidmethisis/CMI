@@ -196,22 +196,77 @@ function normalizeTranslations(input: unknown): { base: { title: string; lead: s
 }
 
 // ── queries ──────────────────────────────────────────────────────────────────
-export async function listPublished(opts: { category?: string; q?: string } = {}): Promise<Article[]> {
+
+// Поля для СПИСКОВ (лента, карточки, «похожие», поиск). Сознательно без `body`,
+// `aiSummary` и `authorSocials`: тело статьи в карточке не показывается, но именно
+// оно составляет почти весь объём строки. Раньше списки тянули статьи целиком —
+// главная и страница статьи вычитывали весь архив с полными текстами всех трёх
+// языков и отправляли его в браузер. На 500 материалах это ~9 МБ на каждый заход.
+const CARD_FIELDS = {
+  id: true, slug: true, title: true, lead: true, translations: true, cover: true, videoUrl: true,
+  categorySlug: true, tags: true, authorName: true, authorUserId: true, authorKind: true,
+  company: true, createdAt: true, readingMinutes: true, premium: true, pinned: true,
+  status: true, views: true,
+} as const;
+
+// Верхняя граница выборки: без неё запрос растёт линейно вместе с архивом.
+// Для главной и «похожих» этого с запасом достаточно.
+const LIST_LIMIT = 300;
+
+// Достраивает до формы Article поля, которых нет в облегчённой выборке.
+//
+// Отдельно вычищаем тексты из `translations`: там лежит ПОЛНАЯ копия статьи на
+// каждом языке, поэтому без этого исключение колонки `body` ничего не давало —
+// тело всё равно уезжало в браузер, да ещё и трижды. Заголовок и лид оставляем:
+// по ним карточка локализуется.
+function toCard(r: Record<string, unknown>): Article {
+  let translations = "{}";
+  try {
+    const tr = JSON.parse((r.translations as string) || "{}") as Record<string, { title?: string; lead?: string }>;
+    const light: Record<string, { title: string; lead: string; body: string }> = {};
+    for (const [lang, v] of Object.entries(tr)) {
+      light[lang] = { title: v?.title ?? "", lead: v?.lead ?? "", body: "" };
+    }
+    translations = JSON.stringify(light);
+  } catch { /* повреждённый JSON — отдаём пустые переводы */ }
+  return toArticle({ ...r, translations, body: "", aiSummary: "", authorSocials: "[]" } as never);
+}
+
+export async function listPublished(opts: { category?: string; q?: string; take?: number } = {}): Promise<Article[]> {
   await ensureSeed();
   const rows = await prisma.article.findMany({
     where: {
       status: "published",
       ...(opts.category ? { categorySlug: opts.category } : {}),
-      ...(opts.q ? { OR: [{ title: { contains: opts.q } }, { lead: { contains: opts.q } }, { tags: { contains: opts.q } }] } : {}),
+      // mode: "insensitive" обязателен: в PostgreSQL `contains` без него — это
+      // регистрозависимый LIKE, и фильтр по подрубрике молча не находил ничего.
+      ...(opts.q ? { OR: [
+        { title: { contains: opts.q, mode: "insensitive" as const } },
+        { lead: { contains: opts.q, mode: "insensitive" as const } },
+        { tags: { contains: opts.q, mode: "insensitive" as const } },
+      ] } : {}),
     },
     orderBy: { createdAt: "desc" },
+    take: opts.take ?? LIST_LIMIT,
+    select: CARD_FIELDS,
   });
-  return rows.map(toArticle);
+  return rows.map(toCard);
+}
+
+// Самые читаемые — считаются базой, а не сортировкой всего архива в памяти.
+export async function listPopular(take = 10): Promise<Article[]> {
+  await ensureSeed();
+  const rows = await prisma.article.findMany({
+    where: { status: "published" }, orderBy: { views: "desc" }, take, select: CARD_FIELDS,
+  });
+  return rows.map(toCard);
 }
 
 export async function getArticle(slug: string): Promise<Article | undefined> {
   await ensureSeed();
-  const r = await prisma.article.findUnique({ where: { slug }, include: { comments: { orderBy: { createdAt: "desc" } } } });
+  // Комментарии грузит отдельный запрос из клиента (Comments.tsx) — здесь они
+  // не нужны, а include без лимита разрастался вместе с обсуждением.
+  const r = await prisma.article.findUnique({ where: { slug } });
   return r ? toArticle(r) : undefined;
 }
 

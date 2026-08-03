@@ -21,6 +21,12 @@ import { localizeName } from "@/lib/dictionaries";
 
 export const dynamic = "force-dynamic";
 
+// Свой canonical: в корневом layout он намеренно не задан, иначе все страницы
+// объявляли бы себя копией главной.
+export async function generateMetadata() {
+  return { alternates: { canonical: "/" } };
+}
+
 export default async function HomePage() {
   const { t, lang } = await serverT();
 
@@ -87,9 +93,15 @@ export default async function HomePage() {
                 <span className="rounded-md bg-accent px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">Asosiy Aktiv</span>
               </div>
               <Link href={`/article/${pinned.slug}`} className="group block">
-                <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={pinned.cover} alt={pinned.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-black/[0.06] dark:bg-white/[0.08]">
+                  {/* Без обложки — нейтральная заглушка: пустой src даёт значок
+                      «битая картинка» в самом заметном блоке главной. */}
+                  {pinned.cover ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={pinned.cover} alt={pinned.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                  ) : (
+                    <span className="grid h-full w-full place-items-center font-serif text-6xl font-bold text-black/15 dark:text-white/15">A</span>
+                  )}
                 </div>
                 <span className="mt-3 inline-block text-xs font-bold uppercase" style={{ color: pinnedCat?.color }}>{pinnedCat ? localizeName(lang, pinnedCat) : ""}</span>
                 <h1 className="mt-1 font-serif text-3xl font-extrabold leading-tight group-hover:text-accent md:text-4xl">{pinned.title}</h1>

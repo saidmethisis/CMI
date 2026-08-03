@@ -55,7 +55,7 @@ export default function InfiniteArticles({ queue }: { queue: string[] }) {
             </h2>
             <p className="mt-2 text-lg text-black/60 dark:text-white/70">{a.lead}</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={a.cover} alt={a.title} className="my-5 aspect-[16/9] w-full rounded-2xl object-cover" />
+            {a.cover && <img src={a.cover} alt={a.title} loading="lazy" className="my-5 aspect-[16/9] w-full rounded-2xl object-cover" />}
             <AiSummary text={a.aiSummary} label={t("article.aiSummary")} />
             <Paragraphs text={a.body} />
             <AuthorSocials socials={a.authorSocials} label={t("article.authorSocials")} />

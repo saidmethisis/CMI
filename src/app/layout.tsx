@@ -26,7 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
     description: desc,
     manifest: "/manifest.webmanifest",
     applicationName: "Asosiy Aktiv",
-    alternates: { canonical: "/", types: { "application/rss+xml": `${SITE_URL}/feed.xml` } },
+    // canonical здесь НЕ задаём: Next наследует alternates во все дочерние страницы,
+    // и каждая рубрика/автор/поиск объявляли себя копией главной — Google выкидывал
+    // их из индекса. Каждая страница задаёт свой canonical сама (см. generateMetadata).
+    alternates: { types: { "application/rss+xml": `${SITE_URL}/feed.xml` } },
     appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Aktiv" },
     openGraph: { type: "website", title: "Asosiy Aktiv", siteName: "Asosiy Aktiv", url: SITE_URL },
     twitter: { card: "summary_large_image", title: "Asosiy Aktiv", description: desc },
