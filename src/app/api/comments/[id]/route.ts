@@ -22,7 +22,11 @@ export const PATCH = withHandler(async (req: Request, { params }: { params: Prom
     else await moderateComment(id, status, user.id);
     return NextResponse.json({ data: { ok: true } });
   }
-  // edit own
+  // edit own — тот же предел длины, что и при создании, иначе ограничение
+  // обходится правкой уже созданного комментария
+  if (String(body ?? "").length > 5000) {
+    return NextResponse.json({ error: { message: "Комментарий длиннее 5000 символов." } }, { status: 422 });
+  }
   const res = await editComment(id, user.id, body ?? "");
   if ("error" in res) return NextResponse.json({ error: { message: "Можно редактировать только свой комментарий." } }, { status: 403 });
   return NextResponse.json({ data: { ok: true } });

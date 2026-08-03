@@ -4,6 +4,10 @@ import { currentUser } from "@/lib/auth";
 import { getCommentsTree, addComment } from "@/lib/comments";
 import { audit } from "@/lib/rbac-store";
 
+// Предел длины комментария. 5000 символов — заведомо больше любого осмысленного
+// отзыва и заведомо меньше того, чем можно засорить базу или сломать страницу.
+const COMMENT_MAX = 5000;
+
 export const GET = withHandler(async (req: Request) => {
   const articleId = new URL(req.url).searchParams.get("articleId");
   if (!articleId) return NextResponse.json({ error: { message: "articleId обязателен" } }, { status: 422 });
@@ -17,6 +21,11 @@ export const POST = withHandler(async (req: Request) => {
   if (!user) return NextResponse.json({ error: { message: "Только зарегистрированные пользователи могут комментировать." } }, { status: 401 });
   const { articleId, body, parentId } = await readBody(req);
   if (!articleId || !body?.trim()) return NextResponse.json({ error: { message: "Пустой комментарий." } }, { status: 422 });
+  // Ограничение длины: без него принимался комментарий на сотни тысяч символов —
+  // это и раздувание базы, и сломанная вёрстка страницы статьи.
+  if (String(body).length > COMMENT_MAX) {
+    return NextResponse.json({ error: { message: `Комментарий длиннее ${COMMENT_MAX} символов.` } }, { status: 422 });
+  }
   const c = await addComment({ articleId, userId: user.id, author: user.displayName || user.name, avatar: user.avatar, body, parentId });
   await audit(user.email, "comment.create", articleId);
   return NextResponse.json({ data: { id: c.id, status: c.status } }, { status: 201 });

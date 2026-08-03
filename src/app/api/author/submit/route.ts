@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { readBody, withHandler } from "@/lib/api";
 import { submitUgcArticle } from "@/lib/store";
 import { apiGuard } from "@/lib/api-guard";
+import { validateTranslations, validateCategory, validateMisc } from "@/lib/article-validate";
 
 // Writer submits a draft/for-moderation article; owner is the logged-in user.
 export const POST = withHandler(async (req: Request) => {
@@ -19,6 +20,13 @@ export const POST = withHandler(async (req: Request) => {
     : !!(title && lead && body);
   if (!hasCompleteLang) {
     return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Заполните заголовок, лид и текст хотя бы на одном языке." } }, { status: 422 });
+  }
+  // Длины полей, существование рубрики и формат обложки — см. article-validate.ts
+  const bad = validateTranslations(langs, { title, lead, body })
+    ?? validateMisc({ tags, cover })
+    ?? (await validateCategory(categorySlug));
+  if (bad) {
+    return NextResponse.json({ error: { code: "VALIDATION_ERROR", field: bad.field, message: bad.message } }, { status: 422 });
   }
   const res = await submitUgcArticle({
     title: title || "", lead: lead || "", body: body || "", categorySlug, tags: tags || "",
