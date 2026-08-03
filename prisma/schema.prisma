@@ -54,6 +54,7 @@ model Comment {
   parent       Comment?  @relation("thread", fields: [parentId], references: [id], onDelete: Cascade)
   replies      Comment[] @relation("thread")
   reactions    CommentReaction[]
+  reportedBy   CommentReport[]
   likes        Int       @default(0)
   dislikes     Int       @default(0)
   reports      Int       @default(0)
@@ -69,6 +70,19 @@ model Comment {
   @@index([articleId, createdAt])
   @@index([userId])
   @@index([status])
+}
+
+// Кто на какой комментарий пожаловался. Без этой таблицы жалобы просто
+// инкрементировали счётчик: один человек тремя запросами скрывал любой
+// комментарий на сайте, и повторно пожаловаться мог бесконечно.
+model CommentReport {
+  id        String   @id @default(cuid())
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+  @@unique([commentId, userId])
+  @@index([commentId])
 }
 
 model CommentReaction {

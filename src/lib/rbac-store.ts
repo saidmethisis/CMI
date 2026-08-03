@@ -191,9 +191,19 @@ export async function deleteAuthor(id: string) {
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
+
+// Что можно показывать в админке. Раньше список отдавался целиком, вместе с
+// passwordHash, twoFactorSecret, verifyToken и resetToken — и всё это уезжало
+// в браузер администратора (страница тянет /api/admin/users на клиенте).
+const USER_PUBLIC = {
+  id: true, name: true, displayName: true, email: true, roleSlug: true, companyId: true,
+  authorId: true, status: true, avatar: true, emailVerified: true, twoFactor: true,
+  locale: true, createdAt: true,
+} as const;
+
 export async function listUsers() {
   await ensureRbacSeed();
-  return prisma.appUser.findMany({ orderBy: { createdAt: "asc" } });
+  return prisma.appUser.findMany({ orderBy: { createdAt: "asc" }, select: USER_PUBLIC });
 }
 export async function getUserById(id: string) {
   await ensureRbacSeed();
@@ -215,7 +225,17 @@ export async function createUser(input: { name: string; email: string; roleSlug:
 }
 export async function updateUser(id: string, patch: Partial<{ status: string; roleSlug: string; companyId: string | null; name: string }>) {
   await ensureRbacSeed();
-  const u = await prisma.appUser.update({ where: { id }, data: patch as never });
+  // ЯВНЫЙ список полей. Раньше сюда уходило всё тело запроса, и обладатель права
+  // «users.edit» мог одним PATCH выставить себе roleSlug: "superadmin", подменить
+  // чужой passwordHash или подложить resetToken. Список полей — единственное,
+  // что отделяет редактирование пользователя от захвата всей платформы.
+  const data: Record<string, unknown> = {};
+  if (typeof patch.name === "string") data.name = patch.name;
+  if (typeof patch.status === "string") data.status = patch.status;
+  if (typeof patch.roleSlug === "string") data.roleSlug = patch.roleSlug;
+  if (patch.companyId === null || typeof patch.companyId === "string") data.companyId = patch.companyId;
+  if (Object.keys(data).length === 0) return { error: "NO_FIELDS" as const };
+  const u = await prisma.appUser.update({ where: { id }, data, select: USER_PUBLIC });
   await audit("Суперадмин", "user.update", u.email);
   return u;
 }

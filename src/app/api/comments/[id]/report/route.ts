@@ -7,5 +7,10 @@ export const POST = withHandler(async (_req: Request, { params }: { params: Prom
   const { id } = await params;
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: { message: "Войдите, чтобы пожаловаться." } }, { status: 401 });
-  return NextResponse.json({ data: await reportComment(id) });
+  const res = await reportComment(id, user.id);
+  if ("error" in res) {
+    const msg = res.error === "OWN" ? "Нельзя пожаловаться на свой комментарий." : "Комментарий не найден.";
+    return NextResponse.json({ error: { message: msg } }, { status: res.error === "OWN" ? 422 : 404 });
+  }
+  return NextResponse.json({ data: res });
 });

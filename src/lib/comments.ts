@@ -69,10 +69,30 @@ export async function reactComment(commentId: string, userId: string, type: "lik
   return { likes, dislikes };
 }
 
-export async function reportComment(commentId: string) {
-  const c = await prisma.comment.update({ where: { id: commentId }, data: { reports: { increment: 1 } } });
-  if (c.reports >= 3 && c.status === "approved") await prisma.comment.update({ where: { id: commentId }, data: { status: "pending" } });
-  return { reports: c.reports };
+// Порог скрытия. Считаются жалобы от РАЗНЫХ людей: раньше счётчик просто
+// инкрементировался, и один пользователь тремя запросами убирал с сайта любой
+// комментарий — включая чужой, который ему просто не понравился.
+const REPORT_THRESHOLD = 3;
+
+export async function reportComment(commentId: string, userId: string) {
+  const c = await prisma.comment.findUnique({ where: { id: commentId }, select: { id: true, userId: true, status: true } });
+  if (!c) return { error: "NOT_FOUND" as const };
+  // На собственный комментарий жаловаться бессмысленно.
+  if (c.userId === userId) return { error: "OWN" as const };
+  try {
+    await prisma.commentReport.create({ data: { commentId, userId } });
+  } catch {
+    // уникальный индекс (commentId, userId) — повторная жалоба ничего не меняет
+    const reports = await prisma.commentReport.count({ where: { commentId } });
+    return { reports, already: true };
+  }
+  const reports = await prisma.commentReport.count({ where: { commentId } });
+  // Держим денормализованный счётчик в актуальном состоянии — его читает UI.
+  await prisma.comment.update({ where: { id: commentId }, data: { reports } });
+  if (reports >= REPORT_THRESHOLD && c.status === "approved") {
+    await prisma.comment.update({ where: { id: commentId }, data: { status: "pending" } });
+  }
+  return { reports };
 }
 
 export async function editComment(commentId: string, userId: string, body: string) {
