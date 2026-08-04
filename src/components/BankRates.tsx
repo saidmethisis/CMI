@@ -60,6 +60,7 @@ export default function BankRates({ initial }: { initial?: { data: BankRatesByCo
           {codes.map((code) => (
             <button
               key={code}
+              aria-pressed={active === code}
               onClick={() => { setTab(code); setAll(false); }}
               className={`rounded-md px-2.5 py-1 font-semibold transition ${active === code ? "bg-brand text-white" : "text-black/60 hover:bg-black/5 dark:text-white/65 dark:hover:bg-white/10"}`}
             >
@@ -74,12 +75,25 @@ export default function BankRates({ initial }: { initial?: { data: BankRatesByCo
           <thead>
             <tr className="border-b border-black/5 text-left text-xs text-black/60 dark:border-white/10 dark:text-white/65">
               <th className="px-4 py-2.5 font-semibold">{t("w.bank")}</th>
-              <th className="cursor-pointer px-4 py-2.5 text-right font-semibold" onClick={() => setSort(sort === "buy" ? null : "buy")}>
-                {active} {t("w.buy")} ▲▼
-              </th>
-              <th className="cursor-pointer px-4 py-2.5 text-right font-semibold" onClick={() => setSort(sort === "sell" ? null : "sell")}>
-                {active} {t("w.sell")} ▲▼
-              </th>
+              {/* Сортировка кнопкой, а не onClick на <th>: заголовок таблицы не
+                  фокусируется, поэтому колонки нельзя было отсортировать с
+                  клавиатуры. aria-sort сообщает диктору текущий порядок, а
+                  стрелка показывает его, а не оба направления сразу. */}
+              {(["buy", "sell"] as const).map((col) => (
+                <th
+                  key={col}
+                  aria-sort={sort === col ? "descending" : "none"}
+                  className="px-4 py-2.5 text-right font-semibold"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSort(sort === col ? null : col)}
+                    className="rounded px-1 hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    {active} {t(col === "buy" ? "w.buy" : "w.sell")} {sort === col ? "▼" : "▲▼"}
+                  </button>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>

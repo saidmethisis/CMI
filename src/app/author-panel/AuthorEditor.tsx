@@ -106,14 +106,14 @@ export default function AuthorEditor() {
   return (
     <div className="card p-5">
       <h2 className="mb-4 font-serif text-lg font-bold">{t("author.new")}</h2>
-      {error && <div className="mb-4 rounded-xl border border-down/30 bg-down/5 px-4 py-3 text-sm text-down">{error}</div>}
+      {error && <div className="mb-4 rounded-xl border border-down/30 bg-down/5 px-4 py-3 text-sm text-down" role="alert">{error}</div>}
 
       {/* cover upload */}
       <label className="label">{t("author.cover")}</label>
       <div className="mb-3 flex items-center gap-3">
         <label className={`btn-ghost text-xs ${coverBusy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}>
           <Icon name="upload" size={14} /> {coverBusy ? t("author.uploading") : t("author.upload")}
-          <input type="file" accept="image/*" disabled={coverBusy} className="hidden" onChange={(e) => onCover(e.target.files?.[0])} />
+          <input type="file" accept="image/*" disabled={coverBusy} className="sr-only" onChange={(e) => onCover(e.target.files?.[0])} />
         </label>
         {cover && !coverBusy && (
           <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function AuthorEditor() {
         <input className="input" value={videoUrl.startsWith("data:") || videoUrl.startsWith("/uploads/") ? "" : videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtu.be/… , https://…/video.mp4" />
         <label className="btn-ghost shrink-0 cursor-pointer text-xs">
           <Icon name="upload" size={14} /> {t("author.fromDevice")}
-          <input type="file" accept="video/mp4,video/webm,video/ogg" className="hidden" onChange={async (e) => {
+          <input type="file" accept="video/mp4,video/webm,video/ogg" className="sr-only" onChange={async (e) => {
             const f = e.target.files?.[0]; if (!f) return;
             if (f.size > 25 * 1024 * 1024) { alert(t("author.videoTooBig")); return; }
             setVideoUrl(await uploadDataUrl(await fileToDataUrl(f)));
@@ -185,7 +185,7 @@ export default function AuthorEditor() {
         <label className="label !mb-0">{t("author.text")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
         <label className={`btn-ghost text-xs ${photoBusy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}>
           <Icon name="image" size={14} /> {photoBusy ? t("author.uploading") : t("author.insertPhoto")}
-          <input type="file" accept="image/*" disabled={photoBusy} className="hidden" onChange={(e) => insertPhoto(e.target.files?.[0])} />
+          <input type="file" accept="image/*" disabled={photoBusy} className="sr-only" onChange={(e) => insertPhoto(e.target.files?.[0])} />
         </label>
       </div>
       <textarea ref={bodyRef} value={cur.body} onChange={(e) => setCur({ body: e.target.value })} rows={10}

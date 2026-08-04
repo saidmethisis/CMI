@@ -54,7 +54,7 @@ export default function StoryUploader() {
           ) : (
             <span className="text-[10px] text-black/60 dark:text-white/65">{t("acc.photo")}</span>
           )}
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+          <input type="file" accept="image/*" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
         </label>
         <div className="flex-1 space-y-2">
           <input className="input" placeholder={t("acc.storyTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} />

@@ -94,7 +94,7 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col">
           {SECTIONS.map((k) => (
-            <button key={k} onClick={() => { setTab(k); setEditing(null); }} className={`whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition ${tab === k ? "bg-accent/10 font-semibold text-accent" : "text-black/65 hover:bg-black/[0.04] dark:text-white/65 dark:hover:bg-white/[0.06]"}`}>{t(`wc.${k}`)}</button>
+            <button key={k} aria-pressed={tab === k} onClick={() => { setTab(k); setEditing(null); }} className={`whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition ${tab === k ? "bg-accent/10 font-semibold text-accent" : "text-black/65 hover:bg-black/[0.04] dark:text-white/65 dark:hover:bg-white/[0.06]"}`}>{t(`wc.${k}`)}</button>
           ))}
         </nav>
       </aside>

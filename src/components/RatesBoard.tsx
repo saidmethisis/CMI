@@ -39,7 +39,7 @@ export default function RatesBoard() {
   }, [load]);
 
   return (
-    <section className="card overflow-hidden" aria-label={t("w.cbuTitle")}>
+    <section className="card overflow-hidden" aria-label={t("w.cbuTitle")} aria-live="polite">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-black/5 px-4 py-3 dark:border-white/10">
         <h2 className="font-serif text-lg font-bold">{t("w.cbuTitle")}</h2>
         <span className="ml-auto text-xs text-black/60 dark:text-white/65">

@@ -37,12 +37,12 @@ export default function ForgotPage() {
         <h1 className="font-serif text-2xl font-bold">{t("au.forgotTitle")}</h1>
         {msg && <div className="mt-3 rounded-lg bg-brand/10 px-3 py-2 text-sm text-brand dark:text-white">{msg}</div>}
         <div className="mt-4 space-y-3">
-          <div><label className="label">{t("auth.email")}</label><input className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@mail.com" /></div>
+          <div><label className="label" htmlFor="fg-email">{t("auth.email")}</label><input id="fg-email" autoComplete="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@mail.com" /></div>
           <button className="btn-ghost w-full" onClick={request}>{t("au.getToken")}</button>
           {issued && (
             <>
-              <div><label className="label">{t("au.resetToken")}</label><input className="input" value={token} onChange={(e) => setToken(e.target.value)} placeholder={issued} /></div>
-              <div><label className="label">{t("au.newPassword")}</label><input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+              <div><label className="label" htmlFor="fg-token">{t("au.resetToken")}</label><input id="fg-token" autoComplete="one-time-code" className="input" value={token} onChange={(e) => setToken(e.target.value)} placeholder={issued} /></div>
+              <div><label className="label" htmlFor="fg-password">{t("au.newPassword")}</label><input id="fg-password" autoComplete="new-password" className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
               <button className="btn-primary w-full" onClick={reset}>{t("au.resetPassword")}</button>
             </>
           )}

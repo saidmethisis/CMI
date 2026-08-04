@@ -53,7 +53,7 @@ export default function ImageUpload({
         <div className="flex flex-col gap-1.5">
           <label className="btn-ghost cursor-pointer text-xs">
             {value ? t("acc.replace") : t("acc.uploadFromDevice")}
-            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
           {value && <button type="button" className="text-left text-xs text-down" onClick={() => onChange("")}>{t("a.delete")}</button>}
         </div>

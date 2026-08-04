@@ -29,11 +29,11 @@ export default function RegisterPage() {
       <div className="card w-full max-w-sm p-6">
         <h1 className="font-serif text-2xl font-bold">{t("auth.registerTitle")}</h1>
         <p className="mt-1 text-sm text-black/60 dark:text-white/65">{t("au.readersOnly")}</p>
-        {error && <div className="mt-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down">{error}</div>}
+        {error && <div className="mt-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down" role="alert">{error}</div>}
         <div className="mt-5 space-y-3">
-          <div><label className="label">{t("auth.name")}</label><input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div><label className="label">{t("auth.email")}</label><input className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@mail.com" /></div>
-          <div><label className="label">{t("auth.password")}</label><input className="input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={t("au.passwordMin")} /></div>
+          <div><label className="label" htmlFor="reg-name">{t("auth.name")}</label><input id="reg-name" autoComplete="name" className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div><label className="label" htmlFor="reg-email">{t("auth.email")}</label><input id="reg-email" autoComplete="email" className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@mail.com" /></div>
+          <div><label className="label" htmlFor="reg-password">{t("auth.password")}</label><input id="reg-password" autoComplete="new-password" className="input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={t("au.passwordMin")} /></div>
           <label className="flex items-start gap-2 text-xs text-black/60 dark:text-white/60">
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-accent" />
             <span>{t("au.consentPre")} <Link href="/privacy" className="text-accent underline">{t("au.privacyPolicy")}</Link> {t("au.consentMid")} <Link href="/terms" className="text-accent underline">{t("au.termsOfUse")}</Link>{t("au.consentPost")}</span>

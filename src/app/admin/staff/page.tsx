@@ -45,7 +45,7 @@ export default function StaffPage() {
         <div><h1 className="font-serif text-2xl font-bold">{t("a.hUsers")}</h1></div>
         <button className="btn-primary text-sm" onClick={() => setCreating((v) => !v)}>+ {t("a.create")}</button>
       </div>
-      {msg && <div className="mb-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down">{msg}</div>}
+      {msg && <div className="mb-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down" role="alert">{msg}</div>}
 
       {creating && (
         <div className="card mb-4 flex flex-wrap items-end gap-2 p-3">

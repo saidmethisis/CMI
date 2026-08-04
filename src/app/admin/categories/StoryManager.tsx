@@ -60,7 +60,7 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
             ) : (
               <span className="flex flex-col items-center gap-1 text-[10px] text-black/60 dark:text-white/65"><Icon name="upload" size={16} /> {t("ad2.photo")}</span>
             )}
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+            <input type="file" accept="image/*" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
           <div className="flex-1 space-y-2">
             <input className="input" placeholder={t("ad2.storyTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} />

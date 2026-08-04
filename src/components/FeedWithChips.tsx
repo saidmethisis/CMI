@@ -27,7 +27,7 @@ export default function FeedWithChips({ items }: { items: Article[] }) {
         <ScrollRow gap="gap-2" className="-mx-4 items-center px-4 py-1 sm:mx-0 sm:px-0 md:pr-16">
           <button onClick={() => setActive("all")} className={`${chipBase} ${active === "all" ? "bg-brand text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`}>{t("home.all")}</button>
           {chips.map((c) => (
-            <button key={c.slug} onClick={() => setActive(c.slug)} className={`${chipBase} ${active === c.slug ? "bg-brand text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`}>{catName(c)}</button>
+            <button key={c.slug} aria-pressed={active === c.slug} onClick={() => setActive(c.slug)} className={`${chipBase} ${active === c.slug ? "bg-brand text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`}>{catName(c)}</button>
           ))}
         </ScrollRow>
       </div>
