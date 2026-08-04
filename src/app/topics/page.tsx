@@ -22,7 +22,7 @@ export default async function TopicsPage() {
             <CatMark cat={c} label={localizeName(lang, c)} size={56} className="!rounded-xl" />
             <div>
               <div className="font-serif text-lg font-bold">{localizeName(lang, c)}</div>
-              <div className="text-sm text-black/50 dark:text-white/50">{counts[c.slug] ?? 0} {t("common.materials")}</div>
+              <div className="text-sm text-black/60 dark:text-white/65">{counts[c.slug] ?? 0} {t("common.materials")}</div>
             </div>
           </Link>
         ))}

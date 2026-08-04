@@ -117,7 +117,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0">
-          <nav className="mb-3 text-xs text-black/50 dark:text-white/50">
+          <nav className="mb-3 text-xs text-black/60 dark:text-white/65">
             <Link href="/">{t("article.home")}</Link> ›{" "}
             <Link href={`/category/${a.categorySlug}`}>{catLabel}</Link>
           </nav>
@@ -133,7 +133,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
               </span>
               <div>
                 <span className="font-semibold">{a.company ?? a.authorName}</span>
-                <div className="text-xs text-black/50 dark:text-white/50">
+                <div className="text-xs text-black/60 dark:text-white/65">
                   {new Date(a.createdAt).toLocaleDateString(lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU", { day: "numeric", month: "long", year: "numeric" })} · {a.readingMinutes} {t("common.min")}
                   {a.authorKind === "pr" && ` · ${t("article.partner")}`}
                 </div>

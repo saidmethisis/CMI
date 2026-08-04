@@ -30,7 +30,7 @@ export default function AccountPage() {
     setNotifMsg(r.ok ? t("a.saved") : t("acc.error")); if (r.ok) refresh(); setTimeout(() => setNotifMsg(""), 1500);
   };
 
-  if (loading) return <div className="container-content py-16 text-center text-black/40">{t("notif.loading")}</div>;
+  if (loading) return <div className="container-content py-16 text-center text-black/60">{t("notif.loading")}</div>;
   if (!user) return (
     <div className="container-content grid min-h-[60vh] place-items-center py-10 text-center">
       <div>
@@ -50,7 +50,7 @@ export default function AccountPage() {
           <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-brand text-white">
             {user.avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : (user.displayName || user.name).charAt(0)}
           </span>
-          <div className="min-w-0"><div className="truncate text-sm font-semibold">{user.displayName || user.name}</div><div className="truncate text-xs text-black/45">{user.email}</div></div>
+          <div className="min-w-0"><div className="truncate text-sm font-semibold">{user.displayName || user.name}</div><div className="truncate text-xs text-black/60">{user.email}</div></div>
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col">
           {TABS.map((k) => (
@@ -63,7 +63,7 @@ export default function AccountPage() {
       <section>
         {tab === "profile" && <ProfileTab onSaved={refresh} />}
         {tab === "saved" && <SavedTab slugs={saved} />}
-        {tab === "history" && <Panel title={t("acc.historyTitle")}><p className="text-sm text-black/50">{t("acc.historyEmpty")}</p></Panel>}
+        {tab === "history" && <Panel title={t("acc.historyTitle")}><p className="text-sm text-black/60">{t("acc.historyEmpty")}</p></Panel>}
         {tab === "comments" && <MyCommentsTab />}
         {tab === "subs" && <SubsTab />}
         {tab === "notif" && (
@@ -106,10 +106,10 @@ function SavedTab({ slugs }: { slugs: string[] }) {
     })();
     return () => { alive = false; };
   }, [slugs]);
-  if (loading) return <Panel title={t("acc.saved")}><p className="text-sm text-black/40">{t("notif.loading")}</p></Panel>;
+  if (loading) return <Panel title={t("acc.saved")}><p className="text-sm text-black/60">{t("notif.loading")}</p></Panel>;
   return (
     <Panel title={t("acc.saved")}>
-      {items.length === 0 ? <p className="text-sm text-black/50">{t("account.noSaved")}</p> : (
+      {items.length === 0 ? <p className="text-sm text-black/60">{t("account.noSaved")}</p> : (
         <ul className="divide-y divide-black/5 dark:divide-white/10">
           {items.map((a) => (
             <li key={a.slug} className="py-2.5">
@@ -136,10 +136,10 @@ function MyCommentsTab() {
     })();
     return () => { alive = false; };
   }, []);
-  if (loading) return <Panel title={t("acc.myComments")}><p className="text-sm text-black/40">{t("notif.loading")}</p></Panel>;
+  if (loading) return <Panel title={t("acc.myComments")}><p className="text-sm text-black/60">{t("notif.loading")}</p></Panel>;
   return (
     <Panel title={t("acc.myComments")}>
-      {rows.length === 0 ? <p className="text-sm text-black/50">{t("acc.noComments")}</p> : (
+      {rows.length === 0 ? <p className="text-sm text-black/60">{t("acc.noComments")}</p> : (
         <ul className="divide-y divide-black/5 dark:divide-white/10">
           {rows.map((c) => (
             <li key={c.id} className="py-3 text-sm">
@@ -178,7 +178,7 @@ function SubsTab() {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-black/50 dark:text-white/50">{t("acc.noSubs")}</p>
+        <p className="text-sm text-black/60 dark:text-white/65">{t("acc.noSubs")}</p>
       )}
     </Panel>
   );
@@ -266,15 +266,15 @@ function SecurityTab({ user, sessions, onChange }: { user: { twoFactor: boolean;
         <ul className="space-y-2 text-sm">
           {sessions.map((s) => (
             <li key={s.id} className="flex items-center gap-2 rounded-lg border border-black/[0.06] px-3 py-2 dark:border-white/10">
-              <div className="flex-1 truncate"><span className="font-medium">{s.userAgent.slice(0, 40) || t("acc.device")}</span> <span className="text-xs text-black/40">· {s.ip}</span></div>
-              {s.current ? <span className="chip !py-0 text-[10px] !border-up/40 text-up">{t("acc.current")}</span> : <span className="text-xs text-black/40">{new Date(s.lastSeenAt).toLocaleDateString("ru-RU")}</span>}
+              <div className="flex-1 truncate"><span className="font-medium">{s.userAgent.slice(0, 40) || t("acc.device")}</span> <span className="text-xs text-black/60">· {s.ip}</span></div>
+              {s.current ? <span className="chip !py-0 text-[10px] !border-up/40 text-up">{t("acc.current")}</span> : <span className="text-xs text-black/60">{new Date(s.lastSeenAt).toLocaleDateString("ru-RU")}</span>}
             </li>
           ))}
         </ul>
         <button className="btn-ghost mt-3 text-xs" onClick={revoke}>{t("acc.revokeAll")}</button>
       </Panel>
       <Panel title={t("acc.deleteTitle")}>
-        <p className="mb-3 text-sm text-black/50 dark:text-white/50">{t("acc.deleteNote")}</p>
+        <p className="mb-3 text-sm text-black/60 dark:text-white/65">{t("acc.deleteNote")}</p>
         <button className="btn-ghost !text-down" onClick={del}>{t("acc.deleteBtn")}</button>
       </Panel>
     </div>

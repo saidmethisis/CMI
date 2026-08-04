@@ -107,7 +107,7 @@ export default async function HomePage() {
                 <h1 className="mt-1 font-serif text-3xl font-extrabold leading-tight group-hover:text-accent md:text-4xl">{pinned.title}</h1>
                 <p className="mt-2 text-lg text-black/60 dark:text-white/70">{pinned.lead}</p>
               </Link>
-              <div className="mt-3 flex items-center gap-3 text-sm text-black/50 dark:text-white/50">
+              <div className="mt-3 flex items-center gap-3 text-sm text-black/60 dark:text-white/65">
                 <span>{pinned.authorName}</span><span>· {pinned.readingMinutes} {t("common.min")}</span>
                 <SaveButton slug={pinned.slug} className="ml-auto" />
               </div>

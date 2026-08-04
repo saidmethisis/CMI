@@ -58,7 +58,7 @@ export default function ImageUpload({
           {value && <button type="button" className="text-left text-xs text-down" onClick={() => onChange("")}>{t("a.delete")}</button>}
         </div>
       </div>
-      {busy && <p className="mt-1 text-xs text-black/40 dark:text-white/40">{t("acc.compressing")}</p>}
+      {busy && <p className="mt-1 text-xs text-black/60 dark:text-white/65">{t("acc.compressing")}</p>}
       {err && <p className="mt-1 text-xs text-down">{err}</p>}
     </div>
   );

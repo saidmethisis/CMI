@@ -29,7 +29,7 @@ export default function ModerationRow({
 
   if (done) {
     const labels: Record<string, string> = { approve: t("status.published"), reject: t("status.rejected"), return: t("status.returned") };
-    return <div className="card p-4 text-sm text-black/50 dark:text-white/50">{title} — {labels[done]}</div>;
+    return <div className="card p-4 text-sm text-black/60 dark:text-white/65">{title} — {labels[done]}</div>;
   }
 
   return (
@@ -40,7 +40,7 @@ export default function ModerationRow({
             <span className={`chip !py-0.5 text-[11px] ${kind === "pr" ? "!border-amber-400/50 text-amber-600" : ""}`}>
               {kind === "pr" ? "PR" : "UGC"}
             </span>
-            <span className="text-xs text-black/50 dark:text-white/50">{category} · {author}</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{category} · {author}</span>
           </div>
           <h3 className="font-serif text-lg font-bold">{title}</h3>
           <p className="mt-1 text-sm text-black/60 dark:text-white/60">{lead}</p>

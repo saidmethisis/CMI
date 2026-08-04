@@ -52,9 +52,9 @@ export default function UserMenu() {
       {open && (
         <div className="absolute right-0 z-50 mt-1.5 w-64 overflow-hidden rounded-xl border border-black/10 bg-[var(--surface)] py-1.5 text-black shadow-xl dark:border-white/10 dark:bg-ink-surface dark:text-white" onClick={() => setOpen(false)}>
           <div className="border-b border-black/5 px-3 pb-2.5 pt-1 dark:border-white/10">
-            <div className="text-[11px] text-black/45 dark:text-white/45">{t("menu.signedInAs")}</div>
+            <div className="text-[11px] text-black/60 dark:text-white/65">{t("menu.signedInAs")}</div>
             <div className="truncate text-sm font-bold">{name}</div>
-            <div className="truncate text-xs text-black/50 dark:text-white/50">{role?.name ?? user.email}</div>
+            <div className="truncate text-xs text-black/60 dark:text-white/65">{role?.name ?? user.email}</div>
           </div>
 
           <div className="p-1">
@@ -69,7 +69,7 @@ export default function UserMenu() {
           </div>
 
           <div className="flex items-center justify-between gap-2 border-t border-black/5 px-3 py-2 dark:border-white/10">
-            <span className="text-xs text-black/50 dark:text-white/50">{t("menu.appearance")}</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{t("menu.appearance")}</span>
             <div className="flex items-center gap-1.5"><LangSwitcher /><ThemeToggle /></div>
           </div>
 

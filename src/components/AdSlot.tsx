@@ -23,7 +23,7 @@ export default function AdSlot({ zone = "leaderboard", native = false }: { zone?
       <a href="#" className="card card-hover block overflow-hidden p-4" data-ad-zone={zone}>
         <div className="mb-2 flex items-center gap-2">
           <span className="chip !py-0.5 text-[10px] uppercase">{t("ads.sponsored")}</span>
-          <span className="min-w-0 truncate text-xs text-black/50 dark:text-white/50">{cr.advertiser}</span>
+          <span className="min-w-0 truncate text-xs text-black/60 dark:text-white/65">{cr.advertiser}</span>
         </div>
         <div className="flex gap-3">
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-lg font-bold text-white" style={{ backgroundColor: cr.color }}>{cr.advertiser.charAt(0)}</span>

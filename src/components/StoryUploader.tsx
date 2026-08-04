@@ -52,7 +52,7 @@ export default function StoryUploader() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={image} alt="" className="h-full w-full object-cover" />
           ) : (
-            <span className="text-[10px] text-black/40 dark:text-white/40">{t("acc.photo")}</span>
+            <span className="text-[10px] text-black/60 dark:text-white/65">{t("acc.photo")}</span>
           )}
           <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
         </label>

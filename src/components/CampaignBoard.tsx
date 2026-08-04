@@ -20,7 +20,7 @@ function Metric({ label, value, color, href }: { label: string; value: string; c
     <>
       <div className="flex items-center gap-2">
         <span className="h-2 w-2 rounded-full" style={{ background: color }} />
-        <span className="text-xs text-white/50">{label}</span>
+        <span className="text-xs text-white/65">{label}</span>
       </div>
       <div className="mt-1 text-2xl font-bold tabular-nums text-white">{value}</div>
     </>
@@ -50,7 +50,7 @@ export default async function CampaignBoard({ metrics, top, catStats, labels, pu
         <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-lg font-bold">A</span>
         <div>
           <h1 className="font-serif text-xl font-bold">{t("dash.title")}</h1>
-          <p className="text-sm text-white/45">{t("dash.subtitle")}</p>
+          <p className="text-sm text-white/65">{t("dash.subtitle")}</p>
         </div>
         {metrics.pending > 0 && (
           <Link href="/admin/moderation" className="ml-auto rounded-full bg-amber-400/15 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-400/25">
@@ -94,7 +94,7 @@ export default async function CampaignBoard({ metrics, top, catStats, labels, pu
                 <span className="flex items-center gap-2 text-sm font-semibold">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />{c.name}
                 </span>
-                <span className="text-[11px] text-white/45">{c.count} {t("dash.materials")}</span>
+                <span className="text-[11px] text-white/65">{c.count} {t("dash.materials")}</span>
               </div>
               <div className="mt-1 text-xl font-bold tabular-nums">{nf(c.views)}</div>
               <div className="mt-2"><Sparkline values={c.spark} color={color} /></div>
@@ -130,7 +130,7 @@ export default async function CampaignBoard({ metrics, top, catStats, labels, pu
                 <span className="w-4 text-center font-serif text-base font-bold text-white/30">{i + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="line-clamp-1">{a.title}</span>
-                  <span className="text-[11px] text-white/40">{a.cat}</span>
+                  <span className="text-[11px] text-white/65">{a.cat}</span>
                 </span>
                 <span className="shrink-0 tabular-nums text-white/60">{nf(a.views)}</span>
               </Link>
@@ -149,7 +149,7 @@ export default async function CampaignBoard({ metrics, top, catStats, labels, pu
               <div key={c.slug}>
                 <div className="mb-1 flex items-center justify-between text-xs">
                   <span className="font-medium">{c.name}</span>
-                  <span className="tabular-nums text-white/50">{nf(c.views)} · {c.count} {t("dash.materials")}</span>
+                  <span className="tabular-nums text-white/65">{nf(c.views)} · {c.count} {t("dash.materials")}</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
                   <div className="h-full rounded-full" style={{ width: `${Math.max(4, (c.views / maxCatViews) * 100)}%`, background: color }} />

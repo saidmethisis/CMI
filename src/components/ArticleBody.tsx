@@ -13,7 +13,7 @@ export function Paragraphs({ text }: { text: string }) {
             <figure key={i} className="my-5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img[2]} alt={img[1] || ""} className="w-full rounded-xl object-cover" />
-              {img[1] && <figcaption className="mt-1.5 text-center text-xs text-black/50 dark:text-white/50">{img[1]}</figcaption>}
+              {img[1] && <figcaption className="mt-1.5 text-center text-xs text-black/60 dark:text-white/65">{img[1]}</figcaption>}
             </figure>
           );
         }

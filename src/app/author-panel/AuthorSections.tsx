@@ -90,7 +90,7 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
       <aside className="md:sticky md:top-20 md:self-start">
         <div className="mb-3 flex items-center gap-2 px-2">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent font-bold text-white">{name.charAt(0)}</span>
-          <div className="min-w-0"><div className="truncate text-sm font-bold">{name}</div><div className="text-[11px] text-black/45 dark:text-white/45">{t("menu.cabAuthor")}</div></div>
+          <div className="min-w-0"><div className="truncate text-sm font-bold">{name}</div><div className="text-[11px] text-black/60 dark:text-white/65">{t("menu.cabAuthor")}</div></div>
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col">
           {SECTIONS.map((k) => (
@@ -117,13 +117,13 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
               <div className="flex gap-1 rounded-xl bg-black/[0.04] p-1 dark:bg-white/[0.06]">
                 {LANG_TABS.map((l) => (
                   <button key={l.code} type="button" onClick={() => setEditLang(l.code)}
-                    className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition ${editLang === l.code ? "bg-[var(--surface)] text-accent shadow-sm dark:bg-ink-surface" : "text-black/50 hover:text-black/75 dark:text-white/50 dark:hover:text-white/75"}`}>
+                    className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition ${editLang === l.code ? "bg-[var(--surface)] text-accent shadow-sm dark:bg-ink-surface" : "text-black/60 hover:text-black/75 dark:text-white/65 dark:hover:text-white/75"}`}>
                     {l.label}
                     {filledLangs.includes(l.code) && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-up" />}
                   </button>
                 ))}
               </div>
-              <span className="text-xs text-black/45 dark:text-white/45">{t("author.langHint")}</span>
+              <span className="text-xs text-black/60 dark:text-white/65">{t("author.langHint")}</span>
             </div>
 
             <div><label className="label">{t("author.titleField")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><input className="input" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} /></div>
@@ -146,7 +146,7 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
 
         {statusFilter[tab] && !editing && (
           <div className="card divide-y divide-black/5 dark:divide-white/10">
-            {list.length === 0 && <p className="p-4 text-sm text-black/50">{t("wc.empty")}</p>}
+            {list.length === 0 && <p className="p-4 text-sm text-black/60">{t("wc.empty")}</p>}
             {list.map((a) => (
               <div key={a.id} className="flex flex-wrap items-center gap-3 p-4 text-sm">
                 <span className="min-w-0 flex-1 truncate">{a.title}</span>
@@ -164,14 +164,14 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
         {tab === "media" && (
           <div className="card p-5">
             <h3 className="mb-1 font-serif text-lg font-bold">{t("wc.stories")}</h3>
-            <p className="mb-3 text-sm text-black/50 dark:text-white/50">{t("wc.storiesNote")}</p>
+            <p className="mb-3 text-sm text-black/60 dark:text-white/65">{t("wc.storiesNote")}</p>
             <StoryUploader />
           </div>
         )}
         {tab === "comments" && <WriterComments />}
         {tab === "notifications" && <WriterNotifications />}
         {tab === "history" && (
-          <div className="card p-6 text-sm text-black/50 dark:text-white/50">{t("wc.section")} «{t(`wc.${tab}`)}» — {t("wc.available")}.</div>
+          <div className="card p-6 text-sm text-black/60 dark:text-white/65">{t("wc.section")} «{t(`wc.${tab}`)}» — {t("wc.available")}.</div>
         )}
         {tab === "profile" && (
           <div className="card p-6"><p className="text-sm text-black/60 dark:text-white/70">{t("wc.profileNote")}</p><Link href="/account" className="btn-primary mt-3 inline-flex text-sm">{t("wc.openProfile")}</Link></div>

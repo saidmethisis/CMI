@@ -54,12 +54,12 @@ export default function LoginPage() {
             <div>
               <label className="label">{t("auth.twoFACode")}</label>
               <input autoFocus className="input tracking-[0.4em]" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" onKeyDown={(e) => e.key === "Enter" && submit()} />
-              <p className="mt-1 text-xs text-black/45 dark:text-white/45">{t("auth.twoFAHint")}</p>
+              <p className="mt-1 text-xs text-black/60 dark:text-white/65">{t("auth.twoFAHint")}</p>
             </div>
           )}
           <button type="button" onClick={submit} disabled={busy || (twoFA && code.length < 6)} className="btn-primary w-full">{busy ? "…" : twoFA ? t("auth.confirm") : t("auth.signin")}</button>
         </div>
-        <div className="mt-4 flex justify-between text-sm text-black/50 dark:text-white/50">
+        <div className="mt-4 flex justify-between text-sm text-black/60 dark:text-white/65">
           <Link href="/forgot" className="hover:text-brand dark:hover:text-white">{t("au.forgotQ")}</Link>
           <Link href="/register" className="text-brand dark:text-white">{t("auth.register")}</Link>
         </div>

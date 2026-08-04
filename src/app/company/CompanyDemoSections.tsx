@@ -22,7 +22,7 @@ const TONE: Record<string, string> = {
   published: "bg-up/12 text-up", review: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   returned: "bg-down/12 text-down", draft: "bg-black/8 text-black/55 dark:bg-white/10 dark:text-white/60",
 };
-const th = "px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-black/40 dark:text-white/40";
+const th = "px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-black/60 dark:text-white/65";
 const td = "px-3 py-2.5 border-t border-black/[0.04] dark:border-white/[0.06]";
 
 function Panel({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
@@ -35,7 +35,7 @@ function Panel({ id, title, children }: { id: string; title: string; children: R
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-black/50 dark:text-white/50">{children}</p>;
+  return <p className="text-sm text-black/60 dark:text-white/65">{children}</p>;
 }
 
 export default function CompanyDemoSections({ keys, t, lang, comments, companyId, data }: { keys: string[]; t: T; lang: Lang; comments: CompanyComment[]; companyId: string; data: Data }) {
@@ -54,7 +54,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
               {data.press.map((r) => (
                 <div key={r.slug} className="flex flex-wrap items-center gap-3 py-2.5 text-sm">
                   <Link href={`/article/${r.slug}`} className="flex-1 hover:text-accent">{r.title}</Link>
-                  <span className="shrink-0 text-xs text-black/45 dark:text-white/45">{fmtDate(r.date)}</span>
+                  <span className="shrink-0 text-xs text-black/60 dark:text-white/65">{fmtDate(r.date)}</span>
                   <span className={chip(TONE[r.status] ?? TONE.draft)}>{t(`status.${r.status}`)}</span>
                 </div>
               ))}
@@ -67,7 +67,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
         <Panel id="media" title={t("co.media")}>
           <div className="mb-5">
             <h3 className="mb-1 text-sm font-bold">{t("cds.addStory")}</h3>
-            <p className="mb-3 text-xs text-black/45 dark:text-white/45">{t("cds.addStoryNote")}</p>
+            <p className="mb-3 text-xs text-black/60 dark:text-white/65">{t("cds.addStoryNote")}</p>
             <StoryUploader />
           </div>
           <h3 className="mb-1 text-sm font-bold">{t("cds.mediaLibrary")}</h3>
@@ -85,7 +85,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
                 <div key={a.id} className="flex items-center gap-3 py-2.5 text-sm">
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-xs font-bold text-white">{a.name.charAt(0)}</span>
                   <Link href={`/author/${a.slug}`} className="flex-1 font-medium hover:text-accent">{a.name}</Link>
-                  {a.position && <span className="text-xs text-black/50 dark:text-white/50">{a.position}</span>}
+                  {a.position && <span className="text-xs text-black/60 dark:text-white/65">{a.position}</span>}
                   {a.verified && <span className="chip !py-0 text-[10px] !border-up/40 text-up">{t("cds.verified")}</span>}
                 </div>
               ))}
@@ -98,7 +98,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
         <Panel id="statistics" title={t("co.statistics")}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[[t("cds.statTotal"), nf(data.stats.total)], [t("cds.statPublished"), nf(data.stats.published)], [t("cds.statReview"), nf(data.stats.review)], [t("cds.statViews"), nf(data.stats.views)]].map(([l, v]) => (
-              <div key={l} className="rounded-xl border border-black/5 p-4 dark:border-white/10"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/45 dark:text-white/45">{l}</div></div>
+              <div key={l} className="rounded-xl border border-black/5 p-4 dark:border-white/10"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/60 dark:text-white/65">{l}</div></div>
             ))}
           </div>
         </Panel>
@@ -112,7 +112,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
               <div className="mb-5 space-y-2.5">
                 {data.catBreakdown.map((c) => (
                   <div key={c.name}>
-                    <div className="mb-1 flex items-center justify-between text-xs"><span className="font-medium">{c.name}</span><span className="tabular-nums text-black/50 dark:text-white/50">{nf(c.views)} · {c.count} {t("cds.matAbbr")}</span></div>
+                    <div className="mb-1 flex items-center justify-between text-xs"><span className="font-medium">{c.name}</span><span className="tabular-nums text-black/60 dark:text-white/65">{nf(c.views)} · {c.count} {t("cds.matAbbr")}</span></div>
                     <div className="h-2 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/[0.08]"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(4, (c.views / maxCatViews) * 100)}%` }} /></div>
                   </div>
                 ))}
@@ -151,7 +151,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
                 <span className="min-w-0 flex-1 truncate text-black/60 dark:text-white/60">{c.body}</span>
                 <span className={chip(TONE[c.status] ?? "bg-amber-500/15 text-amber-600 dark:text-amber-400")}>{c.status}</span>
                 <div className="flex w-full items-center gap-2 pl-0 sm:w-auto sm:pl-3">
-                  <span className="max-w-[220px] truncate text-xs text-black/45 dark:text-white/45">→ {c.articleTitle}</span>
+                  <span className="max-w-[220px] truncate text-xs text-black/60 dark:text-white/65">→ {c.articleTitle}</span>
                   <Link href={`/article/${c.articleSlug}#c-${c.id}`} className="btn-ghost shrink-0 text-xs">{t("co.open")}</Link>
                 </div>
               </div>

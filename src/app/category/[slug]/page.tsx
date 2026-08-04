@@ -44,7 +44,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <CatMark cat={c} label={localizeName(lang, c)} size={48} className="!rounded-xl" />
         <div>
           <h1 className="font-serif text-3xl font-bold">{localizeName(lang, c)}</h1>
-          <p className="text-sm text-black/50 dark:text-white/50">{items.length} {t("common.materials")}{sub ? ` · ${subs.find((s) => s.value === sub)?.label ?? sub}` : ""}</p>
+          <p className="text-sm text-black/60 dark:text-white/65">{items.length} {t("common.materials")}{sub ? ` · ${subs.find((s) => s.value === sub)?.label ?? sub}` : ""}</p>
         </div>
         <FollowButton type="topic" id={slug} className="ml-auto !py-1.5 text-xs" />
       </div>
@@ -71,7 +71,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <Feed items={items} />
         ) : (
           <div className="py-10 text-center">
-            <p className="text-black/50 dark:text-white/50">{sub ? t("category.noFilter") : t("category.noMaterials")}</p>
+            <p className="text-black/60 dark:text-white/65">{sub ? t("category.noFilter") : t("category.noMaterials")}</p>
             {sub && <Link href={`/category/${slug}`} className="btn-ghost mt-3 inline-flex text-sm">{t("category.reset")}</Link>}
           </div>
         )}

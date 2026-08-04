@@ -84,7 +84,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
             <input className="input" placeholder="Name (EN)" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
           </div>
           <div className="mt-2 flex items-center gap-1.5">
-            <span className="text-xs text-black/50 dark:text-white/50">{t("a.color")}:</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{t("a.color")}:</span>
             {palette.map((c) => (
               <button key={c} onClick={() => setColor(c)} className={`h-6 w-6 rounded-md ${color === c ? "ring-2 ring-offset-1 ring-black/40 dark:ring-white/40" : ""}`} style={{ background: c }} aria-label={c} />
             ))}
@@ -116,7 +116,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
               <>
                 <div className="flex-1">
                   <div className="font-medium">{c.name}</div>
-                  <div className="text-xs text-black/40 dark:text-white/40">/{c.slug} · {counts[c.slug] ?? 0} {t("dash.materials")}</div>
+                  <div className="text-xs text-black/60 dark:text-white/65">/{c.slug} · {counts[c.slug] ?? 0} {t("dash.materials")}</div>
                 </div>
                 <button className="btn-ghost text-xs" onClick={() => startEdit(c)}>{t("a.edit")}</button>
                 <button className="btn-ghost text-xs !text-down" onClick={() => del(c)}>{t("a.hide")}</button>
@@ -125,7 +125,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs text-black/40 dark:text-white/40">{t("ad2.catNote")}</p>
+      <p className="mt-3 text-xs text-black/60 dark:text-white/65">{t("ad2.catNote")}</p>
     </div>
   );
 }

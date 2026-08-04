@@ -25,7 +25,7 @@ export default function VideoRow({ title, items }: { title: React.ReactNode; ite
               </span>
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] font-bold uppercase text-accent">
-              Video <span className="font-normal text-black/40 dark:text-white/40">{new Date(a.createdAt).toLocaleDateString(loc, { day: "numeric", month: "short" })}</span>
+              Video <span className="font-normal text-black/60 dark:text-white/65">{new Date(a.createdAt).toLocaleDateString(loc, { day: "numeric", month: "short" })}</span>
             </div>
             <h3 className="mt-0.5 font-serif text-base font-bold leading-snug group-hover:text-accent">{a.title}</h3>
           </Link>

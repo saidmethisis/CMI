@@ -24,7 +24,7 @@ export default async function SearchPage() {
     createdAt: a.createdAt,
   }));
   return (
-    <Suspense fallback={<div className="container-content py-10 text-center text-black/50">{t("misc.loading")}</div>}>
+    <Suspense fallback={<div className="container-content py-10 text-center text-black/60">{t("misc.loading")}</div>}>
       <SearchClient index={index} />
     </Suspense>
   );

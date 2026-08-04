@@ -16,12 +16,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <span className="grid h-10 w-10 place-items-center rounded-full bg-brand text-sm font-bold text-white">{(user.displayName || user.name).charAt(0)}</span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">{user.displayName || user.name}</div>
-            <div className="truncate text-xs text-black/45 dark:text-white/45">{role?.name ?? user.roleSlug}</div>
+            <div className="truncate text-xs text-black/60 dark:text-white/65">{role?.name ?? user.roleSlug}</div>
           </div>
         </div>
 
         {/* search */}
-        <div className="rounded-xl border border-black/[0.07] px-3 py-2 text-sm text-black/40 dark:border-white/10 dark:text-white/40">{t("adm.search")}</div>
+        <div className="rounded-xl border border-black/[0.07] px-3 py-2 text-sm text-black/60 dark:border-white/10 dark:text-white/65">{t("adm.search")}</div>
 
         <AdminNav pending={pending} perms={perms} />
       </aside>

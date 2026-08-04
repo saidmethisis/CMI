@@ -48,7 +48,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-black/5 dark:border-white/10">
-        <div className="container-content flex flex-col gap-2 py-4 text-xs text-black/50 sm:flex-row sm:items-center sm:justify-between dark:text-white/50">
+        <div className="container-content flex flex-col gap-2 py-4 text-xs text-black/60 sm:flex-row sm:items-center sm:justify-between dark:text-white/65">
           <span className="flex items-center gap-2">
             © {new Date().getFullYear()} {ORG.name}.
           </span>

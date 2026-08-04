@@ -44,14 +44,14 @@ export default async function AuthorPage({ params }: Props) {
               {a.verifyStatus === "verified" && <span className="chip !border-up/40 !py-0.5 text-up">{t("a.verified")}</span>}
             </div>
             <p className="text-sm text-black/55 dark:text-white/55">{p.position}{company ? ` · ${company.name}` : ""}</p>
-            <p className="text-xs text-black/45 dark:text-white/45">{[p.city, p.country].filter(Boolean).join(", ")}</p>
+            <p className="text-xs text-black/60 dark:text-white/65">{[p.city, p.country].filter(Boolean).join(", ")}</p>
           </div>
           <FollowButton type="author" id={a.id} showCount={false} className="!py-2 text-sm" />
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map(([l, v]) => <div key={l} className="card p-4 text-center"><div className="text-xl font-bold">{v}</div><div className="text-xs text-black/45 dark:text-white/45">{l}</div></div>)}
+        {stats.map(([l, v]) => <div key={l} className="card p-4 text-center"><div className="text-xl font-bold">{v}</div><div className="text-xs text-black/60 dark:text-white/65">{l}</div></div>)}
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_280px]">
@@ -69,7 +69,7 @@ export default async function AuthorPage({ params }: Props) {
           <h2 className="mb-3 font-semibold">{t("ap.contacts")}</h2>
           <ul className="space-y-1.5 text-sm">
             {[["Email", p.email], [t("ap.phone"), p.phone], ["Telegram", p.telegram], ["LinkedIn", p.linkedin], ["Website", p.website], [t("ap.langs"), p.languages], [t("ap.education"), p.education]].filter(([, v]) => v).map(([l, v]) => (
-              <li key={l as string} className="flex justify-between gap-2"><span className="text-black/45 dark:text-white/45">{l}</span><span className="truncate font-medium">{v}</span></li>
+              <li key={l as string} className="flex justify-between gap-2"><span className="text-black/60 dark:text-white/65">{l}</span><span className="truncate font-medium">{v}</span></li>
             ))}
           </ul>
         </aside>

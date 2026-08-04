@@ -23,15 +23,15 @@ export default async function AdminFinance() {
   return (
     <div>
       <h1 className="mb-1 font-serif text-2xl font-bold">{t("adm.finance")}</h1>
-      <p className="mb-5 max-w-2xl text-sm text-black/50 dark:text-white/50">
+      <p className="mb-5 max-w-2xl text-sm text-black/60 dark:text-white/65">
         {t("ad2.finIntro")}
       </p>
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.companies}</div><div className="text-xs text-black/45 dark:text-white/45">{t("ad2.finCompanies")}</div></div>
-        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.published.toLocaleString("ru-RU")}</div><div className="text-xs text-black/45 dark:text-white/45">{t("ad2.finPublished")}</div></div>
-        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.authors}</div><div className="text-xs text-black/45 dark:text-white/45">{t("dash.mAuthors")}</div></div>
-        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.users}</div><div className="text-xs text-black/45 dark:text-white/45">{t("dash.mUsers")}</div></div>
+        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.companies}</div><div className="text-xs text-black/60 dark:text-white/65">{t("ad2.finCompanies")}</div></div>
+        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.published.toLocaleString("ru-RU")}</div><div className="text-xs text-black/60 dark:text-white/65">{t("ad2.finPublished")}</div></div>
+        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.authors}</div><div className="text-xs text-black/60 dark:text-white/65">{t("dash.mAuthors")}</div></div>
+        <div className="card p-4"><div className="text-2xl font-bold tabular-nums">{m.users}</div><div className="text-xs text-black/60 dark:text-white/65">{t("dash.mUsers")}</div></div>
       </div>
 
       <h2 className="mb-3 font-semibold">{t("ad2.plansForCompanies")}</h2>
@@ -41,8 +41,8 @@ export default async function AdminFinance() {
             <h3 className="font-serif text-lg font-bold">{tier.name}</h3>
             <div className="mt-1 text-sm text-black/60 dark:text-white/60">{tier.price}</div>
             <dl className="mt-4 space-y-1.5 text-sm">
-              <div className="flex justify-between"><dt className="text-black/50 dark:text-white/50">{t("ad2.publicationsCount")}</dt><dd className="font-medium">{tier.articles}</dd></div>
-              <div className="flex justify-between"><dt className="text-black/50 dark:text-white/50">{t("ad2.aiSupport")}</dt><dd className="font-medium">{tier.ai}</dd></div>
+              <div className="flex justify-between"><dt className="text-black/60 dark:text-white/65">{t("ad2.publicationsCount")}</dt><dd className="font-medium">{tier.articles}</dd></div>
+              <div className="flex justify-between"><dt className="text-black/60 dark:text-white/65">{t("ad2.aiSupport")}</dt><dd className="font-medium">{tier.ai}</dd></div>
             </dl>
           </div>
         ))}

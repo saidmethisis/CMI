@@ -142,7 +142,7 @@ export default function AuthorEditor() {
           {t("author.videoUploaded")} <button type="button" className="text-down" onClick={() => setVideoUrl("")}>{t("author.removeVideo")}</button>
         </div>
       )}
-      <p className="mb-3 text-xs text-black/40 dark:text-white/40">{t("author.videoNote")}</p>
+      <p className="mb-3 text-xs text-black/60 dark:text-white/65">{t("author.videoNote")}</p>
 
       {/* Языковые вкладки: один материал — три версии. Точка = язык заполнен. */}
       <div className="mb-3 flex items-center gap-2">
@@ -152,14 +152,14 @@ export default function AuthorEditor() {
               key={l.code}
               type="button"
               onClick={() => setTab(l.code)}
-              className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition ${tab === l.code ? "bg-[var(--surface)] text-accent shadow-sm dark:bg-ink-surface" : "text-black/50 hover:text-black/75 dark:text-white/50 dark:hover:text-white/75"}`}
+              className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition ${tab === l.code ? "bg-[var(--surface)] text-accent shadow-sm dark:bg-ink-surface" : "text-black/60 hover:text-black/75 dark:text-white/65 dark:hover:text-white/75"}`}
             >
               {l.label}
               {filledLangs.includes(l.code) && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-up" />}
             </button>
           ))}
         </div>
-        <span className="text-xs text-black/45 dark:text-white/45">{t("author.langHint")}</span>
+        <span className="text-xs text-black/60 dark:text-white/65">{t("author.langHint")}</span>
       </div>
 
       <label className="label">{t("author.titleField")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>

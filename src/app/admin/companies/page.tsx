@@ -104,14 +104,14 @@ export default function CompaniesPage() {
           {companies.map((c) => (
             <button key={c.id} onClick={() => setSel(c)} className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm ${sel?.id === c.id ? "bg-accent/10" : "hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"}`}>
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-xs font-bold text-white">{c.name.charAt(0)}</span>
-              <div className="flex-1"><div className="font-medium">{c.name}</div><div className="text-xs text-black/40">/{c.slug}</div></div>
+              <div className="flex-1"><div className="font-medium">{c.name}</div><div className="text-xs text-black/60">/{c.slug}</div></div>
               {c.verified && <span className="chip !py-0 text-[10px] !border-up/40 text-up">✓</span>}
             </button>
           ))}
-          {companies.length === 0 && <p className="p-4 text-sm text-black/50">{t("a.noCompanies")}</p>}
+          {companies.length === 0 && <p className="p-4 text-sm text-black/60">{t("a.noCompanies")}</p>}
         </div>
 
-        {!sel ? <div className="card grid place-items-center p-10 text-sm text-black/50">{t("ad2.selectCompany")}</div> : (
+        {!sel ? <div className="card grid place-items-center p-10 text-sm text-black/60">{t("ad2.selectCompany")}</div> : (
           <div className="space-y-4">
             <div className="card p-5">
               <div className="mb-3 flex items-center justify-between">
@@ -169,7 +169,7 @@ export default function CompaniesPage() {
             {/* cabinet sections */}
             <div className="card p-5">
               <h3 className="mb-1 font-semibold">{t("ad2.companySections")}</h3>
-              <p className="mb-3 text-xs text-black/50 dark:text-white/50">{t("ad2.companySectionsHint")}</p>
+              <p className="mb-3 text-xs text-black/60 dark:text-white/65">{t("ad2.companySectionsHint")}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {COMPANY_SECTIONS.map((s) => (
                   <label key={s.key} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={sel.sections.includes(s.key)} onChange={() => toggleSection(s.key)} />{sectionLabel(s)}</label>

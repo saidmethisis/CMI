@@ -63,7 +63,7 @@ export default function InfiniteArticles({ queue }: { queue: string[] }) {
           </article>
         );
       })}
-      {idx < queue.length && <div ref={sentinel} className="py-10 text-center text-sm text-black/40 dark:text-white/40">···</div>}
+      {idx < queue.length && <div ref={sentinel} className="py-10 text-center text-sm text-black/60 dark:text-white/65">···</div>}
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default async function ModerationPage() {
   return (
     <div>
       <h1 className="mb-1 font-serif text-2xl font-bold">{t("adm.modTitle")}</h1>
-      <p className="mb-5 text-sm text-black/50 dark:text-white/50">{t("adm.modSubtitle")}</p>
+      <p className="mb-5 text-sm text-black/60 dark:text-white/65">{t("adm.modSubtitle")}</p>
 
       {queue.length === 0 ? (
         <div className="card p-10 text-center">

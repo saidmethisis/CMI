@@ -58,7 +58,7 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
               // eslint-disable-next-line @next/next/no-img-element
               <img src={image} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="flex flex-col items-center gap-1 text-[10px] text-black/40 dark:text-white/40"><Icon name="upload" size={16} /> {t("ad2.photo")}</span>
+              <span className="flex flex-col items-center gap-1 text-[10px] text-black/60 dark:text-white/65"><Icon name="upload" size={16} /> {t("ad2.photo")}</span>
             )}
             <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
@@ -81,7 +81,7 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
             <div className="aspect-[9/12] bg-cover bg-center" style={{ backgroundImage: `url(${s.image})` }} />
             <div className="p-2 text-[11px]">
               <div className="line-clamp-1 font-medium">{s.title}</div>
-              <div className="text-black/40">→ {s.articleSlug ?? "—"}</div>
+              <div className="text-black/60">→ {s.articleSlug ?? "—"}</div>
             </div>
           </div>
         ))}

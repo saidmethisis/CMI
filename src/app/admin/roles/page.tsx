@@ -34,7 +34,7 @@ export default function RolesPage() {
     <div>
       <div className="mb-5">
         <h1 className="font-serif text-2xl font-bold">{t("a.hRoles")}</h1>
-        <p className="text-sm text-black/50 dark:text-white/50">{t("ad2.rolesIntro")}</p>
+        <p className="text-sm text-black/60 dark:text-white/65">{t("ad2.rolesIntro")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -57,7 +57,7 @@ export default function RolesPage() {
         ))}
       </div>
 
-      <p className="mt-5 text-xs text-black/40 dark:text-white/40">
+      <p className="mt-5 text-xs text-black/60 dark:text-white/65">
         {t("ad2.rolesNote")}
       </p>
     </div>

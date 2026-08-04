@@ -61,7 +61,7 @@ export default function BankRates({ initial }: { initial?: { data: BankRatesByCo
             <button
               key={code}
               onClick={() => { setTab(code); setAll(false); }}
-              className={`rounded-md px-2.5 py-1 font-semibold transition ${active === code ? "bg-brand text-white" : "text-black/50 hover:bg-black/5 dark:text-white/50 dark:hover:bg-white/10"}`}
+              className={`rounded-md px-2.5 py-1 font-semibold transition ${active === code ? "bg-brand text-white" : "text-black/60 hover:bg-black/5 dark:text-white/65 dark:hover:bg-white/10"}`}
             >
               {code}
             </button>
@@ -72,7 +72,7 @@ export default function BankRates({ initial }: { initial?: { data: BankRatesByCo
       <div className="overflow-x-auto">
         <table className="w-full min-w-[440px] text-sm">
           <thead>
-            <tr className="border-b border-black/5 text-left text-xs text-black/45 dark:border-white/10 dark:text-white/45">
+            <tr className="border-b border-black/5 text-left text-xs text-black/60 dark:border-white/10 dark:text-white/65">
               <th className="px-4 py-2.5 font-semibold">{t("w.bank")}</th>
               <th className="cursor-pointer px-4 py-2.5 text-right font-semibold" onClick={() => setSort(sort === "buy" ? null : "buy")}>
                 {active} {t("w.buy")} ▲▼
@@ -89,10 +89,10 @@ export default function BankRates({ initial }: { initial?: { data: BankRatesByCo
                   <a href={r.url} target="_blank" rel="noopener nofollow" className="hover:underline">{r.bank}</a>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums text-up">
-                  {r.buy.toLocaleString(loc)} <span className="text-black/40 dark:text-white/40">{t("w.sum")}</span>
+                  {r.buy.toLocaleString(loc)} <span className="text-black/60 dark:text-white/65">{t("w.sum")}</span>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums text-down">
-                  {r.sell.toLocaleString(loc)} <span className="text-black/40 dark:text-white/40">{t("w.sum")}</span>
+                  {r.sell.toLocaleString(loc)} <span className="text-black/60 dark:text-white/65">{t("w.sum")}</span>
                 </td>
               </tr>
             ))}
@@ -100,7 +100,7 @@ export default function BankRates({ initial }: { initial?: { data: BankRatesByCo
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 px-4 py-2.5 text-xs text-black/45 dark:border-white/10 dark:text-white/45">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 px-4 py-2.5 text-xs text-black/60 dark:border-white/10 dark:text-white/65">
         {rows.length > COLLAPSED ? (
           <button onClick={() => setAll((v) => !v)} className="font-semibold text-accent hover:underline">
             {all ? t("w.showLess") : `${t("w.showAll")} (${rows.length})`}

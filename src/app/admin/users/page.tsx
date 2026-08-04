@@ -14,7 +14,7 @@ export default async function AdminUsers() {
   return (
     <div>
       <h1 className="mb-1 font-serif text-2xl font-bold">{t("a.hAccred")}</h1>
-      <p className="mb-5 text-sm text-black/50 dark:text-white/50">{t("misc.accredDesc")}</p>
+      <p className="mb-5 text-sm text-black/60 dark:text-white/65">{t("misc.accredDesc")}</p>
       <AccreditationList initial={accreditation} />
     </div>
   );

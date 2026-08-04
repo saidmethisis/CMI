@@ -38,7 +38,7 @@ export default function TrendChart({ labels, values, color, unit = "" }: { label
           <rect key={i} x={x(i) - (W / n) / 2} y={0} width={W / n} height={H} fill="transparent" onMouseEnter={() => setHi(i)} onMouseLeave={() => setHi(null)} />
         ))}
       </svg>
-      <div className="mt-1 flex justify-between px-1 text-[10px] uppercase tracking-wide text-white/40">
+      <div className="mt-1 flex justify-between px-1 text-[10px] uppercase tracking-wide text-white/65">
         {labels.map((l, i) => <span key={i}>{l}</span>)}
       </div>
       {hi !== null && (

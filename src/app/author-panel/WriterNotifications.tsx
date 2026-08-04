@@ -19,7 +19,7 @@ export default function WriterNotifications() {
   useEffect(() => { load(); }, []);
   const markAll = async () => { await fetch("/api/notifications/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }); load(); };
 
-  if (loading) return <div className="card p-6 text-sm text-black/40 dark:text-white/40">{t("notif.loading")}</div>;
+  if (loading) return <div className="card p-6 text-sm text-black/60 dark:text-white/65">{t("notif.loading")}</div>;
 
   return (
     <div className="card p-5">
@@ -28,7 +28,7 @@ export default function WriterNotifications() {
         {items.some((n) => !n.read) && <button onClick={markAll} className="btn-ghost text-xs">{t("notif.markAll")}</button>}
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-black/50 dark:text-white/50">{t("notif.empty")}</p>
+        <p className="text-sm text-black/60 dark:text-white/65">{t("notif.empty")}</p>
       ) : (
         <ul className="divide-y divide-black/5 dark:divide-white/10">
           {items.map((n) => {
@@ -40,7 +40,7 @@ export default function WriterNotifications() {
                       текст — t() вернёт его без изменений, поэтому они не ломаются. */}
                   <p className="text-sm">{t(n.title)}</p>
                   {n.body && <p className="mt-0.5 line-clamp-2 text-sm font-normal text-black/55 dark:text-white/55">{n.body}</p>}
-                  <p className="mt-1 text-xs font-normal text-black/40 dark:text-white/40">{new Date(n.createdAt).toLocaleString(loc)}</p>
+                  <p className="mt-1 text-xs font-normal text-black/60 dark:text-white/65">{new Date(n.createdAt).toLocaleString(loc)}</p>
                 </div>
               </div>
             );

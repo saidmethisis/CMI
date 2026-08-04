@@ -32,7 +32,7 @@ export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-xs">
           <span className="font-semibold" style={{ color: cat?.color }}>{cat ? catName(cat) : ""}</span>
-          <span className="text-black/40 dark:text-white/40">· {a.readingMinutes} {t("common.min")}</span>
+          <span className="text-black/60 dark:text-white/65">· {a.readingMinutes} {t("common.min")}</span>
         </div>
         {/* stretched link: makes the whole card clickable + hover styling like a link */}
         <h3 className={`font-serif font-bold leading-snug transition-colors group-hover:text-accent group-hover:underline ${large ? "text-2xl" : "text-lg"}`}>
@@ -43,7 +43,7 @@ export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?
         {/* min-w-0 + truncate на имени и shrink-0 на кнопке: без этого длинное имя
             автора распирало строку и выдавливало «Сохранить» за край карточки. */}
         <div className="mt-3 flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
+          <div className="flex min-w-0 items-center gap-1.5 text-xs text-black/60 dark:text-white/65">
             <span className="truncate font-medium">{a.company ?? a.authorName}</span>
             <span className="shrink-0 whitespace-nowrap">· {fmtDate(a.createdAt)}</span>
           </div>

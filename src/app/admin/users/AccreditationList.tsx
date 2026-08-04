@@ -34,7 +34,7 @@ export default function AccreditationList({ initial }: { initial: AccreditationR
           </span>
           <div className="flex-1">
             <div className="font-medium">{r.name}</div>
-            <div className="text-xs text-black/50 dark:text-white/50">{r.type === "business" ? t("misc.typeBusiness") : t("misc.author")} · {r.detail}</div>
+            <div className="text-xs text-black/60 dark:text-white/65">{r.type === "business" ? t("misc.typeBusiness") : t("misc.author")} · {r.detail}</div>
           </div>
           {r.status === "pending" ? (
             <div className="flex gap-2">

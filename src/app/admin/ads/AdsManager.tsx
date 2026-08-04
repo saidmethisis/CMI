@@ -41,9 +41,9 @@ export default function AdsManager({ initial }: { initial: AdBanner[] }) {
       <div className="grid grid-cols-3 gap-3">
         {(["top", "in-article", "sidebar"] as const).map((s) => (
           <div key={s} className="card p-4 text-center">
-            <div className="text-xs text-black/50 dark:text-white/50">{slotLabel[s]}</div>
+            <div className="text-xs text-black/60 dark:text-white/65">{slotLabel[s]}</div>
             <div className="text-2xl font-bold">{ads.filter((a) => a.slot === s && a.active).length}</div>
-            <div className="text-xs text-black/40">{t("ads.active")}</div>
+            <div className="text-xs text-black/60">{t("ads.active")}</div>
           </div>
         ))}
       </div>
@@ -53,7 +53,7 @@ export default function AdsManager({ initial }: { initial: AdBanner[] }) {
           <div key={a.id} className="flex flex-wrap items-center gap-3 p-4">
             <div className="flex-1">
               <div className="font-medium">{a.title}</div>
-              <div className="text-xs text-black/50 dark:text-white/50">{slotLabel[a.slot]} · {a.impressions.toLocaleString("ru-RU")} {t("ad2.impressions")}</div>
+              <div className="text-xs text-black/60 dark:text-white/65">{slotLabel[a.slot]} · {a.impressions.toLocaleString("ru-RU")} {t("ad2.impressions")}</div>
             </div>
             <label className="flex items-center gap-1.5 text-xs">
               {t("ad2.frequency")}

@@ -69,7 +69,7 @@ export default function AuthorsPage() {
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <div><h1 className="font-serif text-2xl font-bold">{t("a.hAuthors")}</h1><p className="text-sm text-black/50 dark:text-white/50">{t("a.hAuthorsSub")}</p></div>
+        <div><h1 className="font-serif text-2xl font-bold">{t("a.hAuthors")}</h1><p className="text-sm text-black/60 dark:text-white/65">{t("a.hAuthorsSub")}</p></div>
         <button className="btn-primary text-sm" onClick={() => setCreating((v) => !v)}>+ {t("a.create")}</button>
       </div>
       {creating && (
@@ -83,7 +83,7 @@ export default function AuthorsPage() {
             <input className="input min-w-0 flex-1" type="text" placeholder={t("a.loginPassword")} value={nf.password} onChange={(e) => setNf({ ...nf, password: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
             <button className="btn-primary shrink-0" onClick={create}>{t("a.create")}</button>
           </div>
-          <p className="text-xs text-black/45 dark:text-white/45">{t("a.loginHint")}</p>
+          <p className="text-xs text-black/60 dark:text-white/65">{t("a.loginHint")}</p>
         </div>
       )}
       {msg && <div className={`mb-3 rounded-lg px-3 py-2 text-sm ${msgErr ? "bg-down/10 text-down" : "bg-up/10 text-up"}`}>{msg}</div>}
@@ -93,14 +93,14 @@ export default function AuthorsPage() {
           {authors.map((a) => (
             <button key={a.id} onClick={() => setSel(a)} className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm ${sel?.id === a.id ? "bg-accent/10" : "hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"}`}>
               <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-xs font-bold text-white">{a.firstName.charAt(0)}</span>
-              <div className="flex-1"><div className="font-medium">{a.firstName} {a.lastName}</div><div className="text-xs text-black/40">/{a.slug}</div></div>
+              <div className="flex-1"><div className="font-medium">{a.firstName} {a.lastName}</div><div className="text-xs text-black/60">/{a.slug}</div></div>
               {a.verifyStatus === "verified" && <span className="chip !py-0 text-[10px] !border-up/40 text-up">✓</span>}
             </button>
           ))}
-          {authors.length === 0 && <p className="p-4 text-sm text-black/50">{t("a.noAuthors")}</p>}
+          {authors.length === 0 && <p className="p-4 text-sm text-black/60">{t("a.noAuthors")}</p>}
         </div>
 
-        {!sel ? <div className="card grid place-items-center p-10 text-sm text-black/50">{t("a.selectAuthor")}</div> : (
+        {!sel ? <div className="card grid place-items-center p-10 text-sm text-black/60">{t("a.selectAuthor")}</div> : (
           <div className="space-y-4">
             <div className="card p-5">
               <div className="mb-3 flex items-center justify-between">

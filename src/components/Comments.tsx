@@ -47,7 +47,7 @@ export default function Comments({ articleId }: { articleId: string }) {
         <div className="card mb-5 p-3">
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder={t("comments.placeholder")} className="input resize-y" />
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-xs text-black/40 dark:text-white/40">{t("comments.moderationNote")}</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{t("comments.moderationNote")}</span>
             <button onClick={() => post(text)} disabled={busy} className="btn-primary">{t("comments.send")}</button>
           </div>
         </div>
@@ -56,7 +56,7 @@ export default function Comments({ articleId }: { articleId: string }) {
       )}
 
       {tree.length === 0 ? (
-        <p className="rounded-xl border border-black/5 bg-black/[0.02] px-4 py-6 text-center text-sm text-black/45 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/45">{t("comments.beFirst")}</p>
+        <p className="rounded-xl border border-black/5 bg-black/[0.02] px-4 py-6 text-center text-sm text-black/60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/65">{t("comments.beFirst")}</p>
       ) : (
         <ul className="space-y-3">
           {tree.map((c) => <CommentItem key={c.id} node={c} depth={0} me={user?.id ?? null} isMod={isMod} loggedIn={!!user} onChange={load} onReply={post} onFlash={notify} />)}
@@ -99,7 +99,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
           {node.pinned && <span className="chip !py-0 text-[10px] !border-brand/40 text-brand dark:text-white">{t("comments.pinnedBadge")}</span>}
           {node.status === "pending" && <span className="chip !py-0 text-[10px]">{t("comments.pendingBadge")}</span>}
           {node.edited && <span className="text-xs text-black/30">{t("comments.editedMark")}</span>}
-          <span className="ml-auto text-xs text-black/40 dark:text-white/40">{new Date(node.createdAt).toLocaleDateString(loc)}</span>
+          <span className="ml-auto text-xs text-black/60 dark:text-white/65">{new Date(node.createdAt).toLocaleDateString(loc)}</span>
         </div>
 
         {editing ? (
@@ -111,7 +111,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
           <p className="text-sm text-black/80 dark:text-white/80">{node.body}</p>
         )}
 
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-black/50 dark:text-white/50">
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-black/60 dark:text-white/65">
           <button onClick={() => react("like")} className={node.myReaction === "like" ? "font-semibold text-up" : "hover:text-up"}>▲ {node.likes}</button>
           <button onClick={() => react("dislike")} className={node.myReaction === "dislike" ? "font-semibold text-down" : "hover:text-down"}>▼ {node.dislikes}</button>
           {loggedIn && <button onClick={() => setReplying((v) => !v)} className="hover:text-brand dark:hover:text-white">{t("comments.reply")}</button>}

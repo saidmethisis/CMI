@@ -28,7 +28,7 @@ export default function RegisterPage() {
     <div className="container-content grid min-h-[70vh] place-items-center py-10">
       <div className="card w-full max-w-sm p-6">
         <h1 className="font-serif text-2xl font-bold">{t("auth.registerTitle")}</h1>
-        <p className="mt-1 text-sm text-black/50 dark:text-white/50">{t("au.readersOnly")}</p>
+        <p className="mt-1 text-sm text-black/60 dark:text-white/65">{t("au.readersOnly")}</p>
         {error && <div className="mt-3 rounded-lg border border-down/30 bg-down/5 px-3 py-2 text-sm text-down">{error}</div>}
         <div className="mt-5 space-y-3">
           <div><label className="label">{t("auth.name")}</label><input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
@@ -41,7 +41,7 @@ export default function RegisterPage() {
           <GoogleRecaptcha onToken={setHuman} />
           <button type="button" onClick={submit} disabled={busy || !consent} className="btn-primary w-full">{busy ? "…" : t("auth.create")}</button>
         </div>
-        <p className="mt-4 text-center text-sm text-black/50 dark:text-white/50">{t("auth.haveAccount")} <Link href="/login" className="text-brand dark:text-white">{t("auth.signin")}</Link></p>
+        <p className="mt-4 text-center text-sm text-black/60 dark:text-white/65">{t("auth.haveAccount")} <Link href="/login" className="text-brand dark:text-white">{t("auth.signin")}</Link></p>
       </div>
     </div>
   );

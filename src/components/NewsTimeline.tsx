@@ -39,7 +39,7 @@ export default function NewsTimeline({ items }: { items: Item[] }) {
                 <Link href={`/article/${a.slug}`} className="flex gap-3 px-3 py-2.5 transition hover:bg-black/[0.03] dark:hover:bg-white/[0.04]">
                   <span className="flex w-11 shrink-0 flex-col items-center border-r border-black/[0.06] pr-2 text-center dark:border-white/[0.08]">
                     <span className="text-sm font-bold tabular-nums text-brand dark:text-white">{time}</span>
-                    <span className="text-[10px] text-black/40 dark:text-white/40">{day}</span>
+                    <span className="text-[10px] text-black/60 dark:text-white/65">{day}</span>
                   </span>
                   <span className="line-clamp-3 text-sm leading-snug hover:text-accent">{a.title}</span>
                 </Link>

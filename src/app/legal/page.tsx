@@ -36,7 +36,7 @@ export default async function ImpressumPage() {
         <li><a href="/terms">{t("lg.termsTitle")}</a></li>
       </ul>
 
-      <p className="text-sm text-black/50 dark:text-white/50">{t("lg.legalNote")}</p>
+      <p className="text-sm text-black/60 dark:text-white/65">{t("lg.legalNote")}</p>
     </LegalShell>
   );
 }

@@ -52,12 +52,12 @@ export default function SearchClient({ index }: { index: Row[] }) {
         </select>
       </div>
 
-      <p className="my-4 text-sm text-black/50 dark:text-white/50">{t("search.found")}: {results.length}</p>
+      <p className="my-4 text-sm text-black/60 dark:text-white/65">{t("search.found")}: {results.length}</p>
 
       {results.length === 0 ? (
         <div className="card p-10 text-center">
           <p className="text-lg font-semibold">{t("search.nothing")}</p>
-          <p className="mt-1 text-sm text-black/50 dark:text-white/50">{t("search.hint")}</p>
+          <p className="mt-1 text-sm text-black/60 dark:text-white/65">{t("search.hint")}</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -71,7 +71,7 @@ export default function SearchClient({ index }: { index: Row[] }) {
                   <div>
                     <span className="text-xs font-semibold" style={{ color: c?.color }}>{c ? catName(c) : ""}</span>
                     <h3 className="font-serif font-bold leading-snug">{highlight(r.title, q.trim())}</h3>
-                    <p className="mt-1 line-clamp-1 text-sm text-black/50 dark:text-white/50">{highlight(r.lead, q.trim())}</p>
+                    <p className="mt-1 line-clamp-1 text-sm text-black/60 dark:text-white/65">{highlight(r.lead, q.trim())}</p>
                   </div>
                 </Link>
               </li>
