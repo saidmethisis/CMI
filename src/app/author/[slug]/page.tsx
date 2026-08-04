@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getAuthor, getCompany } from "@/lib/rbac-store";
 import { followerCount } from "@/lib/follow";
 import { listPublished, localizeList } from "@/lib/store";
-import { serverT } from "@/lib/i18n-server";
+import { serverT, langAlternates } from "@/lib/i18n-server";
 import FollowButton from "@/components/FollowButton";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { t } = await serverT();
   const a = await getAuthor(slug);
-  return { title: a ? `${a.firstName} ${a.lastName}` : t("misc.author"), alternates: { canonical: `/author/${slug}` } };
+  return { title: a ? `${a.firstName} ${a.lastName}` : t("misc.author"), alternates: await langAlternates(`/author/${slug}`) };
 }
 
 export default async function AuthorPage({ params }: Props) {

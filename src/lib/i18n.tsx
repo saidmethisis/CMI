@@ -26,8 +26,14 @@ export function I18nProvider({ children, initialLang = "ru" }: { children: React
     document.cookie = `aktiv_lang=${l};path=/;max-age=31536000`;
     document.documentElement.lang = l;
     setLangState(l);
-    // re-render server components that read the cookie
-    if (typeof window !== "undefined") window.location.reload();
+    if (typeof window === "undefined") return;
+    // Переходим на адрес выбранного языка: /uz/…, /en/…, русский — без префикса.
+    // Так у каждой версии свой URL — его можно переслать, и он открывается на том
+    // же языке у любого читателя (и виден поисковому роботу, который cookie не шлёт).
+    const { pathname, search, hash } = window.location;
+    const bare = pathname.replace(/^\/(uz|en)(?=\/|$)/, "") || "/";
+    const next = l === "ru" ? bare : `/${l}${bare === "/" ? "" : bare}`;
+    window.location.href = next + search + hash;
   };
   const t = (k: string) => translate(lang, k) || DICTS.ru[k] || k;
   return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;

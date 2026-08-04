@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCategories, listPublished, localizeList } from "@/lib/store";
-import { serverT } from "@/lib/i18n-server";
+import { serverT, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 import { subsectionPairs } from "@/lib/nav";
 import CatMark from "@/components/CatMark";
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { t, lang } = await serverT();
   const c = (await getCategories()).find((x) => x.slug === slug);
-  return { title: c ? localizeName(lang, c) : t("misc.category"), alternates: { canonical: `/category/${slug}` } };
+  return { title: c ? localizeName(lang, c) : t("misc.category"), alternates: await langAlternates(`/category/${slug}`) };
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {

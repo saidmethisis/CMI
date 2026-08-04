@@ -16,7 +16,7 @@ import CryptoTable from "@/components/CryptoTable";
 import SpecialReports from "@/components/SpecialReports";
 import TrendingNow from "@/components/TrendingNow";
 import T from "@/components/T";
-import { serverT } from "@/lib/i18n-server";
+import { serverT, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 // Свой canonical: в корневом layout он намеренно не задан, иначе все страницы
 // объявляли бы себя копией главной.
 export async function generateMetadata() {
-  return { alternates: { canonical: "/" } };
+  return { alternates: await langAlternates("/") };
 }
 
 export default async function HomePage() {

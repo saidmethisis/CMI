@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { getArticle, listPublished, listPopular, getCategories, localizedArticle, localizeList, bumpViews } from "@/lib/store";
-import { serverT, getLang } from "@/lib/i18n-server";
+import { serverT, getLang, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 import { getAuth } from "@/lib/guard";
 import { can } from "@/lib/permissions";
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: L.lead,
     openGraph: { title: L.title, description: L.lead, images: [a.cover], type: "article" },
     twitter: { card: "summary_large_image", title: L.title, description: L.lead, images: [a.cover] },
-    alternates: { canonical: `/article/${a.slug}` },
+    alternates: await langAlternates(`/article/${a.slug}`),
   };
 }
 
