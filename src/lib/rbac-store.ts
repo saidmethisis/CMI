@@ -123,6 +123,18 @@ export async function getAuthor(idOrSlug: string) {
   const a = await prisma.author.findFirst({ where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] } });
   return a ? mapAuthor(a) : null;
 }
+// В статье автор хранится строкой «Имя Фамилия», а для разметки Schema.org нужны
+// его slug и аватар. Ищем одним точечным запросом: выгружать всех авторов на
+// каждый просмотр статьи нельзя. Имя разбиваем по первому пробелу — ровно так же,
+// как оно собиралось при создании автора.
+export async function findAuthorByFullName(full: string) {
+  const s = (full ?? "").trim();
+  if (!s) return null;
+  const i = s.indexOf(" ");
+  const firstName = i === -1 ? s : s.slice(0, i);
+  const lastName = i === -1 ? "" : s.slice(i + 1);
+  return prisma.author.findFirst({ where: { firstName, lastName }, select: { slug: true, avatar: true } });
+}
 function mapAuthor(a: NonNullable<Awaited<ReturnType<typeof prisma.author.findFirst>>>) {
   return { ...a, capabilities: j(a.capabilities, {}) as Record<string, boolean>, profile: j(a.profile, {}) as Record<string, unknown> };
 }

@@ -4,7 +4,9 @@ import { getAuthor, getCompany } from "@/lib/rbac-store";
 import { followerCount } from "@/lib/follow";
 import { listPublished, localizeList } from "@/lib/store";
 import { serverT, langAlternates } from "@/lib/i18n-server";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import FollowButton from "@/components/FollowButton";
+import Cover from "@/components/Cover";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -13,7 +15,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { t } = await serverT();
   const a = await getAuthor(slug);
-  return { title: a ? `${a.firstName} ${a.lastName}` : t("misc.author"), alternates: await langAlternates(`/author/${slug}`) };
+  if (!a) return { title: t("misc.author"), alternates: await langAlternates(`/author/${slug}`) };
+  const p = a.profile as Record<string, string>;
+  const name = `${a.firstName} ${a.lastName}`.trim();
+  // Описание — из биографии автора; без него в выдаче показывался бы случайный
+  // кусок разметки страницы.
+  const description = (p.bio || [p.position, p.city].filter(Boolean).join(", ") || name).slice(0, 300);
+  return {
+    title: name,
+    description,
+    alternates: await langAlternates(`/author/${slug}`),
+    openGraph: { type: "profile", title: name, description, url: `${SITE_URL}/author/${slug}`, ...(a.avatar ? { images: [a.avatar] } : {}) },
+  };
 }
 
 export default async function AuthorPage({ params }: Props) {
@@ -29,14 +42,55 @@ export default async function AuthorPage({ params }: Props) {
   const stats = [[t("ap.articles"), String(mine.length)], [t("ap.views"), views.toLocaleString("ru-RU")], [t("ap.subs"), subs.toLocaleString("ru-RU")], [t("ap.avgRead"), "4:12"]];
   const chips = (v?: string) => (v ? v.split(/[,;]/).map((x) => x.trim()).filter(Boolean) : []);
 
+  // Разметка Schema.org: страница-профиль автора и сам автор как Person.
+  // Поисковики и ИИ-ассистенты по ней связывают статьи с конкретным человеком —
+  // без этого автор для них просто строка текста. Пустые поля не выводим:
+  // незаполненное свойство в разметке хуже отсутствующего.
+  const fullName = `${a.firstName} ${a.lastName}`.trim();
+  const authorUrl = `${SITE_URL}/author/${a.slug}`;
+  const sameAs = [p.website, p.linkedin, p.telegram && (p.telegram.startsWith("http") ? p.telegram : `https://t.me/${p.telegram.replace(/^@/, "")}`)]
+    .filter((v): v is string => !!v && /^https?:\/\//.test(v));
+  const person: Record<string, unknown> = {
+    "@type": "Person",
+    "@id": `${authorUrl}#person`,
+    name: fullName,
+    url: authorUrl,
+    ...(a.avatar ? { image: a.avatar.startsWith("http") ? a.avatar : `${SITE_URL}${a.avatar}` } : {}),
+    ...(p.position ? { jobTitle: p.position } : {}),
+    ...(p.bio ? { description: p.bio } : {}),
+    ...(p.email ? { email: p.email } : {}),
+    ...(chips(p.specialization).length ? { knowsAbout: chips(p.specialization) } : {}),
+    ...(sameAs.length ? { sameAs } : {}),
+    ...(company ? { worksFor: { "@type": "Organization", name: company.name } } : { worksFor: { "@type": "NewsMediaOrganization", name: SITE_NAME, url: SITE_URL } }),
+  };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: authorUrl,
+    mainEntity: person,
+    ...(mine.length
+      ? {
+          hasPart: mine.slice(0, 10).map((x) => ({
+            "@type": "NewsArticle",
+            headline: x.title,
+            url: `${SITE_URL}/article/${x.slug}`,
+            datePublished: x.createdAt,
+            author: { "@id": `${authorUrl}#person` },
+          })),
+        }
+      : {}),
+  };
+
   return (
     <div className="container-content max-w-4xl py-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
       {/* banner + header */}
       <div className="card overflow-hidden">
         <div className="h-32 bg-gradient-to-r from-brand to-brand-700" style={p.banner ? { backgroundImage: `url(${p.banner})`, backgroundSize: "cover" } : undefined} />
         <div className="flex flex-wrap items-center gap-4 p-5">
           <span className="-mt-14 grid h-24 w-24 place-items-center overflow-hidden rounded-2xl bg-brand text-3xl font-bold text-white ring-4 ring-[var(--surface)] dark:ring-ink-surface">
-            {a.avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={a.avatar} alt="" className="h-full w-full object-cover" /> : a.firstName.charAt(0)}
+            {a.avatar ? <Cover src={a.avatar} alt="" width={192} height={192} sizes="96px" className="h-full w-full object-cover" /> : a.firstName.charAt(0)}
           </span>
           <div className="flex-1">
             <div className="flex items-center gap-2">

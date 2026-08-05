@@ -32,6 +32,7 @@ export const RATE = {
   follow: { limit: 60, windowMs: 10 * 60_000 },       // 60 подписок за 10 минут
   upload: { limit: 30, windowMs: 60 * 60_000 },       // 30 файлов в час
   ai: { limit: 10, windowMs: 60 * 60_000 },           // 10 AI-генераций в час
+  og: { limit: 60, windowMs: 10 * 60_000 },           // 60 карточек для соцсетей за 10 минут
 } as const satisfies Record<string, RateRule>;
 
 // Ключ по IP: для анонимных действий (регистрация, восстановление).

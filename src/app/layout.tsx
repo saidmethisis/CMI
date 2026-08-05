@@ -31,8 +31,13 @@ export async function generateMetadata(): Promise<Metadata> {
     // их из индекса. Каждая страница задаёт свой canonical сама (см. generateMetadata).
     alternates: { types: { "application/rss+xml": `${SITE_URL}/feed.xml` } },
     appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Aktiv" },
-    openGraph: { type: "website", title: "Asosiy Aktiv", siteName: "Asosiy Aktiv", url: SITE_URL },
-    twitter: { card: "summary_large_image", title: "Asosiy Aktiv", description: desc },
+    // Картинка для мессенджеров рисуется на лету (/og). Раньше её не было вовсе,
+    // и ссылка на сайт приходила собеседнику голым текстом.
+    openGraph: {
+      type: "website", title: "Asosiy Aktiv", siteName: "Asosiy Aktiv", url: SITE_URL,
+      images: [{ url: `${SITE_URL}/og`, width: 1200, height: 630, alt: "Asosiy Aktiv" }],
+    },
+    twitter: { card: "summary_large_image", title: "Asosiy Aktiv", description: desc, images: [`${SITE_URL}/og`] },
     // Стейджинг дополнительно закрыт мета-тегом: robots.txt бот может проигнорировать,
     // а noindex в разметке уважают все.
     robots: IS_STAGING ? { index: false, follow: false } : undefined,

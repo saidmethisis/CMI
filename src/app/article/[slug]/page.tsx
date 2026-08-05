@@ -7,6 +7,8 @@ import { serverT, getLang, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 import { getAuth } from "@/lib/guard";
 import { can } from "@/lib/permissions";
+import { findAuthorByFullName } from "@/lib/rbac-store";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import ArticleView from "@/components/ArticleView";
 import LeadMedia from "@/components/LeadMedia";
 import Comments from "@/components/Comments";
@@ -34,11 +36,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!a || !(await mayPreview(a))) return { title: "Не найдено" };
   const lang = await getLang();
   const L = localizedArticle(a, lang);
+  // Обложку в карточку соцсети подставляем только если она есть: пустая строка в
+  // og:image заставляла мессенджер показывать ссылку голым текстом. Без обложки
+  // берём нарисованную карточку с заголовком (/og/article/…).
+  const images = [a.cover || `${SITE_URL}/og/article/${a.slug}`];
   return {
     title: L.title,
     description: L.lead,
-    openGraph: { title: L.title, description: L.lead, images: [a.cover], type: "article" },
-    twitter: { card: "summary_large_image", title: L.title, description: L.lead, images: [a.cover] },
+    openGraph: {
+      title: L.title, description: L.lead, type: "article",
+      publishedTime: new Date(a.createdAt).toISOString(),
+      authors: [a.company ?? a.authorName],
+      images,
+    },
+    twitter: { card: "summary_large_image", title: L.title, description: L.lead, images },
     alternates: await langAlternates(`/article/${a.slug}`),
   };
 }
@@ -89,18 +100,32 @@ export default async function ArticlePage({ params, searchParams }: Props) {
   // queue for infinite article-to-article scroll (recent, excluding current)
   const nextSlugs = all.filter((x) => x.slug !== a.slug).slice(0, 8).map((x) => x.slug);
 
+  // Автора ищем в справочнике, чтобы в разметке стояла ссылка на его профиль:
+  // тогда поисковик связывает статью с человеком, у которого есть Person-страница,
+  // а не с одинаковой строкой имени. Нет такого автора — обходимся именем.
+  const authorRef = await findAuthorByFullName(a.authorName).catch(() => null);
+  const articleUrl = `${SITE_URL}/article/${a.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: L.title,
-    image: [a.cover],
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+    url: articleUrl,
+    headline: L.title.slice(0, 110), // Google обрезает headline длиннее 110 символов
+    description: L.lead,
+    ...(a.cover ? { image: [a.cover.startsWith("http") ? a.cover : `${SITE_URL}${a.cover}`] } : {}),
     datePublished: a.createdAt,
     dateModified: a.createdAt,
-    author: [{ "@type": "Person", name: a.authorName }],
-    publisher: { "@type": "NewsMediaOrganization", name: "Asosiy Aktiv" },
-    articleSection: cat?.name,
+    inLanguage: lang,
+    author: [
+      authorRef
+        ? { "@type": "Person", name: a.authorName, url: `${SITE_URL}/author/${authorRef.slug}`, "@id": `${SITE_URL}/author/${authorRef.slug}#person` }
+        : { "@type": a.company ? "Organization" : "Person", name: a.company ?? a.authorName },
+    ],
+    publisher: { "@type": "NewsMediaOrganization", name: SITE_NAME, url: SITE_URL },
+    articleSection: catLabel || cat?.name,
+    ...(a.tags?.length ? { keywords: a.tags.join(", ") } : {}),
     isAccessibleForFree: true,
-    wordCount: L.body.split(/\s+/).length,
+    wordCount: L.body.split(/\s+/).filter(Boolean).length,
   };
 
   return (
