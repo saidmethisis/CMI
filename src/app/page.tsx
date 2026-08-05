@@ -3,7 +3,9 @@ import { listPublished, pinnedArticle, getCategories, localizeList, localizedArt
 import StoriesBar from "@/components/StoriesBar";
 import RatesBoard from "@/components/RatesBoard";
 import BankRates from "@/components/BankRates";
+import StockBoard from "@/components/StockBoard";
 import { getBankRates } from "@/lib/bank-rates";
+import { getStockQuotes } from "@/lib/stock";
 import VideoRow from "@/components/VideoRow";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
@@ -43,6 +45,7 @@ export default async function HomePage() {
   const categories = await soft(getCategories, []);
   // курсы банков тянем на сервере (кэш 1 час) — блок виден сразу, без «прыжка» после гидрации
   const bankRates = await soft(getBankRates, { data: {}, updatedAt: "", source: "unavailable" });
+  const stock = await soft(getStockQuotes, { data: [], updatedAt: "", source: "unavailable" });
   const pinnedRaw = await soft(pinnedArticle, undefined);
   // тексты — на языке интерфейса, с фолбэком на язык оригинала
   const pinned = pinnedRaw ? { ...pinnedRaw, ...localizedArticle(pinnedRaw, lang) } : pinnedRaw;
@@ -126,6 +129,10 @@ export default async function HomePage() {
 
           {/* Курсы валют в банках — прямо над лентой, под ними начинается лента */}
           <div className="mb-8"><BankRates initial={bankRates} /></div>
+
+          {/* Котировки Республиканской фондовой биржи. Блок скрывается сам,
+              если нет данных (не задан PARSE_API_KEY или биржа недоступна). */}
+          <div className="mb-8"><StockBoard initial={stock} /></div>
 
           <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold"><T k="home.feed" /></h2>
           <FeedWithChips items={feed} />

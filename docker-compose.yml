@@ -71,6 +71,8 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # ключ parse.bot для котировок биржи; без него блок котировок скрыт
+      PARSE_API_KEY: ${PARSE_API_KEY:-}
     volumes:
       - uploads:/app/public/uploads
     healthcheck:
