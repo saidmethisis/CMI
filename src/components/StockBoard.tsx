@@ -25,12 +25,19 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
     } catch { /* оставляем прошлый снимок */ }
   }, []);
 
+  // Сервер уже сходил за котировками. Если он ответил «unavailable» — ключа нет
+  // или биржа недоступна, и клиентский запрос вернёт ровно то же самое. Тогда не
+  // дёргаем сеть вовсе: иначе каждый читатель делал бы лишний запрос ради блока,
+  // который всё равно не показывается.
+  const offline = !initial?.data?.length && initial?.source === "unavailable";
+
   useEffect(() => {
+    if (offline) return;
     if (!initial?.data?.length) load();
     const id = setInterval(load, REFRESH_MS);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [load]);
+  }, [load, offline]);
 
   if (!rows.length) return null;
 
