@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { readBody, withHandler } from "@/lib/api";
 import { currentUser } from "@/lib/auth";
-import { editComment, deleteComment, setPinned, moderateComment } from "@/lib/comments";
+import { editComment, deleteComment, setPinned, moderateComment, COMMENT_MAX } from "@/lib/comments";
 import { getRole } from "@/lib/rbac-store";
 import { can } from "@/lib/permissions";
 
@@ -19,13 +19,25 @@ export const PATCH = withHandler(async (req: Request, { params }: { params: Prom
   if (action === "pin" || action === "moderate") {
     if (!(await isModerator(user.roleSlug))) return NextResponse.json({ error: { message: "Нет прав модерации." } }, { status: 403 });
     if (action === "pin") await setPinned(id, !!pinned);
-    else await moderateComment(id, status, user.id);
+    else {
+      // Статус из белого списка: раньше сюда проходила любая строка и
+      // сохранялась в базу — комментарий получал статус, которого нет в системе,
+      // и переставал показываться вообще где-либо.
+      const ALLOWED = ["approved", "pending", "spam", "rejected"];
+      if (!ALLOWED.includes(status)) {
+        return NextResponse.json({ error: { message: "Недопустимый статус комментария." } }, { status: 422 });
+      }
+      await moderateComment(id, status, user.id);
+    }
     return NextResponse.json({ data: { ok: true } });
   }
   // edit own — тот же предел длины, что и при создании, иначе ограничение
   // обходится правкой уже созданного комментария
-  if (String(body ?? "").length > 5000) {
-    return NextResponse.json({ error: { message: "Комментарий длиннее 5000 символов." } }, { status: 422 });
+  if (typeof body !== "string" || !body.trim()) {
+    return NextResponse.json({ error: { message: "Пустой комментарий." } }, { status: 422 });
+  }
+  if (body.length > COMMENT_MAX) {
+    return NextResponse.json({ error: { message: `Комментарий длиннее ${COMMENT_MAX} символов.` } }, { status: 422 });
   }
   const res = await editComment(id, user.id, body ?? "");
   if ("error" in res) return NextResponse.json({ error: { message: "Можно редактировать только свой комментарий." } }, { status: 403 });

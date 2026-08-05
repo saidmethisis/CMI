@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/useAuth";
 
 interface Node {
-  id: string; userId: string | null; author: string; authorAvatar: string; body: string; status: string;
+  id: string; mine: boolean; author: string; authorAvatar: string; body: string; status: string;
   likes: number; dislikes: number; reports: number; pinned: boolean; edited: boolean; createdAt: string;
   myReaction: "like" | "dislike" | null; replies: Node[];
 }
@@ -79,7 +79,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(node.body);
   const [reply, setReply] = useState("");
-  const mine = me && node.userId === me;
+  const mine = node.mine;
 
   const react = async (type: "like" | "dislike") => {
     const r = await fetch(`/api/comments/${node.id}/react`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type }) });
