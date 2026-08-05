@@ -73,6 +73,9 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       # ключ parse.bot для котировок биржи; без него блок котировок скрыт
       PARSE_API_KEY: ${PARSE_API_KEY:-}
+      # JSON сервисного аккаунта для мгновенной индексации в Google; без него
+      # публикация работает как прежде, просто без пинга
+      GOOGLE_INDEXING_CREDENTIALS: ${GOOGLE_INDEXING_CREDENTIALS:-}
     volumes:
       - uploads:/app/public/uploads
     healthcheck:

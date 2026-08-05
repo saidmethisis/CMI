@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "./prisma";
 import { slugify } from "./slug";
 import { notify } from "./notifications";
+import { pingIndexing, articlePaths } from "./indexing";
 import type { Article, ArticleTranslations, LangCode, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
 import { categories, stories } from "./seed";
 
@@ -500,6 +501,11 @@ export async function deleteOwnArticle(id: string, userId: string) {
   if (!a) return { error: "NOT_FOUND" as const };
   if (a.authorUserId !== userId) return { error: "FORBIDDEN" as const };
   await prisma.article.delete({ where: { id } });
+  // Удалённая статья должна уйти и из поиска, иначе читатель придёт из выдачи
+  // на 404. Только для опубликованных: черновика в индексе и не было.
+  if (a.status === "published") {
+    void pingIndexing(articlePaths(a.slug, Object.keys(safeTranslations(a.translations))), "URL_DELETED");
+  }
   return { ok: true };
 }
 
@@ -513,6 +519,10 @@ export async function moderateArticle(id: string, action: string, pinned?: boole
     // В title кладём i18n-КЛЮЧ, а не готовую фразу: уведомление живёт в базе, а читать
     // его могут на любом языке. Заголовок статьи идёт отдельно в body.
     await notify(a.authorUserId, { type: "status", title: "notif.published", body: a.title, link: `/article/${u.slug}` });
+    // Сообщаем Google о новой публикации — без этого новость ждёт обхода часами.
+    // Намеренно не ждём ответа: модерация не должна зависеть от Google, а при
+    // отсутствии ключей вызов сразу возвращается ни с чем.
+    void pingIndexing(articlePaths(u.slug, Object.keys(safeTranslations(u.translations))));
     return { id: u.id, status: u.status, pinned: u.pinned };
   }
   if (action === "pin") {
