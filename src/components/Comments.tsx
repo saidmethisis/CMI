@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/useAuth";
+import Cover from "@/components/Cover";
 
 interface Node {
   id: string; mine: boolean; author: string; authorAvatar: string; body: string; status: string;
@@ -96,7 +97,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
       <div className={`card p-4 ${node.pinned ? "ring-1 ring-brand/40" : ""}`}>
         <div className="mb-1 flex items-center gap-2 text-sm">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-brand text-xs font-bold text-white">
-            {node.authorAvatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={node.authorAvatar} alt="" className="h-full w-full rounded-full object-cover" /> : node.author.charAt(0)}
+            {node.authorAvatar ? <Cover src={node.authorAvatar} alt="" width={56} height={56} sizes="28px" className="h-full w-full rounded-full object-cover" /> : node.author.charAt(0)}
           </span>
           <span className="font-semibold">{node.author}</span>
           {node.pinned && <span className="chip !py-0 text-[10px] !border-brand/40 text-brand dark:text-white">{t("comments.pinnedBadge")}</span>}

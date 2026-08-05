@@ -5,6 +5,15 @@ const nextConfig = {
   // `next start` (the documented run command in DEPLOY.md and the Dockerfile).
   poweredByHeader: false,
   images: {
+    // AVIF в первую очередь: он ощутимо легче WebP, а результат кэшируется, так
+    // что более медленное сжатие платится один раз на картинку.
+    formats: ["image/avif", "image/webp"],
+    // Готовые размеры держим в кэше сутки, а не 60 секунд по умолчанию:
+    // обложки статей не меняются, а каждое повторное сжатие — это процессор.
+    minimumCacheTTL: 86400,
+    // Оптимизируются только наши файлы (/uploads/…). Ссылки на чужие сайты
+    // компонент Cover отдаёт обычным тегом: список доменов, откуда автор возьмёт
+    // картинку, заранее неизвестен, а неразрешённый домен уронил бы страницу.
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "picsum.photos" },

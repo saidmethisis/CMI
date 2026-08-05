@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 import { useI18n } from "@/lib/i18n";
+import Cover from "@/components/Cover";
 
 type Row = { slug: string; title: string; lead: string; tags: string[]; category: string; cover: string; reading: number; views: number; createdAt: string };
 
@@ -66,8 +67,7 @@ export default function SearchClient({ index }: { index: Row[] }) {
             return (
               <li key={r.slug}>
                 <Link href={`/article/${r.slug}`} className="card card-hover flex gap-4 overflow-hidden p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {r.cover && <img src={r.cover} alt="" loading="lazy" className="h-20 w-28 shrink-0 rounded-lg object-cover" />}
+                  {r.cover && <Cover src={r.cover} alt="" width={224} height={160} sizes="112px" className="h-20 w-28 shrink-0 rounded-lg object-cover" />}
                   <div>
                     <span className="text-xs font-semibold" style={{ color: c?.color }}>{c ? catName(c) : ""}</span>
                     <h3 className="font-serif font-bold leading-snug">{highlight(r.title, q.trim())}</h3>

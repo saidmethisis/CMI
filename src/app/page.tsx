@@ -4,6 +4,7 @@ import StoriesBar from "@/components/StoriesBar";
 import RatesBoard from "@/components/RatesBoard";
 import BankRates from "@/components/BankRates";
 import StockBoard from "@/components/StockBoard";
+import Cover from "@/components/Cover";
 import { getBankRates } from "@/lib/bank-rates";
 import { getStockQuotes } from "@/lib/stock";
 import VideoRow from "@/components/VideoRow";
@@ -100,8 +101,8 @@ export default async function HomePage() {
                   {/* Без обложки — нейтральная заглушка: пустой src даёт значок
                       «битая картинка» в самом заметном блоке главной. */}
                   {pinned.cover ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={pinned.cover} alt={pinned.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                    // Главная картинка первого экрана — грузим без ожидания прокрутки.
+                    <Cover src={pinned.cover} alt={pinned.title} width={1600} height={900} sizes="(max-width: 1024px) 100vw, 720px" priority className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
                   ) : (
                     <span className="grid h-full w-full place-items-center font-serif text-6xl font-bold text-black/15 dark:text-white/15">A</span>
                   )}

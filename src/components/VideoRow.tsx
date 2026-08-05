@@ -2,6 +2,7 @@
 import Link from "next/link";
 import type { Article } from "@/lib/types";
 import { useI18n } from "@/lib/i18n";
+import Cover from "@/components/Cover";
 
 // Fox-Business-style video block: a heading + cards with a play overlay.
 export default function VideoRow({ title, items }: { title: React.ReactNode; items: Article[] }) {
@@ -15,8 +16,7 @@ export default function VideoRow({ title, items }: { title: React.ReactNode; ite
         {items.map((a) => (
           <Link key={a.id} href={`/article/${a.slug}`} className="group">
             <div className="relative aspect-video overflow-hidden rounded-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {a.cover && <img src={a.cover} alt={a.title} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
+              {a.cover && <Cover src={a.cover} alt={a.title} width={640} height={360} sizes="(max-width: 768px) 60vw, 300px" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
               <span className="absolute inset-0 grid place-items-center">
                 <span className="grid h-12 w-12 place-items-center rounded-full bg-black/55 ring-2 ring-white/80">
                   {/* pure-CSS play triangle */}

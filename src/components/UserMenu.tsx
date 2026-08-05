@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/useAuth";
 import { useI18n } from "@/lib/i18n";
 import ThemeToggle from "./ThemeToggle";
 import LangSwitcher from "./LangSwitcher";
+import Cover from "@/components/Cover";
 
 // Единое меню пользователя в шапке: быстрый вход в свой кабинет, профиль,
 // разделы сайта, тема/язык и выход. Заменяет разрозненные ссылки.
@@ -43,7 +44,7 @@ export default function UserMenu() {
     <div className="relative hidden md:block" ref={ref}>
       <button aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)} className="flex max-w-[170px] items-center gap-1.5 rounded-md border border-white/25 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10">
         <span className="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full bg-white text-[10px] text-brand">
-          {user.avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : name.charAt(0)}
+          {user.avatar ? <Cover src={user.avatar} alt="" width={40} height={40} sizes="20px" className="h-full w-full object-cover" /> : name.charAt(0)}
         </span>
         <span className="truncate">{name}</span>
         <span className="text-[9px] opacity-70">▾</span>

@@ -4,6 +4,7 @@ import type { Article } from "@/lib/types";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 import { useI18n } from "@/lib/i18n";
 import SaveButton from "./SaveButton";
+import Cover from "@/components/Cover";
 
 export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?: "L" | "M" | "S" }) {
   const { categories } = useTaxonomy();
@@ -20,8 +21,7 @@ export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?
         {/* Без обложки показываем нейтральную заглушку, а не случайное стоковое фото:
             чужая картинка к чужому тексту вводит читателя в заблуждение. */}
         {a.cover ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={a.cover} alt={a.title} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+          <Cover src={a.cover} alt={a.title} width={800} height={450} sizes="(max-width: 768px) 100vw, 400px" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
         ) : (
           <span className="grid h-full w-full place-items-center font-serif text-3xl font-bold text-black/15 dark:text-white/15">A</span>
         )}

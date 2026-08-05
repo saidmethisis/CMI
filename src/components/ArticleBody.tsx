@@ -1,5 +1,6 @@
 "use client";
 import Icon from "./Icon";
+import Cover from "./Cover";
 
 const IMG_RE = /^!\[(.*?)\]\((.+)\)$/;
 
@@ -11,8 +12,7 @@ export function Paragraphs({ text }: { text: string }) {
         if (img) {
           return (
             <figure key={i} className="my-5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img[2]} alt={img[1] || ""} className="w-full rounded-xl object-cover" />
+              <Cover src={img[2]} alt={img[1] || ""} width={1200} height={800} sizes="(max-width: 1024px) 100vw, 720px" className="h-auto w-full rounded-xl object-cover" />
               {img[1] && <figcaption className="mt-1.5 text-center text-xs text-black/60 dark:text-white/65">{img[1]}</figcaption>}
             </figure>
           );

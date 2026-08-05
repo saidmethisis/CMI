@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { LANGS } from "@/lib/dictionaries";
 import ImageUpload from "@/components/ImageUpload";
+import Cover from "@/components/Cover";
 
 const TABS = ["profile", "saved", "history", "comments", "subs", "notif", "security"] as const;
 
@@ -48,7 +49,7 @@ export default function AccountPage() {
       <aside className="md:sticky md:top-20 md:self-start">
         <div className="mb-3 flex items-center gap-2 px-1">
           <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-brand text-white">
-            {user.avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : (user.displayName || user.name).charAt(0)}
+            {user.avatar ? <Cover src={user.avatar} alt="" width={80} height={80} sizes="40px" className="h-full w-full object-cover" /> : (user.displayName || user.name).charAt(0)}
           </span>
           <div className="min-w-0"><div className="truncate text-sm font-semibold">{user.displayName || user.name}</div><div className="truncate text-xs text-black/60">{user.email}</div></div>
         </div>
@@ -114,7 +115,7 @@ function SavedTab({ slugs }: { slugs: string[] }) {
           {items.map((a) => (
             <li key={a.slug} className="py-2.5">
               <Link href={`/article/${a.slug}`} className="flex items-center gap-3 text-sm hover:text-accent">
-                {a.cover && /* eslint-disable-next-line @next/next/no-img-element */ <img src={a.cover} alt="" className="h-10 w-14 shrink-0 rounded object-cover" />}
+                {a.cover && <Cover src={a.cover} alt="" width={112} height={80} sizes="56px" className="h-10 w-14 shrink-0 rounded object-cover" />}
                 <span className="line-clamp-2">{a.title}</span>
               </Link>
             </li>
