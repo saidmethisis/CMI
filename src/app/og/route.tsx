@@ -17,7 +17,8 @@ export async function GET() {
   const limited = await guardRate("og");
   if (limited) return limited;
 
+  // Без kicker: имя издания уже стоит слева вверху, второй раз в углу — лишнее.
   return renderOg(
-    <OgCard title="Деловое медиа нового поколения" kicker="Asosiy Aktiv" footer="Бизнес · Технологии · Дипломатия · Политика" />,
+    <OgCard title="Деловое медиа нового поколения" footer="Бизнес · Технологии · Дипломатия · Политика" />,
   );
 }
