@@ -4,6 +4,9 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json ./
+# Схема нужна ДО установки: postinstall запускает `prisma generate`, а он без
+# prisma/schema.prisma падает и валит весь `npm ci`.
+COPY prisma ./prisma
 RUN npm ci
 
 FROM node:20-alpine AS build
