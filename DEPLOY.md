@@ -8,7 +8,7 @@
 
 | | Боевой сайт | Стейджинг |
 |---|---|---|
-| Домен | `asosiyaktiv.uz` | `staging.asosiyaktiv.uz` |
+| Домен | `asosiy.net` | `staging.asosiy.net` |
 | Ветка git | `main` | `staging` |
 | Порт (внутренний) | 3000 | 3100 |
 | Проект Docker | `aktiv-prod` | `aktiv-staging` |
@@ -55,9 +55,9 @@ git clone <ваш-репозиторий> /var/www/aktiv-staging
 Две A-записи на IP сервера:
 
 ```
-asosiyaktiv.uz          A   <IP>
-www.asosiyaktiv.uz      A   <IP>
-staging.asosiyaktiv.uz  A   <IP>
+asosiy.net          A   <IP>
+www.asosiy.net      A   <IP>
+staging.asosiy.net  A   <IP>
 ```
 
 ## 3. Переменные окружения
@@ -91,7 +91,7 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo htpasswd -c /etc/nginx/.htpasswd-staging redaktsiya
 
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d asosiyaktiv.uz -d www.asosiyaktiv.uz -d staging.asosiyaktiv.uz
+sudo certbot --nginx -d asosiy.net -d www.asosiy.net -d staging.asosiy.net
 ```
 
 ## 5. Первый запуск
@@ -106,8 +106,8 @@ git checkout main    && npm run deploy:prod
 Проверка:
 
 ```bash
-curl https://asosiyaktiv.uz/api/health          # {"status":"ok","db":"up"}
-curl -u redaktsiya:пароль https://staging.asosiyaktiv.uz/api/health
+curl https://asosiy.net/api/health          # {"status":"ok","db":"up"}
+curl -u redaktsiya:пароль https://staging.asosiy.net/api/health
 ```
 
 Первый супер-админ создаётся автоматически из `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`

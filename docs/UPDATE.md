@@ -5,7 +5,7 @@
 ## Правило
 
 ```
-работа здесь  →  ветка staging  →  проверили на staging.asosiyaktiv.uz  →  ветка main  →  боевой сайт
+работа здесь  →  ветка staging  →  проверили на staging.asosiy.net  →  ветка main  →  боевой сайт
 ```
 
 Прямо в `main` не коммитим. Боевой сайт обновляется только тем кодом, который
@@ -37,7 +37,7 @@ npm run deploy:staging
 поднимет контейнер → дождётся `/api/health`. Если новая версия не отвечает —
 **автоматически вернёт предыдущую** и завершится с ошибкой.
 
-Проверьте `https://staging.asosiyaktiv.uz` (спросит логин/пароль — это нормально,
+Проверьте `https://staging.asosiy.net` (спросит логин/пароль — это нормально,
 стейджинг закрыт basic-auth). Пройдитесь по тому, что меняли.
 
 ## 3. Всё хорошо — выкатили на боевой
@@ -55,7 +55,7 @@ cd /var/www/aktiv-production
 npm run deploy:prod
 ```
 
-Проверьте `https://asosiyaktiv.uz` и `curl https://asosiyaktiv.uz/api/health`.
+Проверьте `https://asosiy.net` и `curl https://asosiy.net/api/health`.
 
 ---
 
@@ -116,7 +116,7 @@ docker compose --env-file .env.production -p aktiv-prod exec db psql -U aktiv -d
 
 # сбросить пароль админа (если заперлись снаружи)
 docker compose --env-file .env.production -p aktiv-prod exec web \
-  node scripts/set-admin-password.mjs admin@asosiyaktiv.uz "новый-пароль"
+  node scripts/set-admin-password.mjs admin@asosiy.net "новый-пароль"
 ```
 
 ---

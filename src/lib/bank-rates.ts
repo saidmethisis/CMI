@@ -26,7 +26,7 @@ export const SOURCE_NAME = "bank.uz";
 export const SOURCE_URL = SRC_URL;
 
 const TTL = 60 * 60 * 1000; // 1 час
-const UA = "Mozilla/5.0 (compatible; AsosiyAktivBot/1.0; +https://asosiyaktiv.uz)";
+const UA = "Mozilla/5.0 (compatible; AsosiyAktivBot/1.0; +https://asosiy.net)";
 
 // <a href="/currency/bank/SLUG"><span class="medium-text">Название</span></a></div>
 // <span class="medium-text green-date">12 050 сум</span>

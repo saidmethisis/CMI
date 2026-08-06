@@ -6,12 +6,12 @@
 #   sudo nginx -t && sudo systemctl reload nginx
 #
 # TLS выпускает certbot (он сам допишет сюда ssl_* и редирект с http):
-#   sudo certbot --nginx -d asosiyaktiv.uz -d www.asosiyaktiv.uz -d staging.asosiyaktiv.uz
+#   sudo certbot --nginx -d asosiy.net -d www.asosiy.net -d staging.asosiy.net
 
 # ── БОЕВОЙ САЙТ ──────────────────────────────────────────────────────────────
 server {
     listen 80;
-    server_name asosiyaktiv.uz www.asosiyaktiv.uz;
+    server_name asosiy.net www.asosiy.net;
 
     client_max_body_size 32M;          # загрузка медиа (лимит приложения — 30 МБ)
 
@@ -29,7 +29,7 @@ server {
 # ── СТЕЙДЖИНГ ────────────────────────────────────────────────────────────────
 server {
     listen 80;
-    server_name staging.asosiyaktiv.uz;
+    server_name staging.asosiy.net;
 
     client_max_body_size 32M;
 

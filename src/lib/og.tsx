@@ -60,7 +60,7 @@ export function OgCard({ title, kicker, footer }: { title: string; kicker?: stri
       <div style={{ display: "flex", fontSize: size, lineHeight: 1.15 }}>{text}</div>
 
       <div style={{ display: "flex", alignItems: "center", fontSize: 26, color: "rgba(255,255,255,.75)" }}>
-        {footer ?? "asosiyaktiv.uz"}
+        {footer ?? "asosiy.net"}
       </div>
     </div>
   );
