@@ -52,6 +52,7 @@ export default function ModerationRow({
           {t("adm.pinTop")}
         </label>
         <div className="ml-auto flex gap-2">
+          <a href={`/admin/moderation/${id}`} className="btn-ghost text-xs font-bold">{t("mod.edit")}</a>
           <a href={`/article/${slug}?preview=1`} target="_blank" rel="noopener" className="btn-ghost text-xs">{t("wc.preview")}</a>
           <button disabled={busy} onClick={() => act("return")} className="btn-ghost text-xs">{t("adm.return")}</button>
           <button disabled={busy} onClick={() => act("reject")} className="btn-ghost text-xs !text-down">{t("adm.reject")}</button>

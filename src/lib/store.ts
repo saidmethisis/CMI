@@ -381,6 +381,31 @@ export async function adminMetrics() {
   return { published, pending, views: viewsAgg._sum.views ?? 0, comments, authors, companies, users };
 }
 
+/**
+ * Комментарии по месяцам за год — для графика на дашборде.
+ *
+ * В ТЗ отдельным пунктом: счётчики просмотров и комментариев должны быть
+ * связаны с реальной базой. Общее число было настоящим и раньше, а вот
+ * динамики не было вовсе. Берём только даты, без текстов: на графике нужны
+ * лишь числа, а тянуть все комментарии ради подсчёта — лишняя работа базе.
+ */
+export async function commentsByMonth(months = 12): Promise<{ y: number; m: number; count: number }[]> {
+  await ensureSeed();
+  const from = new Date();
+  from.setMonth(from.getMonth() - (months - 1), 1);
+  from.setHours(0, 0, 0, 0);
+  const rows = await prisma.comment.findMany({ where: { createdAt: { gte: from } }, select: { createdAt: true } });
+  const acc = new Map<string, number>();
+  for (const r of rows) {
+    const k = `${r.createdAt.getFullYear()}-${r.createdAt.getMonth()}`;
+    acc.set(k, (acc.get(k) ?? 0) + 1);
+  }
+  return Array.from({ length: months }, (_, i) => {
+    const d = new Date(from.getFullYear(), from.getMonth() + i, 1);
+    return { y: d.getFullYear(), m: d.getMonth(), count: acc.get(`${d.getFullYear()}-${d.getMonth()}`) ?? 0 };
+  });
+}
+
 // Функция kpis() удалена: она возвращала выдуманные константы
 // (visitorsToday: 18420, mrr: 12750, adRevenue: 3820) вперемешку с реальными
 // счётчиками и нигде не вызывалась. Реальные метрики дашборда — в adminMetrics().
@@ -556,4 +581,68 @@ export async function moderateArticle(id: string, action: string, pinned?: boole
     link: `/author-panel`,
   });
   return { id: u.id, status: u.status, pinned: u.pinned };
+}
+
+/**
+ * Правка материала модератором (ТЗ, блок 3: «полный доступ к редактированию»).
+ *
+ * Отличий от авторской правки два, и оба существенные:
+ *   • владелец не проверяется — в том и смысл, редактор правит чужой текст;
+ *   • статус НЕ сбрасывается на «на модерации». Материал уже в очереди, и
+ *     отправлять его самому себе на проверку бессмысленно; после правки
+ *     модератор нажимает «Одобрить» отдельным действием.
+ *
+ * Право вызывать это проверяется на входе в маршрут (news.publish).
+ */
+export async function updateArticleAsModerator(
+  id: string,
+  patch: { translations?: unknown; categorySlug?: string; cover?: string; tags?: string },
+) {
+  await ensureSeed();
+  const a = await prisma.article.findUnique({ where: { id } });
+  if (!a) return { error: "NOT_FOUND" as const };
+
+  const data: Record<string, unknown> = {};
+  if (patch.translations !== undefined) {
+    const norm = normalizeTranslations(patch.translations);
+    if (!norm.base) return { error: "EMPTY" as const };
+    data.title = norm.base.title;
+    data.lead = norm.base.lead;
+    data.body = norm.base.body;
+    data.translations = JSON.stringify(norm.translations);
+  }
+  if (patch.categorySlug !== undefined) data.categorySlug = patch.categorySlug;
+  if (patch.cover !== undefined) data.cover = patch.cover;
+  if (patch.tags !== undefined) {
+    data.tags = JSON.stringify(patch.tags.split(",").map((s) => s.trim()).filter(Boolean));
+  }
+
+  const newTitle = (data.title as string) ?? a.title;
+  const newLead = (data.lead as string) ?? a.lead;
+  const newBody = (data.body as string) ?? a.body;
+  data.readingMinutes = readingTime(newBody);
+  data.aiSummary = buildAiSummary(newTitle, newLead);
+
+  const u = await prisma.article.update({ where: { id }, data });
+
+  // Правка уже опубликованного материала должна дойти до поиска: иначе в
+  // выдаче остаётся старая версия с ошибками, ради которых правку и делали.
+  if (u.status === "published") {
+    void pingIndexing(articlePaths(u.slug, Object.keys(safeTranslations(u.translations))));
+  }
+  return { ok: true, status: u.status };
+}
+
+/** Материал для правки модератором: со всеми языковыми версиями. */
+export async function articleForModeration(id: string) {
+  await ensureSeed();
+  const a = await prisma.article.findUnique({ where: { id } });
+  if (!a) return null;
+  return {
+    id: a.id, slug: a.slug, status: a.status, categorySlug: a.categorySlug,
+    cover: a.cover, tags: safeTags(a.tags).join(", "),
+    authorName: a.authorName, company: a.company,
+    translations: safeTranslations(a.translations),
+    base: { title: a.title, lead: a.lead, body: a.body },
+  };
 }

@@ -29,8 +29,8 @@ function Metric({ label, value, color, href }: { label: string; value: string; c
   return href ? <Link href={href} className={`${cls} block hover:border-white/25 hover:bg-white/[0.06]`}>{inner}</Link> : <div className={cls}>{inner}</div>;
 }
 
-export default async function CampaignBoard({ metrics, top, catStats, labels, pubSeries, viewSeries }: {
-  metrics: Metrics; top: Top; catStats: CatStat[]; labels: string[]; pubSeries: number[]; viewSeries: number[];
+export default async function CampaignBoard({ metrics, top, catStats, labels, pubSeries, viewSeries, commentSeries }: {
+  metrics: Metrics; top: Top; catStats: CatStat[]; labels: string[]; pubSeries: number[]; viewSeries: number[]; commentSeries: number[];
 }) {
   const { t } = await serverT();
   const maxCatViews = Math.max(1, ...catStats.map((c) => c.views));
@@ -106,6 +106,7 @@ export default async function CampaignBoard({ metrics, top, catStats, labels, pu
       {/* row 3: pub chart + quick actions + top materials */}
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <TrendPanel title={t("dash.pubsByMonth")} total={nf(metrics.published)} labels={labels} values={pubSeries} color="#22d3ee" />
+        <TrendPanel title={t("dash.commentsByMonth")} total={nf(metrics.comments)} labels={labels} values={commentSeries} color="#f59e0b" />
 
         <Card>
           <h3 className="mb-3 font-semibold">{t("dash.quickActions")}</h3>
