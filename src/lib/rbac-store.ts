@@ -128,12 +128,17 @@ export async function getAuthor(idOrSlug: string) {
 // каждый просмотр статьи нельзя. Имя разбиваем по первому пробелу — ровно так же,
 // как оно собиралось при создании автора.
 export async function findAuthorByFullName(full: string) {
-  const s = (full ?? "").trim();
+  const s = (full ?? "").replace(/\s+/g, " ").trim();
   if (!s) return null;
-  const i = s.indexOf(" ");
-  const firstName = i === -1 ? s : s.slice(0, i);
-  const lastName = i === -1 ? "" : s.slice(i + 1);
-  return prisma.author.findFirst({ where: { firstName, lastName }, select: { slug: true, avatar: true } });
+  // Сравниваем склеенное имя, а не поля по отдельности, и приводим пробелы к
+  // одному виду с обеих сторон. В базе такое встречается: у автора реального
+  // сайта в имени затесался хвостовой пробел, и точное сравнение по полям
+  // молча не находило профиль — статья теряла ссылку на автора в разметке.
+  const rows = await prisma.$queryRaw<{ slug: string; avatar: string }[]>`
+    SELECT slug, avatar FROM "Author"
+    WHERE btrim(regexp_replace("firstName" || ' ' || "lastName", '\s+', ' ', 'g')) = ${s}
+    LIMIT 1`;
+  return rows[0] ?? null;
 }
 function mapAuthor(a: NonNullable<Awaited<ReturnType<typeof prisma.author.findFirst>>>) {
   return { ...a, capabilities: j(a.capabilities, {}) as Record<string, boolean>, profile: j(a.profile, {}) as Record<string, unknown> };
