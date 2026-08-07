@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import Cover from "@/components/Cover";
 
 type Item = { slug: string; title: string; cover: string; author: string };
 
@@ -27,8 +28,7 @@ export default function SpecialReports({ items }: { items: Item[] }) {
       <div className="grid gap-5 md:grid-cols-2">
         {shown.map((a) => (
           <Link key={a.slug} href={`/article/${a.slug}`} className="group relative block aspect-[16/9] overflow-hidden rounded-xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={a.cover} alt={a.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+            {a.cover && <Cover src={a.cover} alt={a.title} width={800} height={450} sizes="(max-width: 768px) 100vw, 400px" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />}
             <span className="absolute inset-0 bg-gradient-to-t from-brand-900/95 via-brand-900/55 to-brand-900/10" />
             <div className="absolute inset-x-0 bottom-0 p-5">
               <h3 className="font-serif text-xl font-extrabold leading-tight text-white underline decoration-2 underline-offset-4 md:text-2xl">{a.title}</h3>

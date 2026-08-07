@@ -16,6 +16,10 @@ export type ArticleStatus =
 
 export type ArticleKind = "editorial" | "ugc" | "pr";
 
+export type LangCode = "ru" | "uz" | "en";
+// Переводы по языкам; базовые title/lead/body — язык-фолбэк.
+export type ArticleTranslations = Partial<Record<LangCode, { title: string; lead: string; body: string }>>;
+
 export interface Category {
   slug: string;
   name: string;
@@ -49,12 +53,14 @@ export interface Article {
   title: string;
   lead: string; // dek / краткое описание
   body: string; // markdown-ish plain blocks separated by \n\n
+  translations?: ArticleTranslations; // переводы title/lead/body по языкам
   aiSummary: string; // AI-Саммари блок
   cover: string;
   videoUrl?: string; // lead video; if set, the article is "video-first"
   categorySlug: string;
   tags: string[];
   authorName: string;
+  authorUserId?: string; // AppUser.id владельца (правка/удаление/предпросмотр)
   authorKind: ArticleKind;
   authorSocials?: { label: string; url: string }[];
   company?: string; // for PR

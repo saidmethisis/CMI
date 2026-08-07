@@ -3,32 +3,51 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
 import PWARegister from "@/components/PWARegister";
 import Analytics from "@/components/Analytics";
 import CookieConsent from "@/components/CookieConsent";
 import Providers from "@/components/Providers";
-import { getLang } from "@/lib/i18n-server";
+import { getLang, serverT } from "@/lib/i18n-server";
 import { SITE_URL, SITE_NAME, SITE_DESC } from "@/lib/site";
+import { IS_STAGING } from "@/lib/env";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: "Asosiy Aktiv — деловое медиа нового поколения",
-    template: "%s — Asosiy Aktiv",
-  },
-  description: SITE_DESC,
-  manifest: "/manifest.webmanifest",
-  applicationName: "Asosiy Aktiv",
-  alternates: { canonical: "/", types: { "application/rss+xml": `${SITE_URL}/feed.xml` } },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Aktiv" },
-  openGraph: { type: "website", title: "Asosiy Aktiv", siteName: "Asosiy Aktiv", url: SITE_URL },
-  twitter: { card: "summary_large_image", title: "Asosiy Aktiv", description: SITE_DESC },
-  // Подтверждение прав в Google Search Console и Яндекс.Вебмастер — вставьте коды в .env
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
-    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || undefined,
-  },
-};
+// Заголовок и описание сайта — на языке пользователя (читается из cookie aktiv_lang),
+// поэтому это generateMetadata, а не статический export const metadata.
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await serverT();
+  const desc = t("footer.tagline");
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: t("meta.siteTitle"),
+      template: "%s — Asosiy Aktiv",
+    },
+    description: desc,
+    manifest: "/manifest.webmanifest",
+    applicationName: "Asosiy Aktiv",
+    // canonical здесь НЕ задаём: Next наследует alternates во все дочерние страницы,
+    // и каждая рубрика/автор/поиск объявляли себя копией главной — Google выкидывал
+    // их из индекса. Каждая страница задаёт свой canonical сама (см. generateMetadata).
+    alternates: { types: { "application/rss+xml": `${SITE_URL}/feed.xml` } },
+    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Aktiv" },
+    // Картинка для мессенджеров рисуется на лету (/og). Раньше её не было вовсе,
+    // и ссылка на сайт приходила собеседнику голым текстом.
+    openGraph: {
+      type: "website", title: "Asosiy Aktiv", siteName: "Asosiy Aktiv", url: SITE_URL,
+      images: [{ url: `${SITE_URL}/og`, width: 1200, height: 630, alt: "Asosiy Aktiv" }],
+    },
+    twitter: { card: "summary_large_image", title: "Asosiy Aktiv", description: desc, images: [`${SITE_URL}/og`] },
+    // Стейджинг дополнительно закрыт мета-тегом: robots.txt бот может проигнорировать,
+    // а noindex в разметке уважают все.
+    robots: IS_STAGING ? { index: false, follow: false } : undefined,
+    // Подтверждение прав в Google Search Console и Яндекс.Вебмастер — вставьте коды в .env
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+      yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || undefined,
+    },
+  };
+}
 
 const siteJsonLd = {
   "@context": "https://schema.org",
@@ -69,11 +88,11 @@ const noFlashTheme = `(function(){try{var t=localStorage.getItem('aktiv.theme');
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLang();
+  const { t } = await serverT();
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashTheme }} />
-        <link rel="preconnect" href="https://picsum.photos" />
         <link rel="preconnect" href="https://cbu.uz" />
         <link rel="alternate" type="application/rss+xml" title="Asosiy Aktiv — RSS" href="/feed.xml" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }} />
@@ -81,8 +100,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans antialiased">
         <Providers initialLang={lang}>
           <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-brand focus:px-3 focus:py-2 focus:text-white">
-            Перейти к содержимому
+            {t("ui.skipToContent")}
           </a>
+          {IS_STAGING && (
+            <div className="bg-fuchsia-700 px-4 py-1.5 text-center text-xs font-bold uppercase tracking-widest text-white">
+              STAGING — тестовая версия сайта, публикации отсюда не видны читателям
+            </div>
+          )}
+          <ImpersonationBanner />
           <Header />
           <main id="main" className="min-h-[60vh] pb-24 md:pb-10">
             {children}

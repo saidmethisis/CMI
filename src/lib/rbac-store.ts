@@ -123,16 +123,69 @@ export async function getAuthor(idOrSlug: string) {
   const a = await prisma.author.findFirst({ where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] } });
   return a ? mapAuthor(a) : null;
 }
+// В статье автор хранится строкой «Имя Фамилия», а для разметки Schema.org нужны
+// его slug и аватар. Ищем одним точечным запросом: выгружать всех авторов на
+// каждый просмотр статьи нельзя. Имя разбиваем по первому пробелу — ровно так же,
+// как оно собиралось при создании автора.
+export async function findAuthorByFullName(full: string) {
+  const s = (full ?? "").trim();
+  if (!s) return null;
+  const i = s.indexOf(" ");
+  const firstName = i === -1 ? s : s.slice(0, i);
+  const lastName = i === -1 ? "" : s.slice(i + 1);
+  return prisma.author.findFirst({ where: { firstName, lastName }, select: { slug: true, avatar: true } });
+}
 function mapAuthor(a: NonNullable<Awaited<ReturnType<typeof prisma.author.findFirst>>>) {
   return { ...a, capabilities: j(a.capabilities, {}) as Record<string, boolean>, profile: j(a.profile, {}) as Record<string, unknown> };
 }
-export async function createAuthor(input: { firstName: string; lastName?: string; profile?: Record<string, unknown>; companyId?: string | null }) {
+export async function createAuthor(input: { firstName: string; lastName?: string; profile?: Record<string, unknown>; companyId?: string | null; email?: string; password?: string; roleSlug?: string }) {
   await ensureRbacSeed();
   const slug = slugify(`${input.firstName} ${input.lastName ?? ""}`);
   if (await prisma.author.findUnique({ where: { slug } })) return { error: "EXISTS" as const };
-  const a = await prisma.author.create({ data: { id: "au-" + slug + "-" + Date.now().toString(36), slug, firstName: input.firstName, lastName: input.lastName ?? "", companyId: input.companyId ?? null, capabilities: "{}", profile: JSON.stringify(input.profile ?? {}) } });
-  await audit("Суперадмин", "author.create", slug);
-  return { author: mapAuthor(a) };
+  // Если заданы email+пароль — заранее проверяем, что почта свободна, чтобы не создать
+  // «осиротевший» профиль автора без логина.
+  const email = input.email?.trim().toLowerCase();
+  if (email && input.password) {
+    if (await prisma.appUser.findUnique({ where: { email } })) return { error: "EMAIL_EXISTS" as const };
+  }
+  // Профиль и учётку создаём одной транзакцией: если вставка пользователя упадёт
+  // (гонка, дубль почты), автор тоже не сохранится. Иначе в базе оставался бы
+  // профиль без логина, а повторная попытка упиралась бы в занятый slug.
+  const fullName = `${input.firstName} ${input.lastName ?? ""}`.trim();
+  const withLogin = !!(email && input.password);
+  try {
+    const { a, u } = await prisma.$transaction(async (tx) => {
+      const a = await tx.author.create({ data: { id: "au-" + slug + "-" + Date.now().toString(36), slug, firstName: input.firstName, lastName: input.lastName ?? "", companyId: input.companyId ?? null, capabilities: "{}", profile: JSON.stringify(input.profile ?? {}) } });
+      let u: { id: string; email: string } | null = null;
+      if (withLogin) {
+        u = await tx.appUser.create({
+          data: {
+            id: "u-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            name: fullName, displayName: fullName, email: email!,
+            passwordHash: hashPassword(input.password!),
+            roleSlug: input.roleSlug || "writer",
+            companyId: input.companyId ?? null,
+            authorId: a.id,
+            avatar: (input.profile?.avatar as string) || "",
+            emailVerified: true,
+          },
+          select: { id: true, email: true },
+        });
+      }
+      return { a, u };
+    });
+    await audit("Суперадмин", "author.create", slug);
+    if (u) await audit("Суперадмин", "user.create", u.email);
+    return { author: mapAuthor(a), user: u };
+  } catch (e) {
+    // P2002 — нарушение уникальности: почта или slug заняты (проверки выше могли
+    // не поймать это из-за гонки двух одновременных запросов).
+    if ((e as { code?: string }).code === "P2002") {
+      const target = String((e as { meta?: { target?: unknown } }).meta?.target ?? "");
+      return { error: target.includes("email") ? ("EMAIL_EXISTS" as const) : ("EXISTS" as const) };
+    }
+    throw e;
+  }
 }
 export async function updateAuthor(id: string, patch: Partial<{ firstName: string; lastName: string; avatar: string; verifyStatus: string; companyId: string | null; capabilities: Record<string, boolean>; profile: Record<string, unknown> }>) {
   await ensureRbacSeed();
@@ -150,9 +203,19 @@ export async function deleteAuthor(id: string) {
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
+
+// Что можно показывать в админке. Раньше список отдавался целиком, вместе с
+// passwordHash, twoFactorSecret, verifyToken и resetToken — и всё это уезжало
+// в браузер администратора (страница тянет /api/admin/users на клиенте).
+const USER_PUBLIC = {
+  id: true, name: true, displayName: true, email: true, roleSlug: true, companyId: true,
+  authorId: true, status: true, avatar: true, emailVerified: true, twoFactor: true,
+  locale: true, createdAt: true,
+} as const;
+
 export async function listUsers() {
   await ensureRbacSeed();
-  return prisma.appUser.findMany({ orderBy: { createdAt: "asc" } });
+  return prisma.appUser.findMany({ orderBy: { createdAt: "asc" }, select: USER_PUBLIC });
 }
 export async function getUserById(id: string) {
   await ensureRbacSeed();
@@ -165,14 +228,26 @@ export async function firstCompany() {
 }
 export async function createUser(input: { name: string; email: string; roleSlug: string; companyId?: string | null; password?: string }) {
   await ensureRbacSeed();
-  if (await prisma.appUser.findUnique({ where: { email: input.email } })) return { error: "EXISTS" as const };
-  const u = await prisma.appUser.create({ data: { id: "u-" + Date.now().toString(36), name: input.name, displayName: input.name, email: input.email, roleSlug: input.roleSlug, companyId: input.companyId ?? null, passwordHash: input.password ? hashPassword(input.password) : "", emailVerified: true } });
-  await audit("Суперадмин", "user.create", input.email);
+  // Регистр почты приводим к нижнему — так же, как при входе и регистрации.
+  const email = (input.email ?? "").trim().toLowerCase();
+  if (await prisma.appUser.findUnique({ where: { email } })) return { error: "EXISTS" as const };
+  const u = await prisma.appUser.create({ data: { id: "u-" + Date.now().toString(36), name: input.name, displayName: input.name, email, roleSlug: input.roleSlug, companyId: input.companyId ?? null, passwordHash: input.password ? hashPassword(input.password) : "", emailVerified: true } });
+  await audit("Суперадмин", "user.create", email);
   return { user: u };
 }
 export async function updateUser(id: string, patch: Partial<{ status: string; roleSlug: string; companyId: string | null; name: string }>) {
   await ensureRbacSeed();
-  const u = await prisma.appUser.update({ where: { id }, data: patch as never });
+  // ЯВНЫЙ список полей. Раньше сюда уходило всё тело запроса, и обладатель права
+  // «users.edit» мог одним PATCH выставить себе roleSlug: "superadmin", подменить
+  // чужой passwordHash или подложить resetToken. Список полей — единственное,
+  // что отделяет редактирование пользователя от захвата всей платформы.
+  const data: Record<string, unknown> = {};
+  if (typeof patch.name === "string") data.name = patch.name;
+  if (typeof patch.status === "string") data.status = patch.status;
+  if (typeof patch.roleSlug === "string") data.roleSlug = patch.roleSlug;
+  if (patch.companyId === null || typeof patch.companyId === "string") data.companyId = patch.companyId;
+  if (Object.keys(data).length === 0) return { error: "NO_FIELDS" as const };
+  const u = await prisma.appUser.update({ where: { id }, data, select: USER_PUBLIC });
   await audit("Суперадмин", "user.update", u.email);
   return u;
 }

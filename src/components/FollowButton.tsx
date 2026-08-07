@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 export default function FollowButton({
   type, id, showCount = true, className = "",
 }: {
-  type: "author" | "topic"; id: string; label?: string; showCount?: boolean; className?: string;
+  type: "author" | "topic"; id: string; showCount?: boolean; className?: string;
 }) {
   const { t, lang } = useI18n();
   const loc = lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU";

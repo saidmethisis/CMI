@@ -4,14 +4,19 @@ import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 
-type A = { id: string; slug: string; title: string; lead: string; body: string; categorySlug: string; status: string; createdAt: string; views: number };
+type LangFields = { title: string; lead: string; body: string };
+type A = {
+  id: string; slug: string; title: string; lead: string; body: string; categorySlug: string;
+  status: string; createdAt: string; views: number;
+  translations?: Partial<Record<"ru" | "uz" | "en", LangFields>>;
+};
 type Todo = { id: string; text: string; done: boolean };
 
 const NAV = ["create", "all", "draft", "published", "review", "archived", "comments", "media"];
 const STATUS_TONE: Record<string, string> = {
   published: "bg-up/12 text-up", review: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   returned: "bg-down/12 text-down", draft: "bg-black/8 text-black/55 dark:bg-white/10 dark:text-white/60",
-  archived: "bg-black/8 text-black/45 dark:bg-white/10 dark:text-white/45",
+  archived: "bg-black/8 text-black/60 dark:bg-white/10 dark:text-white/65",
 };
 
 export default function WriterDashboard({ articles, name, onNav, onEdit }: { articles: A[]; name: string; onNav: (tab: string) => void; onEdit: (a: A) => void }) {
@@ -45,13 +50,13 @@ export default function WriterDashboard({ articles, name, onNav, onEdit }: { art
       <div className="overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-r from-accent/12 via-accent/5 to-transparent p-6 dark:border-white/10">
         <div className="text-xs uppercase tracking-widest text-accent">{t("wc.hello")}</div>
         <h2 className="mt-1 font-serif text-2xl font-bold">{name}</h2>
-        <p className="mt-1 text-sm text-black/50 dark:text-white/50">{t("wc.startHint")}</p>
+        <p className="mt-1 text-sm text-black/60 dark:text-white/65">{t("wc.startHint")}</p>
       </div>
 
       {/* stat cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[[t("wc.total"), counts.all], [t("wc.pub"), counts.published], [t("wc.rev"), counts.review], [t("wc.views"), counts.views.toLocaleString("ru-RU")]].map(([l, v]) => (
-          <div key={l as string} className="card p-4"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/45 dark:text-white/45">{l}</div></div>
+          <div key={l as string} className="card p-4"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/60 dark:text-white/65">{l}</div></div>
         ))}
       </div>
 
@@ -73,7 +78,7 @@ export default function WriterDashboard({ articles, name, onNav, onEdit }: { art
             <button className="btn-ghost shrink-0 text-xs" onClick={addTodo}>{t("wc.addNote")}</button>
           </div>
           <ul className="space-y-1">
-            {todos.length === 0 && <li className="text-xs text-black/40 dark:text-white/40">{t("wc.noteHint")}</li>}
+            {todos.length === 0 && <li className="text-xs text-black/60 dark:text-white/65">{t("wc.noteHint")}</li>}
             {todos.map((x) => (
               <li key={x.id} className="group flex items-center gap-2 rounded-md px-1 py-1 hover:bg-black/[0.03] dark:hover:bg-white/[0.05]">
                 <input type="checkbox" checked={x.done} onChange={() => toggle(x.id)} className="h-4 w-4 accent-accent" />
@@ -100,7 +105,7 @@ export default function WriterDashboard({ articles, name, onNav, onEdit }: { art
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-black/40 dark:border-white/10 dark:text-white/40">
+              <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-black/60 dark:border-white/10 dark:text-white/65">
                 <th className="px-4 py-2 font-medium">{t("wc.colName")}</th>
                 <th className="px-4 py-2 font-medium">{t("wc.colStatus")}</th>
                 <th className="hidden px-4 py-2 font-medium sm:table-cell">{t("wc.colCategory")}</th>
@@ -108,7 +113,7 @@ export default function WriterDashboard({ articles, name, onNav, onEdit }: { art
               </tr>
             </thead>
             <tbody>
-              {recent.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-black/40 dark:text-white/40">{t("wc.noDrafts")}</td></tr>}
+              {recent.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-black/60 dark:text-white/65">{t("wc.noDrafts")}</td></tr>}
               {recent.map((a) => (
                 <tr key={a.id} className="border-b border-black/[0.04] last:border-0 hover:bg-black/[0.02] dark:border-white/[0.06] dark:hover:bg-white/[0.03]">
                   <td className="px-4 py-2.5">

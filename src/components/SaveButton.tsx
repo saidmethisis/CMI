@@ -10,7 +10,7 @@ export default function SaveButton({ slug, className = "" }: { slug: string; cla
     <button
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(slug); }}
       aria-pressed={isSaved}
-      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${isSaved ? "border-brand bg-brand text-white" : "border-black/15 hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"} ${className}`}
+      className={`whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${isSaved ? "border-brand bg-brand text-white" : "border-black/15 hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"} ${className}`}
     >
       {isSaved ? t("common.saved") : t("common.save")}
     </button>

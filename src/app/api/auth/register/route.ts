@@ -4,14 +4,22 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, createSession, SESSION_COOKIE, sessionCookieOptions, verifyRecaptcha, safeUser, randomToken } from "@/lib/auth";
 import { sendEmail, verifyEmailMessage } from "@/lib/email";
 import { ensureRbacSeed, audit } from "@/lib/rbac-store";
+import { guardRate } from "@/lib/rate-limit";
 
 // Stage 22/24: ONLY readers (subscriber) may self-register.
 export const POST = withHandler(async (req: Request) => {
   await ensureRbacSeed();
-  const { name, email, password, human, consent } = await readBody(req);
-  if (!name?.trim() || !email?.trim() || !password) {
+  const body = await readBody(req);
+  const { name, password, human, consent } = body;
+  // Регистр почты нормализуем при регистрации, иначе один и тот же адрес,
+  // введённый по-разному, создаст два аккаунта (в PostgreSQL сравнение
+  // регистрозависимое, и уникальный индекс их не остановит).
+  const email: string = (body.email ?? "").trim().toLowerCase();
+  if (!name?.trim() || !email || !password) {
     return NextResponse.json({ error: { message: "Заполните имя, email и пароль." } }, { status: 422 });
   }
+  // не даём массово создавать аккаунты с одного адреса
+  const rl = await guardRate("register"); if (rl) return rl;
   if (!consent) {
     return NextResponse.json({ error: { message: "Необходимо согласие на обработку персональных данных." } }, { status: 422 });
   }

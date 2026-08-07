@@ -9,7 +9,11 @@ import { ensureRbacSeed, audit } from "@/lib/rbac-store";
 
 export const POST = withHandler(async (req: Request) => {
   await ensureRbacSeed();
-  const { email, password, human, code, challenge } = await readBody(req);
+  const body = await readBody(req);
+  const { password, human, code, challenge } = body;
+  // Почту всюду приводим к нижнему регистру: в PostgreSQL сравнение регистрозависимое,
+  // и «Ivan@Mail.ru» не нашёл бы аккаунт, записанный как «ivan@mail.ru».
+  const email: string = (body.email ?? "").trim().toLowerCase();
   // на шаге 2 (ввод 2FA-кода) капчу не требуем повторно — доверяем подписанному челленджу
   const step2 = !!(challenge && verify2faChallenge(email, challenge));
   const ip = (await headers()).get("x-forwarded-for") ?? "local";

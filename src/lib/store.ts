@@ -1,14 +1,15 @@
 // Data-access layer backed by Prisma + SQLite.
-// Reference data (categories/stories/instruments) stays static in seed.ts;
+// Reference data (categories/stories) stays static in seed.ts;
 // mutable entities (articles, business, accreditation, ads) live in the DB.
 import { randomUUID } from "node:crypto";
 import { prisma } from "./prisma";
 import { slugify } from "./slug";
 import { notify } from "./notifications";
-import type { Article, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
-import { categories, stories, instruments } from "./seed";
+import { pingIndexing, articlePaths } from "./indexing";
+import type { Article, ArticleTranslations, LangCode, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
+import { categories, stories } from "./seed";
 
-export { categories, stories, instruments };
+export { categories, stories };
 
 // ── lazy, idempotent seeding on first access ─────────────────────────────────
 let seeding: Promise<void> | null = null;
@@ -87,20 +88,12 @@ export async function updateAccreditation(id: string, status: string) {
 
 // ── company requests (заявки в кабинете компании) ────────────────────────────
 export type CompanyRequestRow = { id: string; companyId: string; client: string; topic: string; status: string; createdAt: string };
-const DEMO_REQUESTS = [
-  { client: "ООО «Silk Trade»", topic: "Корпоративный тариф", status: "new" },
-  { client: "ЧП Азизов", topic: "Эквайринг", status: "processing" },
-  { client: "«Bahor» LLC", topic: "Реклама", status: "done" },
-  { client: "IT Park Fintech", topic: "Партнёрство", status: "new" },
-];
+// Отдаём только реальные заявки. Раньше здесь на пустом списке досоздавались
+// четыре выдуманные («ООО «Silk Trade»», «ЧП Азизов» и т.д.) — компания видела
+// в своём кабинете несуществующих клиентов и могла принять их за настоящих.
 export async function listCompanyRequests(companyId: string): Promise<CompanyRequestRow[]> {
   await ensureSeed();
-  let rows = await prisma.companyRequest.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
-  if (rows.length === 0) {
-    // ленивое демо-наполнение для этой компании (без общего реседа)
-    await prisma.companyRequest.createMany({ data: DEMO_REQUESTS.map((r, i) => ({ id: `cr-${companyId}-${i}`, companyId, client: r.client, topic: r.topic, status: r.status })) });
-    rows = await prisma.companyRequest.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
-  }
+  const rows = await prisma.companyRequest.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
   return rows.map((r) => ({ id: r.id, companyId: r.companyId, client: r.client, topic: r.topic, status: r.status, createdAt: r.createdAt.toISOString() }));
 }
 // companyId задан → обновляем только если заявка принадлежит этой компании (защита от IDOR).
@@ -140,6 +133,16 @@ export async function addStory(input: { categorySlug: string; title: string; ima
   return { story: s as Story };
 }
 
+// Удаление стори: автор убирает свою, модератор — любую.
+export async function deleteOwnStory(id: string, userId: string, isModerator = false) {
+  await ensureSeed();
+  const s = await prisma.story.findUnique({ where: { id }, select: { ownerUserId: true } });
+  if (!s) return { error: "NOT_FOUND" as const };
+  if (!isModerator && s.ownerUserId !== userId) return { error: "FORBIDDEN" as const };
+  await prisma.story.delete({ where: { id } });
+  return { ok: true };
+}
+
 // ── mappers ──────────────────────────────────────────────────────────────────
 type Row = Awaited<ReturnType<typeof prisma.article.findFirst>> & { comments?: unknown[] };
 function toArticle(r: NonNullable<Row>): Article {
@@ -147,6 +150,7 @@ function toArticle(r: NonNullable<Row>): Article {
     ...r,
     tags: safeTags(r.tags),
     authorSocials: safeSocials((r as any).authorSocials),
+    translations: safeTranslations((r as any).translations),
     company: r.company ?? undefined,
     createdAt: r.createdAt.toISOString(),
     authorKind: r.authorKind as Article["authorKind"],
@@ -162,24 +166,118 @@ function safeTags(t: string): string[] {
 function safeSocials(t?: string): { label: string; url: string }[] {
   try { return t ? JSON.parse(t) : []; } catch { return []; }
 }
+function safeTranslations(t?: string): ArticleTranslations {
+  try { return t ? (JSON.parse(t) as ArticleTranslations) : {}; } catch { return {}; }
+}
+
+// Возвращает title/lead/body статьи на нужном языке: если перевод заполнен — он,
+// иначе базовые (язык-фолбэк). Используется на странице статьи и в карточках.
+export function localizedArticle(a: Article, lang: LangCode): { title: string; lead: string; body: string } {
+  const tr = a.translations?.[lang];
+  if (tr && tr.title?.trim()) {
+    return { title: tr.title, lead: tr.lead?.trim() ? tr.lead : a.lead, body: tr.body?.trim() ? tr.body : a.body };
+  }
+  return { title: a.title, lead: a.lead, body: a.body };
+}
+
+// Применяет localizedArticle ко всему списку — для лент, рубрик, поиска и карточек.
+export function localizeList(items: Article[], lang: LangCode): Article[] {
+  return items.map((a) => ({ ...a, ...localizedArticle(a, lang) }));
+}
+
+// Нормализует объект переводов от клиента. В translations сохраняются ВСЕ заполненные
+// языки (включая основной) — так всегда однозначно известно, на каких языках есть текст.
+// Базовые title/lead/body дублируют основной язык и служат фолбэком для остальных.
+function normalizeTranslations(input: unknown): { base: { title: string; lead: string; body: string } | null; translations: ArticleTranslations } {
+  const src = (input && typeof input === "object" ? input : {}) as Record<string, { title?: string; lead?: string; body?: string }>;
+  const order: LangCode[] = ["ru", "uz", "en"];
+  const translations: ArticleTranslations = {};
+  for (const l of order) {
+    const v = src[l];
+    if (v && (v.title?.trim() || v.lead?.trim() || v.body?.trim())) {
+      translations[l] = { title: (v.title ?? "").trim(), lead: (v.lead ?? "").trim(), body: (v.body ?? "").trim() };
+    }
+  }
+  // основной язык = первый, где заполнены все три поля; иначе первый непустой
+  const primary = order.find((l) => translations[l]?.title && translations[l]?.lead && translations[l]?.body)
+    ?? order.find((l) => translations[l]);
+  if (!primary) return { base: null, translations: {} };
+  const base = { title: translations[primary]!.title, lead: translations[primary]!.lead, body: translations[primary]!.body };
+  return { base, translations };
+}
 
 // ── queries ──────────────────────────────────────────────────────────────────
-export async function listPublished(opts: { category?: string; q?: string } = {}): Promise<Article[]> {
+
+// Поля для СПИСКОВ (лента, карточки, «похожие», поиск). Сознательно без `body`,
+// `aiSummary` и `authorSocials`: тело статьи в карточке не показывается, но именно
+// оно составляет почти весь объём строки. Раньше списки тянули статьи целиком —
+// главная и страница статьи вычитывали весь архив с полными текстами всех трёх
+// языков и отправляли его в браузер. На 500 материалах это ~9 МБ на каждый заход.
+const CARD_FIELDS = {
+  id: true, slug: true, title: true, lead: true, translations: true, cover: true, videoUrl: true,
+  categorySlug: true, tags: true, authorName: true, authorUserId: true, authorKind: true,
+  company: true, createdAt: true, readingMinutes: true, premium: true, pinned: true,
+  status: true, views: true,
+} as const;
+
+// Верхняя граница выборки: без неё запрос растёт линейно вместе с архивом.
+// Для главной и «похожих» этого с запасом достаточно.
+const LIST_LIMIT = 300;
+
+// Достраивает до формы Article поля, которых нет в облегчённой выборке.
+//
+// Отдельно вычищаем тексты из `translations`: там лежит ПОЛНАЯ копия статьи на
+// каждом языке, поэтому без этого исключение колонки `body` ничего не давало —
+// тело всё равно уезжало в браузер, да ещё и трижды. Заголовок и лид оставляем:
+// по ним карточка локализуется.
+function toCard(r: Record<string, unknown>): Article {
+  let translations = "{}";
+  try {
+    const tr = JSON.parse((r.translations as string) || "{}") as Record<string, { title?: string; lead?: string }>;
+    const light: Record<string, { title: string; lead: string; body: string }> = {};
+    for (const [lang, v] of Object.entries(tr)) {
+      light[lang] = { title: v?.title ?? "", lead: v?.lead ?? "", body: "" };
+    }
+    translations = JSON.stringify(light);
+  } catch { /* повреждённый JSON — отдаём пустые переводы */ }
+  return toArticle({ ...r, translations, body: "", aiSummary: "", authorSocials: "[]" } as never);
+}
+
+export async function listPublished(opts: { category?: string; q?: string; take?: number } = {}): Promise<Article[]> {
   await ensureSeed();
   const rows = await prisma.article.findMany({
     where: {
       status: "published",
       ...(opts.category ? { categorySlug: opts.category } : {}),
-      ...(opts.q ? { OR: [{ title: { contains: opts.q } }, { lead: { contains: opts.q } }, { tags: { contains: opts.q } }] } : {}),
+      // mode: "insensitive" обязателен: в PostgreSQL `contains` без него — это
+      // регистрозависимый LIKE, и фильтр по подрубрике молча не находил ничего.
+      ...(opts.q ? { OR: [
+        { title: { contains: opts.q, mode: "insensitive" as const } },
+        { lead: { contains: opts.q, mode: "insensitive" as const } },
+        { tags: { contains: opts.q, mode: "insensitive" as const } },
+      ] } : {}),
     },
     orderBy: { createdAt: "desc" },
+    take: opts.take ?? LIST_LIMIT,
+    select: CARD_FIELDS,
   });
-  return rows.map(toArticle);
+  return rows.map(toCard);
+}
+
+// Самые читаемые — считаются базой, а не сортировкой всего архива в памяти.
+export async function listPopular(take = 10): Promise<Article[]> {
+  await ensureSeed();
+  const rows = await prisma.article.findMany({
+    where: { status: "published" }, orderBy: { views: "desc" }, take, select: CARD_FIELDS,
+  });
+  return rows.map(toCard);
 }
 
 export async function getArticle(slug: string): Promise<Article | undefined> {
   await ensureSeed();
-  const r = await prisma.article.findUnique({ where: { slug }, include: { comments: { orderBy: { createdAt: "desc" } } } });
+  // Комментарии грузит отдельный запрос из клиента (Comments.tsx) — здесь они
+  // не нужны, а include без лимита разрастался вместе с обсуждением.
+  const r = await prisma.article.findUnique({ where: { slug } });
   return r ? toArticle(r) : undefined;
 }
 
@@ -270,23 +368,9 @@ export async function adminMetrics() {
   return { published, pending, views: viewsAgg._sum.views ?? 0, comments, authors, companies, users };
 }
 
-export async function kpis() {
-  await ensureSeed();
-  const [pageViews, pending, published] = await Promise.all([
-    prisma.article.aggregate({ _sum: { views: true }, where: { status: "published" } }),
-    prisma.article.count({ where: { status: "review" } }),
-    prisma.article.count({ where: { status: "published" } }),
-  ]);
-  return {
-    visitorsToday: 18420,
-    pageViews: pageViews._sum.views ?? 0,
-    newSubscribers: 214,
-    mrr: 12750,
-    pendingModeration: pending,
-    adRevenue: 3820,
-    published,
-  };
-}
+// Функция kpis() удалена: она возвращала выдуманные константы
+// (visitorsToday: 18420, mrr: 12750, adRevenue: 3820) вперемешку с реальными
+// счётчиками и нигде не вызывалась. Реальные метрики дашборда — в adminMetrics().
 
 // ── mutations ────────────────────────────────────────────────────────────────
 export async function submitPrArticle(input: { title: string; lead: string; body: string; company: string; categorySlug: string }) {
@@ -299,7 +383,7 @@ export async function submitPrArticle(input: { title: string; lead: string; body
     data: {
       id: "a-" + randomUUID(), slug, title: input.title, lead: input.lead, body: input.body,
       aiSummary: `• ${input.company} — материал от партнёра.\n• Прошёл AI-генерацию и отправлен на модерацию.`,
-      cover: `https://picsum.photos/seed/${slug}/1200/675`, categorySlug: input.categorySlug || "business",
+      cover: "", categorySlug: input.categorySlug || "business",
       tags: JSON.stringify(["PR", input.company]), authorName: `Пресс-служба ${input.company}`, authorKind: "pr",
       company: input.company, readingMinutes: 3, status: "review", views: 0,
     },
@@ -308,22 +392,67 @@ export async function submitPrArticle(input: { title: string; lead: string; body
   return { slug, remaining: updated.publicationsLimit - updated.publicationsUsed };
 }
 
-export async function submitUgcArticle(input: { title: string; lead: string; body: string; categorySlug: string; tags: string; authorName: string; authorUserId?: string; cover?: string; videoUrl?: string; socials?: { label: string; url: string }[]; asDraft?: boolean }) {
+export async function submitUgcArticle(input: { title: string; lead: string; body: string; categorySlug: string; tags: string; authorName: string; authorUserId?: string; cover?: string; videoUrl?: string; socials?: { label: string; url: string }[]; asDraft?: boolean; translations?: unknown }) {
   await ensureSeed();
+  // если пришли многоязычные поля — основной язык идёт в базовые поля, остальные в translations
+  const norm = input.translations ? normalizeTranslations(input.translations) : null;
+  const title = norm?.base?.title || input.title;
+  const lead = norm?.base?.lead || input.lead;
+  const body = norm?.base?.body || input.body;
+  const translations = norm?.translations ?? {};
   const rid = randomUUID().slice(0, 8);
-  const slug = "ugc-" + slugify(input.title, 40) + "-" + Date.now().toString(36) + rid.slice(0, 4);
+  const slug = "ugc-" + slugify(title, 40) + "-" + Date.now().toString(36) + rid.slice(0, 4);
   const a = await prisma.article.create({
     data: {
-      id: "a-" + randomUUID(), slug, title: input.title, lead: input.lead, body: input.body,
-      aiSummary: `• ${input.title}\n• Авторский материал (UGC).`,
-      cover: input.cover || `https://picsum.photos/seed/${slug}/1200/675`, videoUrl: input.videoUrl || "", categorySlug: input.categorySlug || "business",
+      id: "a-" + randomUUID(), slug, title, lead, body,
+      translations: JSON.stringify(translations),
+      aiSummary: buildAiSummary(title, lead),
+      cover: input.cover || "", videoUrl: input.videoUrl || "", categorySlug: input.categorySlug || "business",
       tags: JSON.stringify(input.tags.split(",").map((t) => t.trim()).filter(Boolean)),
       authorName: input.authorName || "Независимый автор", authorUserId: input.authorUserId ?? "", authorKind: "ugc",
       authorSocials: JSON.stringify(input.socials ?? []),
-      readingMinutes: Math.max(1, Math.round(input.body.split(/\s+/).length / 180)), status: input.asDraft ? "draft" : "review", views: 0,
+      readingMinutes: readingTime(body), status: input.asDraft ? "draft" : "review", views: 0,
     },
   });
   return { slug, id: a.id };
+}
+
+// Сводка над статьёй. Строится из самого материала и не содержит служебных фраз
+// на одном языке: раньше вторая строка была русским литералом «Авторский материал
+// (UGC)» и висела над английским текстом у англоязычного читателя.
+function buildAiSummary(title: string, lead: string): string {
+  const l = (lead || "").trim();
+  return l ? `• ${title}\n• ${l}` : `• ${title}`;
+}
+
+// Слов в минуту при подсчёте времени чтения.
+const WPM = 180;
+const readingTime = (body: string) => Math.max(1, Math.round(body.split(/\s+/).filter(Boolean).length / WPM));
+
+// Инкремент просмотров опубликованной статьи (dashboard «Ko'rishlar» и топ материалов).
+//
+// Один и тот же читатель не должен накручивать счётчик обновлением страницы, поэтому
+// пара «читатель + статья» засчитывается не чаще раза в 30 минут. Дедуп в памяти
+// процесса: он не переживает перезапуск и не общий на несколько инстансов, но своей
+// задачи — отсечь F5 и частые перезаходы — достигает без лишней инфраструктуры.
+// Полный учёт уникальных посетителей — задача аналитики (GA/Я.Метрика), а не этого счётчика.
+const VIEW_DEDUP_MS = 30 * 60 * 1000;
+const vg = globalThis as unknown as { __viewSeen?: Map<string, number> };
+const viewSeen = vg.__viewSeen ?? (vg.__viewSeen = new Map<string, number>());
+
+export async function bumpViews(slug: string, viewerKey?: string) {
+  if (viewerKey) {
+    const k = `${viewerKey}|${slug}`;
+    const now = Date.now();
+    const last = viewSeen.get(k);
+    if (last && now - last < VIEW_DEDUP_MS) return;
+    viewSeen.set(k, now);
+    // чистим протухшие записи, чтобы карта не росла бесконечно
+    if (viewSeen.size > 5000) {
+      for (const [key, ts] of viewSeen) if (now - ts > VIEW_DEDUP_MS) viewSeen.delete(key);
+    }
+  }
+  try { await prisma.article.update({ where: { slug }, data: { views: { increment: 1 } } }); } catch { /* статья могла быть удалена — молча игнорируем */ }
 }
 
 // ── writer-owned articles (edit/delete own) ──────────────────────────────────
@@ -332,16 +461,34 @@ export async function ownArticles(userId: string): Promise<Article[]> {
   return (await prisma.article.findMany({ where: { authorUserId: userId }, orderBy: { createdAt: "desc" } })).map(toArticle);
 }
 
-export async function updateOwnArticle(id: string, userId: string, patch: { title?: string; lead?: string; body?: string; categorySlug?: string; asDraft?: boolean }) {
+export async function updateOwnArticle(id: string, userId: string, patch: { title?: string; lead?: string; body?: string; categorySlug?: string; asDraft?: boolean; translations?: unknown }) {
   await ensureSeed();
   const a = await prisma.article.findUnique({ where: { id } });
   if (!a) return { error: "NOT_FOUND" as const };
   if (a.authorUserId !== userId) return { error: "FORBIDDEN" as const };
   const data: Record<string, unknown> = {};
-  if (patch.title !== undefined) data.title = patch.title;
-  if (patch.lead !== undefined) data.lead = patch.lead;
-  if (patch.body !== undefined) data.body = patch.body;
+  if (patch.translations !== undefined) {
+    // многоязычная правка: основной язык → базовые поля, остальные → translations
+    const norm = normalizeTranslations(patch.translations);
+    // Пустая правка — это ошибка, а не «сохранить ничего». Раньше здесь молча
+    // ничего не записывалось, но статус всё равно менялся: опубликованная статья
+    // уходила на повторную модерацию и пропадала с сайта, а ответ был «ок».
+    if (!norm.base) return { error: "EMPTY" as const };
+    data.title = norm.base.title; data.lead = norm.base.lead; data.body = norm.base.body;
+    data.translations = JSON.stringify(norm.translations);
+  } else {
+    if (patch.title !== undefined) data.title = patch.title;
+    if (patch.lead !== undefined) data.lead = patch.lead;
+    if (patch.body !== undefined) data.body = patch.body;
+  }
   if (patch.categorySlug !== undefined) data.categorySlug = patch.categorySlug;
+  // Пересчитываем производные поля от нового текста, иначе после правки время
+  // чтения и сводка остаются от прежней версии (в сводке — старый заголовок).
+  const newTitle = (data.title as string) ?? a.title;
+  const newLead = (data.lead as string) ?? a.lead;
+  const newBody = (data.body as string) ?? a.body;
+  data.readingMinutes = readingTime(newBody);
+  data.aiSummary = buildAiSummary(newTitle, newLead);
   // writer edits go back to moderation (writer can't self-publish); or stay draft
   data.status = patch.asDraft ? "draft" : "review";
   const u = await prisma.article.update({ where: { id }, data });
@@ -354,6 +501,11 @@ export async function deleteOwnArticle(id: string, userId: string) {
   if (!a) return { error: "NOT_FOUND" as const };
   if (a.authorUserId !== userId) return { error: "FORBIDDEN" as const };
   await prisma.article.delete({ where: { id } });
+  // Удалённая статья должна уйти и из поиска, иначе читатель придёт из выдачи
+  // на 404. Только для опубликованных: черновика в индексе и не было.
+  if (a.status === "published") {
+    void pingIndexing(articlePaths(a.slug, Object.keys(safeTranslations(a.translations))), "URL_DELETED");
+  }
   return { ok: true };
 }
 
@@ -364,7 +516,13 @@ export async function moderateArticle(id: string, action: string, pinned?: boole
   if (action === "approve") {
     if (pinned) await prisma.article.updateMany({ data: { pinned: false } });
     const u = await prisma.article.update({ where: { id }, data: { status: "published", createdAt: new Date(), pinned: pinned ?? a.pinned } });
-    await notify(a.authorUserId, { type: "status", title: `Статья опубликована: «${a.title}»`, link: `/article/${u.slug}` });
+    // В title кладём i18n-КЛЮЧ, а не готовую фразу: уведомление живёт в базе, а читать
+    // его могут на любом языке. Заголовок статьи идёт отдельно в body.
+    await notify(a.authorUserId, { type: "status", title: "notif.published", body: a.title, link: `/article/${u.slug}` });
+    // Сообщаем Google о новой публикации — без этого новость ждёт обхода часами.
+    // Намеренно не ждём ответа: модерация не должна зависеть от Google, а при
+    // отсутствии ключей вызов сразу возвращается ни с чем.
+    void pingIndexing(articlePaths(u.slug, Object.keys(safeTranslations(u.translations))));
     return { id: u.id, status: u.status, pinned: u.pinned };
   }
   if (action === "pin") {
@@ -377,7 +535,8 @@ export async function moderateArticle(id: string, action: string, pinned?: boole
   const u = await prisma.article.update({ where: { id }, data: { status } });
   await notify(a.authorUserId, {
     type: "status",
-    title: status === "rejected" ? `Статья отклонена: «${a.title}»` : `Статья возвращена на доработку: «${a.title}»`,
+    title: status === "rejected" ? "notif.rejected" : "notif.returned",
+    body: a.title,
     link: `/author-panel`,
   });
   return { id: u.id, status: u.status, pinned: u.pinned };

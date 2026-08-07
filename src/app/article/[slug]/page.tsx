@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
-import { getArticle, listPublished, getCategories } from "@/lib/store";
-import { serverT } from "@/lib/i18n-server";
+import { getArticle, listPublished, listPopular, getCategories, localizedArticle, localizeList, bumpViews } from "@/lib/store";
+import { serverT, getLang, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
+import { getAuth } from "@/lib/guard";
+import { can } from "@/lib/permissions";
+import { findAuthorByFullName } from "@/lib/rbac-store";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import ArticleView from "@/components/ArticleView";
 import LeadMedia from "@/components/LeadMedia";
 import Comments from "@/components/Comments";
@@ -13,31 +18,67 @@ import InfiniteArticles from "@/components/InfiniteArticles";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ preview?: string }> };
+
+// Кому разрешено видеть неопубликованную статью: её автору и модератору (news.publish).
+// Вынесено в отдельную функцию, потому что ту же проверку обязана делать и generateMetadata:
+// она выполняется независимо от компонента страницы, и без проверки заголовок черновика
+// утекал в <title> даже на 404-ответе постороннему.
+async function mayPreview(a: { status: string; authorUserId?: string }) {
+  if (a.status === "published") return true;
+  const { user, perms } = await getAuth();
+  return !!user && (a.authorUserId === user.id || can(perms, "news.publish"));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const a = await getArticle(slug);
-  if (!a) return { title: "Не найдено" };
+  if (!a || !(await mayPreview(a))) return { title: "Не найдено" };
+  const lang = await getLang();
+  const L = localizedArticle(a, lang);
+  // Обложку в карточку соцсети подставляем только если она есть: пустая строка в
+  // og:image заставляла мессенджер показывать ссылку голым текстом. Без обложки
+  // берём нарисованную карточку с заголовком (/og/article/…).
+  const images = [a.cover || `${SITE_URL}/og/article/${a.slug}`];
   return {
-    title: a.title,
-    description: a.lead,
-    openGraph: { title: a.title, description: a.lead, images: [a.cover], type: "article" },
-    twitter: { card: "summary_large_image", title: a.title, description: a.lead, images: [a.cover] },
-    alternates: { canonical: `/article/${a.slug}` },
+    title: L.title,
+    description: L.lead,
+    openGraph: {
+      title: L.title, description: L.lead, type: "article",
+      publishedTime: new Date(a.createdAt).toISOString(),
+      authors: [a.company ?? a.authorName],
+      images,
+    },
+    twitter: { card: "summary_large_image", title: L.title, description: L.lead, images },
+    alternates: await langAlternates(`/article/${a.slug}`),
   };
 }
 
-export default async function ArticlePage({ params }: Props) {
+export default async function ArticlePage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { preview } = await searchParams;
   const a = await getArticle(slug);
-  if (!a || a.status !== "published") notFound();
+  if (!a) notFound();
+
+  const isPreview = preview === "1";
+  if (a.status !== "published") {
+    if (!(await mayPreview(a))) notFound();
+  } else if (!isPreview) {
+    // Считаем просмотр только для реального публичного просмотра (не предпросмотра).
+    // Ключ читателя — IP + User-Agent: он не идентифицирует человека, а лишь позволяет
+    // не засчитывать повторные открытия одной и той же страницы подряд.
+    const h = await headers();
+    const viewerKey = `${h.get("x-forwarded-for") ?? "local"}|${(h.get("user-agent") ?? "").slice(0, 80)}`;
+    await bumpViews(a.slug, viewerKey);
+  }
 
   const { t, lang } = await serverT();
+  const L = localizedArticle(a, lang);
+  const localized = { ...a, title: L.title, lead: L.lead, body: L.body };
   const categories = await getCategories();
   const cat = categories.find((c) => c.slug === a.categorySlug);
   const catLabel = cat ? localizeName(lang, cat) : "";
-  const all = await listPublished();
+  const all = localizeList(await listPublished(), lang);
   // релевантность: общие теги (вес 3) + та же рубрика (вес 1), затем свежесть
   const aTags = new Set(a.tags ?? []);
   const scored = all.filter((x) => x.slug !== a.slug).map((x) => ({
@@ -53,47 +94,71 @@ export default async function ArticlePage({ params }: Props) {
   const byAuthor = isNamedAuthor
     ? all.filter((x) => x.slug !== a.slug && x.authorName === a.authorName && !related.some((r) => r.slug === x.slug)).slice(0, 3)
     : [];
-  const popular = [...all].sort((x, y) => y.views - x.views);
+  // «Самое читаемое» берём отдельным запросом с сортировкой в базе, а не
+  // пересортировкой всего архива в памяти на каждый просмотр статьи.
+  const popular = localizeList(await listPopular(5), lang);
   // queue for infinite article-to-article scroll (recent, excluding current)
   const nextSlugs = all.filter((x) => x.slug !== a.slug).slice(0, 8).map((x) => x.slug);
 
+  // Автора ищем в справочнике, чтобы в разметке стояла ссылка на его профиль:
+  // тогда поисковик связывает статью с человеком, у которого есть Person-страница,
+  // а не с одинаковой строкой имени. Нет такого автора — обходимся именем.
+  const authorRef = await findAuthorByFullName(a.authorName).catch(() => null);
+  const articleUrl = `${SITE_URL}/article/${a.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: a.title,
-    image: [a.cover],
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+    url: articleUrl,
+    headline: L.title.slice(0, 110), // Google обрезает headline длиннее 110 символов
+    description: L.lead,
+    ...(a.cover ? { image: [a.cover.startsWith("http") ? a.cover : `${SITE_URL}${a.cover}`] } : {}),
     datePublished: a.createdAt,
     dateModified: a.createdAt,
-    author: [{ "@type": "Person", name: a.authorName }],
-    publisher: { "@type": "NewsMediaOrganization", name: "Asosiy Aktiv" },
-    articleSection: cat?.name,
+    inLanguage: lang,
+    author: [
+      authorRef
+        ? { "@type": "Person", name: a.authorName, url: `${SITE_URL}/author/${authorRef.slug}`, "@id": `${SITE_URL}/author/${authorRef.slug}#person` }
+        : { "@type": a.company ? "Organization" : "Person", name: a.company ?? a.authorName },
+    ],
+    publisher: { "@type": "NewsMediaOrganization", name: SITE_NAME, url: SITE_URL },
+    articleSection: catLabel || cat?.name,
+    ...(a.tags?.length ? { keywords: a.tags.join(", ") } : {}),
     isAccessibleForFree: true,
-    wordCount: a.body.split(/\s+/).length,
+    wordCount: L.body.split(/\s+/).filter(Boolean).length,
   };
 
   return (
     <div className="container-content py-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      {a.status !== "published" && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+          <span className="font-semibold">{t("preview.badge")}</span>
+          <span className="opacity-80">{t("preview.note")} · {t(`status.${a.status}`)}</span>
+          <Link href="/author-panel" className="ml-auto btn-ghost text-xs">{t("preview.back")}</Link>
+        </div>
+      )}
+
       <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0">
-          <nav className="mb-3 text-xs text-black/50 dark:text-white/50">
+          <nav className="mb-3 text-xs text-black/60 dark:text-white/65">
             <Link href="/">{t("article.home")}</Link> ›{" "}
             <Link href={`/category/${a.categorySlug}`}>{catLabel}</Link>
           </nav>
 
           <header className="mb-5">
             <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: cat?.color }}>{catLabel}</span>
-            <h1 className="mt-2 font-serif text-3xl font-bold leading-tight md:text-4xl">{a.title}</h1>
+            <h1 className="mt-2 font-serif text-3xl font-bold leading-tight md:text-4xl">{L.title}</h1>
             {/* compact teaser / summary line */}
-            <p className="mt-3 text-lg text-black/60 dark:text-white/70">{a.lead}</p>
+            <p className="mt-3 text-lg text-black/60 dark:text-white/70">{L.lead}</p>
             <div className="mt-4 flex flex-wrap items-center gap-3 border-y border-black/5 py-3 text-sm dark:border-white/10">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-bold text-white">
                 {(a.company ?? a.authorName).charAt(0)}
               </span>
               <div>
                 <span className="font-semibold">{a.company ?? a.authorName}</span>
-                <div className="text-xs text-black/50 dark:text-white/50">
+                <div className="text-xs text-black/60 dark:text-white/65">
                   {new Date(a.createdAt).toLocaleDateString(lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU", { day: "numeric", month: "long", year: "numeric" })} · {a.readingMinutes} {t("common.min")}
                   {a.authorKind === "pr" && ` · ${t("article.partner")}`}
                 </div>
@@ -101,9 +166,9 @@ export default async function ArticlePage({ params }: Props) {
             </div>
           </header>
 
-          <LeadMedia cover={a.cover} videoUrl={a.videoUrl} title={a.title} />
+          <LeadMedia cover={a.cover} videoUrl={a.videoUrl} title={L.title} noVideoLabel={t("ui.noVideo")} />
 
-          <ArticleView a={a} />
+          <ArticleView a={localized} />
 
           <div className="mt-8 flex flex-wrap gap-2">
             {a.tags.map((t) => (
@@ -138,7 +203,7 @@ export default async function ArticlePage({ params }: Props) {
             <div className="card p-4">
               <h3 className="mb-3 font-semibold">{t("home.mostRead")}</h3>
               <ol className="space-y-3">
-                {popular.slice(0, 5).map((r, i) => (
+                {popular.map((r, i) => (
                   <li key={r.id} className="flex gap-3 text-sm">
                     <span className="font-serif text-xl font-bold text-black/20 dark:text-white/20">{i + 1}</span>
                     <Link href={`/article/${r.slug}`} className="hover:text-brand dark:hover:text-white">{r.title}</Link>

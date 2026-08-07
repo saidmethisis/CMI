@@ -4,6 +4,9 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json ./
+# Схема нужна ДО установки: postinstall запускает `prisma generate`, а он без
+# prisma/schema.prisma падает и валит весь `npm ci`.
+COPY prisma ./prisma
 RUN npm ci
 
 FROM node:20-alpine AS build
@@ -30,18 +33,21 @@ ARG NEXT_PUBLIC_ORG_ADDRESS
 ARG NEXT_PUBLIC_ORG_SMI_CERT
 ARG NEXT_PUBLIC_ORG_PD_REGISTRY
 ARG NEXT_PUBLIC_ORG_AGE
-# Dummy DB URL just so `next build` (which may touch Prisma) doesn't fail at build.
-ENV DATABASE_URL="file:/tmp/build.db"
+# Заглушка: `next build` может дёрнуть Prisma, но к базе не подключается.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate && npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000
-# App + deps (deps kept so `prisma db push` works at container start).
+# Приложение + зависимости (нужны, чтобы на старте отработали миграции Prisma).
 COPY --from=build /app ./
-# Persist SQLite DB and uploaded media on named volumes (see docker-compose.yml).
-VOLUME ["/data", "/app/public/uploads"]
+# Загруженные медиа переживают пересоздание контейнера (см. docker-compose.yml).
+VOLUME ["/app/public/uploads"]
 EXPOSE 3000
-# On boot: sync schema to the (persistent) DB, then start Next.
-CMD ["sh", "-c", "npx prisma db push --skip-generate && npm run start"]
+# На старте: применяем миграции, затем поднимаем Next.
+# Именно `migrate deploy`, а не `db push`: он применяет только зафиксированные
+# в репозитории миграции, никогда не удаляет данные и падает при расхождении —
+# то есть контейнер не поднимется вместо того, чтобы молча испортить боевую базу.
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]

@@ -2,9 +2,9 @@
 import { LANGS, useI18n } from "@/lib/i18n";
 
 export default function LangSwitcher({ className = "", dark = false }: { className?: string; dark?: boolean }) {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, t } = useI18n();
   return (
-    <div className={`inline-flex overflow-hidden rounded-lg border text-xs ${dark ? "border-white/25" : "border-black/10 dark:border-white/15"} ${className}`} role="group" aria-label="Язык">
+    <div className={`inline-flex overflow-hidden rounded-lg border text-xs ${dark ? "border-white/25" : "border-black/10 dark:border-white/15"} ${className}`} role="group" aria-label={t("misc.language")}>
       {LANGS.map((l) => {
         const active = lang === l.code;
         const cls = active

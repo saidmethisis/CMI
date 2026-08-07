@@ -9,11 +9,21 @@ export const GET = withHandler(async () => {
 });
 export const POST = withHandler(async (req: Request) => {
   const g = await apiGuard("authors.create"); if (g.error) return g.error;
-  const { firstName, lastName, profile, companyId } = await readBody(req);
+  const { firstName, lastName, profile, companyId, email, password } = await readBody(req);
   if (!firstName?.trim()) return NextResponse.json({ error: { message: "Укажите имя автора." } }, { status: 422 });
-  const res = await createAuthor({ firstName, lastName, profile, companyId });
-  if ("error" in res) return NextResponse.json({ error: { message: "Автор уже существует." } }, { status: 409 });
-  return NextResponse.json({ data: res.author }, { status: 201 });
+  // Логин необязателен, но если задан email — нужен и пароль (и наоборот).
+  if ((email?.trim() && !password?.trim()) || (!email?.trim() && password?.trim())) {
+    return NextResponse.json({ error: { message: "Для входа укажите и email, и пароль." } }, { status: 422 });
+  }
+  if (password?.trim() && password.trim().length < 6) {
+    return NextResponse.json({ error: { message: "Пароль — минимум 6 символов." } }, { status: 422 });
+  }
+  const res = await createAuthor({ firstName, lastName, profile, companyId, email, password });
+  if ("error" in res) {
+    const msg = res.error === "EMAIL_EXISTS" ? "Пользователь с таким email уже существует." : "Автор уже существует.";
+    return NextResponse.json({ error: { message: msg } }, { status: 409 });
+  }
+  return NextResponse.json({ data: res.author, user: res.user }, { status: 201 });
 });
 export const PATCH = withHandler(async (req: Request) => {
   const g = await apiGuard("authors.edit"); if (g.error) return g.error;

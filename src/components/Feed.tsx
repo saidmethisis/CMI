@@ -42,7 +42,7 @@ export default function Feed({ items, initial = 8, step = 9 }: { items: Article[
           <div className="py-6">
             {/* ad at the end of the feed */}
             <AdSlot native />
-            <p className="py-8 text-center text-sm text-black/40 dark:text-white/40">{t("feed.end")}</p>
+            <p className="py-8 text-center text-sm text-black/60 dark:text-white/65">{t("feed.end")}</p>
           </div>
         )
       )}

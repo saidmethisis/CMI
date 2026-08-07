@@ -6,6 +6,7 @@ import { Paragraphs, AiSummary, AuthorSocials } from "./ArticleBody";
 import AdSlot from "./AdSlot";
 import { useI18n } from "@/lib/i18n";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
+import Cover from "@/components/Cover";
 
 // Item #7: scroll past the end of an article to flow straight into the next one.
 export default function InfiniteArticles({ queue }: { queue: string[] }) {
@@ -54,8 +55,7 @@ export default function InfiniteArticles({ queue }: { queue: string[] }) {
               <Link href={`/article/${a.slug}`}>{a.title}</Link>
             </h2>
             <p className="mt-2 text-lg text-black/60 dark:text-white/70">{a.lead}</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={a.cover} alt={a.title} className="my-5 aspect-[16/9] w-full rounded-2xl object-cover" />
+            {a.cover && <Cover src={a.cover} alt={a.title} width={1200} height={675} sizes="(max-width: 1024px) 100vw, 720px" className="my-5 aspect-[16/9] w-full rounded-2xl object-cover" />}
             <AiSummary text={a.aiSummary} label={t("article.aiSummary")} />
             <Paragraphs text={a.body} />
             <AuthorSocials socials={a.authorSocials} label={t("article.authorSocials")} />
@@ -63,7 +63,7 @@ export default function InfiniteArticles({ queue }: { queue: string[] }) {
           </article>
         );
       })}
-      {idx < queue.length && <div ref={sentinel} className="py-10 text-center text-sm text-black/40 dark:text-white/40">···</div>}
+      {idx < queue.length && <div ref={sentinel} className="py-10 text-center text-sm text-black/60 dark:text-white/65">···</div>}
     </div>
   );
 }

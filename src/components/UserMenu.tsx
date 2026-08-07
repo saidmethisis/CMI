@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/useAuth";
 import { useI18n } from "@/lib/i18n";
 import ThemeToggle from "./ThemeToggle";
 import LangSwitcher from "./LangSwitcher";
+import Cover from "@/components/Cover";
 
 // Единое меню пользователя в шапке: быстрый вход в свой кабинет, профиль,
 // разделы сайта, тема/язык и выход. Заменяет разрозненные ссылки.
@@ -41,9 +42,9 @@ export default function UserMenu() {
 
   return (
     <div className="relative hidden md:block" ref={ref}>
-      <button onClick={() => setOpen((o) => !o)} className="flex max-w-[170px] items-center gap-1.5 rounded-md border border-white/25 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10">
+      <button aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)} className="flex max-w-[170px] items-center gap-1.5 rounded-md border border-white/25 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-white/10">
         <span className="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full bg-white text-[10px] text-brand">
-          {user.avatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : name.charAt(0)}
+          {user.avatar ? <Cover src={user.avatar} alt="" width={40} height={40} sizes="20px" className="h-full w-full object-cover" /> : name.charAt(0)}
         </span>
         <span className="truncate">{name}</span>
         <span className="text-[9px] opacity-70">▾</span>
@@ -52,9 +53,9 @@ export default function UserMenu() {
       {open && (
         <div className="absolute right-0 z-50 mt-1.5 w-64 overflow-hidden rounded-xl border border-black/10 bg-[var(--surface)] py-1.5 text-black shadow-xl dark:border-white/10 dark:bg-ink-surface dark:text-white" onClick={() => setOpen(false)}>
           <div className="border-b border-black/5 px-3 pb-2.5 pt-1 dark:border-white/10">
-            <div className="text-[11px] text-black/45 dark:text-white/45">{t("menu.signedInAs")}</div>
+            <div className="text-[11px] text-black/60 dark:text-white/65">{t("menu.signedInAs")}</div>
             <div className="truncate text-sm font-bold">{name}</div>
-            <div className="truncate text-xs text-black/50 dark:text-white/50">{role?.name ?? user.email}</div>
+            <div className="truncate text-xs text-black/60 dark:text-white/65">{role?.name ?? user.email}</div>
           </div>
 
           <div className="p-1">
@@ -69,7 +70,7 @@ export default function UserMenu() {
           </div>
 
           <div className="flex items-center justify-between gap-2 border-t border-black/5 px-3 py-2 dark:border-white/10">
-            <span className="text-xs text-black/50 dark:text-white/50">{t("menu.appearance")}</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{t("menu.appearance")}</span>
             <div className="flex items-center gap-1.5"><LangSwitcher /><ThemeToggle /></div>
           </div>
 

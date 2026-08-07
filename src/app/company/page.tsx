@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { getUserById, getCompany, firstCompany } from "@/lib/rbac-store";
-import { COMPANY_SECTIONS, COMPANY_CAPABILITIES } from "@/lib/permissions";
+import { getCompany, firstCompany } from "@/lib/rbac-store";
+import { COMPANY_SECTIONS, COMPANY_CAPABILITIES, canAccessAdmin } from "@/lib/permissions";
 import { articlesByCompany, commentsByCompany, companyAuthors, getCategories } from "@/lib/store";
 import { requirePermission } from "@/lib/guard";
 import { serverT } from "@/lib/i18n-server";
@@ -9,34 +8,36 @@ import CompanyDemoSections from "./CompanyDemoSections";
 import CompanyNav from "./CompanyNav";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Кабинет компании" };
+export async function generateMetadata() {
+  const { t } = await serverT();
+  return { title: t("menu.cabCompany") };
+}
 
-async function resolveCompany(userCompanyId: string | null) {
-  // 1) admin «войти как» — импёрсонация конкретной компании
-  const c = await cookies();
-  const imp = c.get("aktiv_impersonate")?.value;
-  if (imp) {
-    try {
-      const { userId } = JSON.parse(imp);
-      const u = userId ? await getUserById(userId) : null;
-      if (u?.companyId) { const co = await getCompany(u.companyId); if (co) return co; }
-    } catch { /* */ }
-  }
-  // 2) собственная компания пользователя
+// Какой кабинет показывать. Определяется ТОЛЬКО серверными данными сессии.
+//
+// Раньше здесь читалась cookie `aktiv_impersonate` и по её userId выбиралась компания.
+// Cookie не httpOnly, то есть её мог подставить любой пользователь из консоли браузера
+// и открыть кабинет чужой компании вместе с её неопубликованными материалами.
+// Теперь имперсонализация выдаёт настоящую сессию (см. /api/admin/login-as), поэтому
+// currentUser() уже возвращает нужного пользователя и его companyId — подмена не нужна.
+async function resolveCompany(userCompanyId: string | null, isAdmin: boolean) {
   if (userCompanyId) { const co = await getCompany(userCompanyId); if (co) return co; }
-  // 3) фолбэк (напр. суперадмин без импёрсонации) — первая компания
-  return firstCompany();
+  // Фолбэк на «первую компанию» — только для админа (например, суперадмин
+  // заглядывает в кабинет). Обычный пользователь без своей компании не должен
+  // проваливаться в чужую.
+  return isAdmin ? firstCompany() : null;
 }
 
 export default async function CompanyCabinet() {
-  const { user } = await requirePermission("ads.view", "/company");
-  const { t } = await serverT();
-  const company = await resolveCompany(user?.companyId ?? null);
+  const { user, perms } = await requirePermission("ads.view", "/company");
+  const { t, lang } = await serverT();
+  const company = await resolveCompany(user?.companyId ?? null, canAccessAdmin(perms));
   if (!company) {
-    return <div className="container-content py-10 text-center text-black/50">Компания не найдена. Создайте её в админ-панели.</div>;
+    return <div className="container-content py-10 text-center text-black/60">{t("misc.companyNotFound")}</div>;
   }
   const sections = COMPANY_SECTIONS.filter((s) => company.sections.includes(s.key));
-  const secLabel = (key: string, fallback: string) => { const v = t(`co.${key}`); return v === `co.${key}` ? fallback : v; };
+  // COMPANY_SECTIONS labels are i18n keys (see src/lib/permissions.ts) — translate them.
+  const secLabel = (key: string, fallback: string) => { const v = t(`co.${key}`); return v === `co.${key}` ? t(fallback) : v; };
   const sectionKeys = sections.map((s) => s.key);
   const enabledCaps = COMPANY_CAPABILITIES.filter((c) => company.capabilities[c.key]);
   const news = await articlesByCompany(company.name);
@@ -72,10 +73,10 @@ export default async function CompanyCabinet() {
       <aside className="md:sticky md:top-20 md:self-start">
         <div className="mb-3 flex items-center gap-2 px-2">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand font-bold text-white">{company.name.charAt(0)}</span>
-          <div><div className="text-sm font-bold">{company.name}</div><div className="text-[11px] text-black/45 dark:text-white/45">{t("co.cabinet")}</div></div>
+          <div><div className="text-sm font-bold">{company.name}</div><div className="text-[11px] text-black/60 dark:text-white/65">{t("co.cabinet")}</div></div>
         </div>
         <CompanyNav items={sections.map((s) => ({ key: s.key, label: secLabel(s.key, s.label) }))} />
-        <p className="mt-3 px-2 text-[11px] text-black/40 dark:text-white/40">{t("co.setBy")}</p>
+        <p className="mt-3 px-2 text-[11px] text-black/60 dark:text-white/65">{t("co.setBy")}</p>
       </aside>
 
       <section className="space-y-5">
@@ -88,7 +89,7 @@ export default async function CompanyCabinet() {
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[[t("co.mNews"), news.length], [t("co.mViews"), news.reduce((s, a) => s + a.views, 0).toLocaleString("ru-RU")], [t("co.mSections"), sections.length], [t("co.mCaps"), enabledCaps.length]].map(([l, v]) => (
-                <div key={l as string} className="card p-4"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/45 dark:text-white/45">{l}</div></div>
+                <div key={l as string} className="card p-4"><div className="text-2xl font-bold tabular-nums">{v}</div><div className="text-xs text-black/60 dark:text-white/65">{l}</div></div>
               ))}
             </div>
           </div>
@@ -98,7 +99,7 @@ export default async function CompanyCabinet() {
           <div id="news" className="card p-5">
             <h2 className="mb-3 font-semibold">{t("co.news")}</h2>
             <div className="divide-y divide-black/5 dark:divide-white/10">
-              {news.length === 0 && <p className="text-sm text-black/50">{t("co.noNews")}</p>}
+              {news.length === 0 && <p className="text-sm text-black/60">{t("co.noNews")}</p>}
               {news.map((a) => (
                 <div key={a.id} className="flex items-center gap-3 py-2.5 text-sm">
                   <span className="flex-1">{a.title}</span>
@@ -111,12 +112,12 @@ export default async function CompanyCabinet() {
         )}
 
         {/* sample/demo content for every other enabled section */}
-        <CompanyDemoSections keys={sectionKeys} t={t} comments={comments} companyId={company.id} data={companyData} />
+        <CompanyDemoSections keys={sectionKeys} t={t} lang={lang} comments={comments} companyId={company.id} data={companyData} />
 
         <div className="card p-5">
           <h2 className="mb-2 font-semibold">{t("co.profile")}</h2>
           <p className="text-sm text-black/60 dark:text-white/70">{p.description || "—"}</p>
-          <div className="mt-2 text-xs text-black/45 dark:text-white/45">{[p.city, p.country, p.website].filter(Boolean).join(" · ")}</div>
+          <div className="mt-2 text-xs text-black/60 dark:text-white/65">{[p.city, p.country, p.website].filter(Boolean).join(" · ")}</div>
         </div>
       </section>
     </div>

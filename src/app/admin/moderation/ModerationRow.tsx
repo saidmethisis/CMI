@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 
 export default function ModerationRow({
-  id, title, lead, kind, author, category,
-}: { id: string; title: string; lead: string; kind: string; author: string; category: string }) {
+  id, slug, title, lead, kind, author, category,
+}: { id: string; slug: string; title: string; lead: string; kind: string; author: string; category: string }) {
   const router = useRouter();
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
@@ -29,7 +29,7 @@ export default function ModerationRow({
 
   if (done) {
     const labels: Record<string, string> = { approve: t("status.published"), reject: t("status.rejected"), return: t("status.returned") };
-    return <div className="card p-4 text-sm text-black/50 dark:text-white/50">{title} — {labels[done]}</div>;
+    return <div className="card p-4 text-sm text-black/60 dark:text-white/65">{title} — {labels[done]}</div>;
   }
 
   return (
@@ -40,7 +40,7 @@ export default function ModerationRow({
             <span className={`chip !py-0.5 text-[11px] ${kind === "pr" ? "!border-amber-400/50 text-amber-600" : ""}`}>
               {kind === "pr" ? "PR" : "UGC"}
             </span>
-            <span className="text-xs text-black/50 dark:text-white/50">{category} · {author}</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{category} · {author}</span>
           </div>
           <h3 className="font-serif text-lg font-bold">{title}</h3>
           <p className="mt-1 text-sm text-black/60 dark:text-white/60">{lead}</p>
@@ -52,6 +52,7 @@ export default function ModerationRow({
           {t("adm.pinTop")}
         </label>
         <div className="ml-auto flex gap-2">
+          <a href={`/article/${slug}?preview=1`} target="_blank" rel="noopener" className="btn-ghost text-xs">{t("wc.preview")}</a>
           <button disabled={busy} onClick={() => act("return")} className="btn-ghost text-xs">{t("adm.return")}</button>
           <button disabled={busy} onClick={() => act("reject")} className="btn-ghost text-xs !text-down">{t("adm.reject")}</button>
           <button disabled={busy} onClick={() => act("approve")} className="btn-primary text-xs">{t("adm.approve")}</button>

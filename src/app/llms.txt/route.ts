@@ -1,7 +1,10 @@
 import { listPublished, getCategories } from "@/lib/store";
 import { SITE_URL, SITE_NAME, SITE_DESC } from "@/lib/site";
 
-export const revalidate = 3600;
+// Читает базу, поэтому рендерится по запросу, а не на этапе сборки:
+// в Docker-образе на момент `next build` базы ещё нет, а для новостной ленты
+// снимок на момент сборки всё равно был бы устаревшим.
+export const dynamic = "force-dynamic";
 
 // llms.txt — a markdown index for large language models (see llmstxt.org)
 export async function GET() {

@@ -1,7 +1,12 @@
 import Link from "next/link";
-import { listPublished, pinnedArticle, getCategories } from "@/lib/store";
+import { listPublished, pinnedArticle, getCategories, localizeList, localizedArticle } from "@/lib/store";
 import StoriesBar from "@/components/StoriesBar";
 import RatesBoard from "@/components/RatesBoard";
+import BankRates from "@/components/BankRates";
+import StockBoard from "@/components/StockBoard";
+import Cover from "@/components/Cover";
+import { getBankRates } from "@/lib/bank-rates";
+import { getStockQuotes } from "@/lib/stock";
 import VideoRow from "@/components/VideoRow";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
@@ -14,16 +19,38 @@ import CryptoTable from "@/components/CryptoTable";
 import SpecialReports from "@/components/SpecialReports";
 import TrendingNow from "@/components/TrendingNow";
 import T from "@/components/T";
-import { serverT } from "@/lib/i18n-server";
+import { serverT, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 
 export const dynamic = "force-dynamic";
 
+// Свой canonical: в корневом layout он намеренно не задан, иначе все страницы
+// объявляли бы себя копией главной.
+export async function generateMetadata() {
+  return { alternates: await langAlternates("/") };
+}
+
 export default async function HomePage() {
   const { t, lang } = await serverT();
-  const categories = await getCategories();
-  const pinned = await pinnedArticle();
-  const all = await listPublished();
+
+  // Главная не должна падать целиком, если база на секунду недоступна: раньше
+  // любая ошибка Prisma превращала весь сайт в HTTP 500. Теперь шапка, меню,
+  // курсы валют и футер остаются на месте, а лента просто пустая.
+  const soft = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
+    try { return await fn(); } catch (e) {
+      console.error("Главная: не удалось получить данные —", (e as Error).message);
+      return fallback;
+    }
+  };
+
+  const categories = await soft(getCategories, []);
+  // курсы банков тянем на сервере (кэш 1 час) — блок виден сразу, без «прыжка» после гидрации
+  const bankRates = await soft(getBankRates, { data: {}, updatedAt: "", source: "unavailable" });
+  const stock = await soft(getStockQuotes, { data: [], updatedAt: "", source: "unavailable" });
+  const pinnedRaw = await soft(pinnedArticle, undefined);
+  // тексты — на языке интерфейса, с фолбэком на язык оригинала
+  const pinned = pinnedRaw ? { ...pinnedRaw, ...localizedArticle(pinnedRaw, lang) } : pinnedRaw;
+  const all = localizeList(await soft(listPublished, []), lang);
   // separate video-first articles from photo-first articles
   const videos = all.filter((a) => a.videoUrl && a.slug !== pinned?.slug).slice(0, 6);
   const feed = all.filter((a) => !a.videoUrl && a.slug !== pinned?.slug);
@@ -38,6 +65,12 @@ export default async function HomePage() {
     <>
       <div className="container-content pt-4">
         <BreakingNews items={breaking} />
+      </div>
+
+      {/* Официальный курс ЦБ — компактной строкой сразу под срочными новостями.
+          Таблица банков стоит ниже, прямо над лентой (см. основную колонку). */}
+      <div className="container-content pt-4">
+        <RatesBoard />
       </div>
 
       <div className="container-content py-4">
@@ -64,15 +97,21 @@ export default async function HomePage() {
                 <span className="rounded-md bg-accent px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">Asosiy Aktiv</span>
               </div>
               <Link href={`/article/${pinned.slug}`} className="group block">
-                <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={pinned.cover} alt={pinned.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-black/[0.06] dark:bg-white/[0.08]">
+                  {/* Без обложки — нейтральная заглушка: пустой src даёт значок
+                      «битая картинка» в самом заметном блоке главной. */}
+                  {pinned.cover ? (
+                    // Главная картинка первого экрана — грузим без ожидания прокрутки.
+                    <Cover src={pinned.cover} alt={pinned.title} width={1600} height={900} sizes="(max-width: 1024px) 100vw, 720px" priority className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+                  ) : (
+                    <span className="grid h-full w-full place-items-center font-serif text-6xl font-bold text-black/15 dark:text-white/15">A</span>
+                  )}
                 </div>
                 <span className="mt-3 inline-block text-xs font-bold uppercase" style={{ color: pinnedCat?.color }}>{pinnedCat ? localizeName(lang, pinnedCat) : ""}</span>
                 <h1 className="mt-1 font-serif text-3xl font-extrabold leading-tight group-hover:text-accent md:text-4xl">{pinned.title}</h1>
                 <p className="mt-2 text-lg text-black/60 dark:text-white/70">{pinned.lead}</p>
               </Link>
-              <div className="mt-3 flex items-center gap-3 text-sm text-black/50 dark:text-white/50">
+              <div className="mt-3 flex items-center gap-3 text-sm text-black/60 dark:text-white/65">
                 <span>{pinned.authorName}</span><span>· {pinned.readingMinutes} {t("common.min")}</span>
                 <SaveButton slug={pinned.slug} className="ml-auto" />
               </div>
@@ -89,8 +128,12 @@ export default async function HomePage() {
             <VideoRow title={<T k="home.video" />} items={videos} />
           </div>
 
-          {/* Official CBU exchange rates (real data, auto-refreshing) */}
-          <div className="mb-8"><RatesBoard /></div>
+          {/* Курсы валют в банках — прямо над лентой, под ними начинается лента */}
+          <div className="mb-8"><BankRates initial={bankRates} /></div>
+
+          {/* Котировки Республиканской фондовой биржи. Блок скрывается сам,
+              если нет данных (не задан PARSE_API_KEY или биржа недоступна). */}
+          <div className="mb-8"><StockBoard initial={stock} /></div>
 
           <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold"><T k="home.feed" /></h2>
           <FeedWithChips items={feed} />

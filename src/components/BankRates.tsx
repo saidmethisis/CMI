@@ -1,55 +1,71 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import type { Rate } from "@/lib/currency";
-import DemoBadge from "@/components/DemoBadge";
+import { useCallback, useEffect, useState } from "react";
+import { BANK_CODES, SOURCE_NAME, SOURCE_URL, type BankRate, type BankRatesByCode } from "@/lib/bank-rates";
 import { useI18n } from "@/lib/i18n";
 
-const BANKS = [
-  "InFinBank", "NBU", "Kapitalbank", "Garant Bank", "Xalq Banki", "Agrobank", "Asaka Bank", "BRB",
-  "Orient Finans", "Turon Bank", "Asia Alliance Bank", "Hamkorbank", "Ipak Yuli Bank", "Ipoteka Bank",
-  "Mikrokreditbank", "Octobank", "Trastbank", "Universal Bank", "SQB", "Davr Bank", "Anor Bank", "Poytaxt Bank",
-];
-const TABS = ["USD", "RUB", "EUR", "KZT"] as const;
+// Реальные курсы покупки/продажи в коммерческих банках Узбекистана (источник — bank.uz).
+// Ничего не досчитываем и не моделируем: показываем ровно то, что отдал источник,
+// со ссылкой на него. Если данных нет — блок не рисуется вовсе.
+const REFRESH_MS = 30 * 60 * 1000;
+const COLLAPSED = 8;
 
-// deterministic per-bank spread (no Math.random → no hydration mismatch)
-function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
-function bankQuote(bank: string, code: string, base: number) {
-  const h = hash(bank + code);
-  const buy = base * (0.90 + (h % 70) / 1000);   // 90.0–96.9% of base
-  const sell = base * (1.005 + (h % 55) / 1000);  // 100.5–106.0% of base
-  const round = (v: number) => (base < 1000 ? Math.round(v) : Math.round(v / 5) * 5);
-  return { buy: round(buy), sell: round(sell) };
-}
-
-export default function BankRates() {
+export default function BankRates({ initial }: { initial?: { data: BankRatesByCode; updatedAt: string; source: string } }) {
   const { t, lang } = useI18n();
   const loc = lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU";
-  const [rates, setRates] = useState<Rate[]>([]);
-  const [updatedAt, setUpdatedAt] = useState<string>("");
-  const [source, setSource] = useState<string>("");
-  const [tab, setTab] = useState<(typeof TABS)[number]>("USD");
-  const [sortDesc, setSortDesc] = useState<null | "buy" | "sell">(null);
+  // Данные приходят с сервера уже отрендеренными; клиент лишь освежает их со временем.
+  const [data, setData] = useState<BankRatesByCode>(initial?.data ?? {});
+  const [updatedAt, setUpdatedAt] = useState(initial?.updatedAt ?? "");
+  const [source, setSource] = useState(initial?.source ?? "");
+  const [tab, setTab] = useState<string>("USD");
+  const [sort, setSort] = useState<null | "buy" | "sell">(null);
+  const [all, setAll] = useState(false);
+  const [loaded, setLoaded] = useState(!!initial);
 
-  useEffect(() => {
-    fetch("/api/currency", { cache: "no-store" }).then((r) => r.json()).then((j) => {
-      setRates(j.data ?? []); setUpdatedAt(j.updatedAt ?? ""); setSource(j.source ?? "");
-    }).catch(() => {});
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/api/bank-rates", { cache: "no-store" });
+      const j = await r.json();
+      setData(j.data ?? {});
+      setUpdatedAt(j.updatedAt ?? "");
+      setSource(j.source ?? "");
+    } catch {
+      /* оставляем прошлый снимок */
+    } finally {
+      setLoaded(true);
+    }
   }, []);
 
-  const base = rates.find((r) => r.code === tab)?.rate ?? 0;
-  const rows = useMemo(() => {
-    let list = BANKS.map((b) => ({ bank: b, ...bankQuote(b, tab, base) }));
-    if (sortDesc) list = [...list].sort((a, b) => b[sortDesc] - a[sortDesc]);
-    return list;
-  }, [tab, base, sortDesc]);
+  useEffect(() => {
+    if (!initial) load(); // с серверными данными первый запрос не нужен
+    const id = setInterval(load, REFRESH_MS);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load]);
+
+  const codes = BANK_CODES.filter((c) => (data[c]?.length ?? 0) > 0);
+  // пока грузим — тихо; если источник недоступен — блок не показываем, чтобы не
+  // занимать место пустой таблицей и не вводить читателя в заблуждение
+  if (!loaded || codes.length === 0) return null;
+
+  const active = codes.includes(tab as (typeof codes)[number]) ? tab : codes[0];
+  let rows: BankRate[] = data[active] ?? [];
+  if (sort) rows = [...rows].sort((a, b) => b[sort] - a[sort]);
+  const shown = all ? rows : rows.slice(0, COLLAPSED);
 
   return (
     <section className="card overflow-hidden" aria-label={t("w.bankRates")}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-black/5 px-4 py-3 dark:border-white/10">
-        <h2 className="font-serif text-lg font-bold">{t("w.bankRates")}<DemoBadge title="Курсы банков ориентировочные, рассчитаны от курса ЦБ. Реальный источник по банкам не подключён." /></h2>
+        <h2 className="font-serif text-lg font-bold">{t("w.bankRates")}</h2>
         <div className="ml-auto flex gap-1 text-sm">
-          {TABS.map((code) => (
-            <button key={code} onClick={() => setTab(code)} className={`rounded-md px-2.5 py-1 font-semibold transition ${tab === code ? "bg-brand text-white" : "text-black/50 hover:bg-black/5 dark:text-white/50 dark:hover:bg-white/10"}`}>{code}</button>
+          {codes.map((code) => (
+            <button
+              key={code}
+              aria-pressed={active === code}
+              onClick={() => { setTab(code); setAll(false); }}
+              className={`rounded-md px-2.5 py-1 font-semibold transition ${active === code ? "bg-brand text-white" : "text-black/60 hover:bg-black/5 dark:text-white/65 dark:hover:bg-white/10"}`}
+            >
+              {code}
+            </button>
           ))}
         </div>
       </div>
@@ -57,27 +73,58 @@ export default function BankRates() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[440px] text-sm">
           <thead>
-            <tr className="border-b border-black/5 text-left text-xs text-black/45 dark:border-white/10 dark:text-white/45">
+            <tr className="border-b border-black/5 text-left text-xs text-black/60 dark:border-white/10 dark:text-white/65">
               <th className="px-4 py-2.5 font-semibold">{t("w.bank")}</th>
-              <th className="cursor-pointer px-4 py-2.5 text-right font-semibold" onClick={() => setSortDesc(sortDesc === "buy" ? null : "buy")}>{tab} {t("w.buy")} ▲▼</th>
-              <th className="cursor-pointer px-4 py-2.5 text-right font-semibold" onClick={() => setSortDesc(sortDesc === "sell" ? null : "sell")}>{tab} {t("w.sell")} ▲▼</th>
+              {/* Сортировка кнопкой, а не onClick на <th>: заголовок таблицы не
+                  фокусируется, поэтому колонки нельзя было отсортировать с
+                  клавиатуры. aria-sort сообщает диктору текущий порядок, а
+                  стрелка показывает его, а не оба направления сразу. */}
+              {(["buy", "sell"] as const).map((col) => (
+                <th
+                  key={col}
+                  aria-sort={sort === col ? "descending" : "none"}
+                  className="px-4 py-2.5 text-right font-semibold"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSort(sort === col ? null : col)}
+                    className="rounded px-1 hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    {active} {t(col === "buy" ? "w.buy" : "w.sell")} {sort === col ? "▼" : "▲▼"}
+                  </button>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.bank} className="border-b border-black/[0.04] last:border-0 hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.03]">
-                <td className="px-4 py-3 font-semibold text-brand dark:text-white/85">{r.bank}</td>
-                <td className="px-4 py-3 text-right tabular-nums text-up">{base ? r.buy.toLocaleString("ru-RU") : "—"} <span className="text-black/40 dark:text-white/40">{t("w.sum")}</span></td>
-                <td className="px-4 py-3 text-right tabular-nums text-down">{base ? r.sell.toLocaleString("ru-RU") : "—"} <span className="text-black/40 dark:text-white/40">{t("w.sum")}</span></td>
+            {shown.map((r) => (
+              <tr key={r.slug} className="border-b border-black/[0.04] last:border-0 hover:bg-black/[0.02] dark:border-white/[0.05] dark:hover:bg-white/[0.03]">
+                <td className="px-4 py-3 font-semibold text-brand dark:text-white/85">
+                  <a href={r.url} target="_blank" rel="noopener nofollow" className="hover:underline">{r.bank}</a>
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums text-up">
+                  {r.buy.toLocaleString(loc)} <span className="text-black/60 dark:text-white/65">{t("w.sum")}</span>
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums text-down">
+                  {r.sell.toLocaleString(loc)} <span className="text-black/60 dark:text-white/65">{t("w.sum")}</span>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 px-4 py-2.5 text-xs text-black/45 dark:border-white/10 dark:text-white/45">
-        <span>{t("w.cbuBase")}: <b className="text-black/70 dark:text-white/70">{base ? base.toLocaleString("ru-RU") : "…"} {t("w.sum")}</b></span>
-        <span>{source === "fallback" ? t("w.fallback") : t("w.updated")}: {updatedAt ? new Date(updatedAt).toLocaleDateString(loc) : "…"}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 px-4 py-2.5 text-xs text-black/60 dark:border-white/10 dark:text-white/65">
+        {rows.length > COLLAPSED ? (
+          <button onClick={() => setAll((v) => !v)} className="font-semibold text-accent hover:underline">
+            {all ? t("w.showLess") : `${t("w.showAll")} (${rows.length})`}
+          </button>
+        ) : <span />}
+        <span>
+          {t("w.source")}:{" "}
+          <a href={SOURCE_URL} target="_blank" rel="noopener nofollow" className="font-semibold hover:underline">{SOURCE_NAME}</a>
+          {source !== "unavailable" && updatedAt && ` · ${t("w.updated")}: ${new Date(updatedAt).toLocaleString(loc, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`}
+        </span>
       </div>
     </section>
   );

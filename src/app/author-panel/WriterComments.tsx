@@ -34,14 +34,14 @@ export default function WriterComments() {
     const prev = rows;
     setRows((p) => p.map((c) => (c.id === id ? { ...c, status } : c)));
     const r = await fetch("/api/author/comments", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) });
-    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || "Ошибка."); }
+    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || t("misc.errorDot")); }
   };
   const del = async (id: string) => {
     if (!confirm(t("comments.confirmDelete"))) return;
     const prev = rows;
     setRows((p) => p.filter((c) => c.id !== id));
     const r = await fetch("/api/author/comments", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
-    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || "Ошибка."); }
+    if (!r.ok) { setRows(prev); const j = await r.json(); alert(j.error?.message || t("misc.errorDot")); }
   };
 
   const counts = useMemo(() => {
@@ -51,7 +51,7 @@ export default function WriterComments() {
   }, [rows]);
   const shown = filter === "all" ? rows : rows.filter((r) => r.status === filter);
 
-  if (loading) return <div className="card p-6 text-sm text-black/40 dark:text-white/40">…</div>;
+  if (loading) return <div className="card p-6 text-sm text-black/60 dark:text-white/65">…</div>;
 
   return (
     <div className="card p-5">
@@ -65,7 +65,7 @@ export default function WriterComments() {
       </div>
 
       {shown.length === 0 ? (
-        <p className="text-sm text-black/50 dark:text-white/50">{t("wc.commentsEmpty")}</p>
+        <p className="text-sm text-black/60 dark:text-white/65">{t("wc.commentsEmpty")}</p>
       ) : (
         <div className="divide-y divide-black/5 dark:divide-white/10">
           {shown.map((c) => (

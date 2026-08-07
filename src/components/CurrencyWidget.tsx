@@ -26,20 +26,20 @@ export default function CurrencyWidget() {
       <ul className="divide-y divide-black/[0.05] dark:divide-white/[0.06]">
         {show.length === 0
           ? (err
-              ? <li className="py-2 text-xs text-black/45 dark:text-white/45">Курсы временно недоступны.</li>
+              ? <li className="py-2 text-xs text-black/60 dark:text-white/65">{t("w.ratesNA")}</li>
               : Array.from({ length: 3 }).map((_, i) => <li key={i} className="py-2"><div className="skeleton h-4 w-full rounded" /></li>))
           : show.map((r) => {
               const up = r.diff >= 0;
               return (
                 <li key={r.code} className="flex items-center gap-2 py-1.5 text-sm">
                   <span className="w-10 font-bold">{r.code}</span>
-                  <span className="flex-1 tabular-nums">{r.rate.toLocaleString("ru-RU")} <span className="text-black/40 dark:text-white/40">{t("w.sum")}</span></span>
+                  <span className="flex-1 tabular-nums">{r.rate.toLocaleString("ru-RU")} <span className="text-black/60 dark:text-white/65">{t("w.sum")}</span></span>
                   <span className={`tabular-nums text-xs font-semibold ${up ? "text-up" : "text-down"}`}>{up ? "▲" : "▼"} {Math.abs(r.diff).toFixed(2)}</span>
                 </li>
               );
             })}
       </ul>
-      <div className="mt-2 text-[11px] text-black/40 dark:text-white/40">{source === "fallback" ? t("w.fallback") : t("w.updated")}: {updatedAt ? new Date(updatedAt).toLocaleDateString(loc) : "…"}</div>
+      <div className="mt-2 text-[11px] text-black/60 dark:text-white/65">{source === "fallback" ? t("w.fallback") : t("w.updated")}: {updatedAt ? new Date(updatedAt).toLocaleDateString(loc) : "…"}</div>
     </section>
   );
 }

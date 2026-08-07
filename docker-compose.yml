@@ -1,8 +1,38 @@
+# Asosiy Aktiv — один compose-файл на все окружения.
+#
+# Окружения разделяются именем проекта (-p) и env-файлом. У каждого свои контейнеры,
+# своя база, свои загрузки и свой порт — они физически не пересекаются:
+#
+#   продакшен:  docker compose --env-file .env.production -p aktiv-prod    up -d
+#   стейджинг:  docker compose --env-file .env.staging    -p aktiv-staging up -d
+#
+# На практике этим занимается scripts/deploy.sh — он ещё и проверяет здоровье
+# нового контейнера и откатывается, если тот не поднялся.
+
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Порт наружу не публикуем: база доступна только веб-контейнеру внутри сети.
+    # Для отладки: docker compose -p <проект> exec db psql -U <user> -d <db>
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   web:
     build:
       context: .
-      # NEXT_PUBLIC_* must be present at BUILD time (inlined into the client bundle).
+      # NEXT_PUBLIC_* вшиваются в клиентский бандл на этапе сборки — передаём их
+      # как build args, иначе в браузер уедут значения от прошлой сборки.
       args:
         NEXT_PUBLIC_SITE_URL: ${SITE_URL}
         NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}
@@ -21,22 +51,32 @@ services:
         NEXT_PUBLIC_ORG_PD_REGISTRY: ${NEXT_PUBLIC_ORG_PD_REGISTRY:-}
         NEXT_PUBLIC_ORG_AGE: ${NEXT_PUBLIC_ORG_AGE:-18+}
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # Слушаем только localhost: наружу трафик пускает nginx с TLS.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
     environment:
-      # SQLite file lives on the persistent /data volume.
-      DATABASE_URL: "file:/data/dev.db"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
       NODE_ENV: production
-      # ── Fill these in a .env file next to this compose file ──
+      APP_ENV: ${APP_ENV:-production}
       SITE_URL: ${SITE_URL:?set SITE_URL}
-      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (openssl rand -hex 32)}
       NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (openssl rand -hex 32)}
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
       NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # ключ parse.bot для котировок биржи; без него блок котировок скрыт
+      PARSE_API_KEY: ${PARSE_API_KEY:-}
+      # JSON сервисного аккаунта для мгновенной индексации в Google; без него
+      # публикация работает как прежде, просто без пинга
+      GOOGLE_INDEXING_CREDENTIALS: ${GOOGLE_INDEXING_CREDENTIALS:-}
     volumes:
-      - db:/data
       - uploads:/app/public/uploads
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
@@ -46,5 +86,5 @@ services:
       start_period: 40s
 
 volumes:
-  db:
+  pgdata:
   uploads:

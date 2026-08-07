@@ -4,49 +4,66 @@ import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 import { useI18n } from "@/lib/i18n";
-import { uploadDataUrl } from "@/lib/upload";
+import { imageFileToUrl, fileToDataUrl, uploadDataUrl } from "@/lib/upload";
 
 type Social = { label: string; url: string };
+type LangCode = "ru" | "uz" | "en";
+type LangFields = { title: string; lead: string; body: string };
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result as string);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
+const LANG_TABS: { code: LangCode; label: string }[] = [
+  { code: "ru", label: "RU" }, { code: "uz", label: "UZ" }, { code: "en", label: "EN" },
+];
+const EMPTY: Record<LangCode, LangFields> = {
+  ru: { title: "", lead: "", body: "" },
+  uz: { title: "", lead: "", body: "" },
+  en: { title: "", lead: "", body: "" },
+};
 
 export default function AuthorEditor() {
   const router = useRouter();
   const { categories } = useTaxonomy();
   const catName = useCatName();
-  const { t } = useI18n();
+  const { t, lang: uiLang } = useI18n();
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  const [title, setTitle] = useState("");
-  const [lead, setLead] = useState("");
+  // Один материал — три языковые версии. Заполнять можно любую (минимум одну);
+  // незаполненные языки на сайте показываются на языке-фолбэке.
+  const [tab, setTab] = useState<LangCode>((uiLang as LangCode) ?? "ru");
+  const [tr, setTr] = useState<Record<LangCode, LangFields>>(EMPTY);
+  const cur = tr[tab];
+  const setCur = (patch: Partial<LangFields>) => setTr((s) => ({ ...s, [tab]: { ...s[tab], ...patch } }));
+  // «Заполнен» = есть хоть одно непустое поле — то же условие, по которому
+  // сервер сохраняет языковую версию.
+  const filledLangs = LANG_TABS.filter((l) => tr[l.code].title.trim() || tr[l.code].lead.trim() || tr[l.code].body.trim()).map((l) => l.code);
+
   const [category, setCategory] = useState(categories[0]?.slug ?? "startups");
   const [tags, setTags] = useState("");
-  const [body, setBody] = useState("");
   const [cover, setCover] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
   const [socials, setSocials] = useState<Social[]>([{ label: "Telegram", url: "" }]);
   const [busy, setBusy] = useState(false);
+  const [coverBusy, setCoverBusy] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const onCover = async (f?: File) => { if (f) setCover(await uploadDataUrl(await fileToDataUrl(f))); };
+  const onCover = async (f?: File) => {
+    if (!f) return;
+    setCoverBusy(true);
+    try { setCover(await imageFileToUrl(f)); } finally { setCoverBusy(false); }
+  };
 
   const insertPhoto = async (f?: File) => {
     if (!f) return;
-    const url = await uploadDataUrl(await fileToDataUrl(f));
-    const ta = bodyRef.current;
-    const marker = `\n\n![фото](${url})\n\n`;
-    if (ta) {
-      const pos = ta.selectionStart ?? body.length;
-      setBody(body.slice(0, pos) + marker + body.slice(pos));
-    } else {
-      setBody(body + marker);
+    setPhotoBusy(true);
+    try {
+      const url = await imageFileToUrl(f);
+      const ta = bodyRef.current;
+      const marker = `\n\n![фото](${url})\n\n`;
+      const text = cur.body;
+      const pos = ta?.selectionStart ?? text.length;
+      setCur({ body: text.slice(0, pos) + marker + text.slice(pos) });
+    } finally {
+      setPhotoBusy(false);
     }
   };
 
@@ -56,14 +73,16 @@ export default function AuthorEditor() {
 
   const submit = async (asDraft = false) => {
     setError("");
-    if (!title.trim() || !lead.trim() || !body.trim()) { setError(t("author.required")); return; }
+    // Достаточно одной полностью заполненной языковой версии.
+    const complete = LANG_TABS.map((l) => l.code).filter((l) => tr[l].title.trim() && tr[l].lead.trim() && tr[l].body.trim());
+    if (complete.length === 0) { setError(t("author.requiredLang")); return; }
     setBusy(true);
     try {
       const r = await fetch("/api/author/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title, lead, body, categorySlug: category, tags,
+          translations: tr, categorySlug: category, tags,
           // authorName пустой — сервер подставит реальное имя пользователя
           authorName: "",
           asDraft,
@@ -73,10 +92,10 @@ export default function AuthorEditor() {
         }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error?.message || "Ошибка");
+      if (!r.ok) throw new Error(j.error?.message || t("misc.error"));
       alert(asDraft ? t("author.draftSaved") : t("author.submitted"));
       router.refresh();
-      setTitle(""); setLead(""); setTags(""); setBody(""); setCover(""); setSocials([{ label: "Telegram", url: "" }]);
+      setTr(EMPTY); setTags(""); setCover(""); setVideoUrl(""); setSocials([{ label: "Telegram", url: "" }]);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -87,16 +106,16 @@ export default function AuthorEditor() {
   return (
     <div className="card p-5">
       <h2 className="mb-4 font-serif text-lg font-bold">{t("author.new")}</h2>
-      {error && <div className="mb-4 rounded-xl border border-down/30 bg-down/5 px-4 py-3 text-sm text-down">{error}</div>}
+      {error && <div className="mb-4 rounded-xl border border-down/30 bg-down/5 px-4 py-3 text-sm text-down" role="alert">{error}</div>}
 
       {/* cover upload */}
       <label className="label">{t("author.cover")}</label>
       <div className="mb-3 flex items-center gap-3">
-        <label className="btn-ghost cursor-pointer text-xs">
-          <Icon name="upload" size={14} /> {t("author.upload")}
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => onCover(e.target.files?.[0])} />
+        <label className={`btn-ghost text-xs ${coverBusy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}>
+          <Icon name="upload" size={14} /> {coverBusy ? t("author.uploading") : t("author.upload")}
+          <input type="file" accept="image/*" disabled={coverBusy} className="sr-only" onChange={(e) => onCover(e.target.files?.[0])} />
         </label>
-        {cover && (
+        {cover && !coverBusy && (
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={cover} alt="cover" className="h-12 w-20 rounded-md object-cover" />
@@ -111,7 +130,7 @@ export default function AuthorEditor() {
         <input className="input" value={videoUrl.startsWith("data:") || videoUrl.startsWith("/uploads/") ? "" : videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtu.be/… , https://…/video.mp4" />
         <label className="btn-ghost shrink-0 cursor-pointer text-xs">
           <Icon name="upload" size={14} /> {t("author.fromDevice")}
-          <input type="file" accept="video/mp4,video/webm,video/ogg" className="hidden" onChange={async (e) => {
+          <input type="file" accept="video/mp4,video/webm,video/ogg" className="sr-only" onChange={async (e) => {
             const f = e.target.files?.[0]; if (!f) return;
             if (f.size > 25 * 1024 * 1024) { alert(t("author.videoTooBig")); return; }
             setVideoUrl(await uploadDataUrl(await fileToDataUrl(f)));
@@ -123,13 +142,31 @@ export default function AuthorEditor() {
           {t("author.videoUploaded")} <button type="button" className="text-down" onClick={() => setVideoUrl("")}>{t("author.removeVideo")}</button>
         </div>
       )}
-      <p className="mb-3 text-xs text-black/40 dark:text-white/40">{t("author.videoNote")}</p>
+      <p className="mb-3 text-xs text-black/60 dark:text-white/65">{t("author.videoNote")}</p>
 
-      <label className="label">{t("author.titleField")} *</label>
-      <input className="input mb-3 font-serif text-lg" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("author.titleField")} />
+      {/* Языковые вкладки: один материал — три версии. Точка = язык заполнен. */}
+      <div className="mb-3 flex items-center gap-2">
+        <div className="flex gap-1 rounded-xl bg-black/[0.04] p-1 dark:bg-white/[0.06]">
+          {LANG_TABS.map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => setTab(l.code)}
+              className={`relative rounded-lg px-3 py-1.5 text-xs font-bold transition ${tab === l.code ? "bg-[var(--surface)] text-accent shadow-sm dark:bg-ink-surface" : "text-black/60 hover:text-black/75 dark:text-white/65 dark:hover:text-white/75"}`}
+            >
+              {l.label}
+              {filledLangs.includes(l.code) && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-up" />}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-black/60 dark:text-white/65">{t("author.langHint")}</span>
+      </div>
 
-      <label className="label">{t("author.lead")} *</label>
-      <textarea className="input mb-3 resize-y" rows={2} value={lead} onChange={(e) => setLead(e.target.value)} placeholder={t("author.lead")} />
+      <label className="label">{t("author.titleField")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
+      <input className="input mb-3 font-serif text-lg" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} placeholder={t("author.titleField")} />
+
+      <label className="label">{t("author.lead")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
+      <textarea className="input mb-3 resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} placeholder={t("author.lead")} />
 
       <div className="mb-3 grid grid-cols-2 gap-3">
         <div>
@@ -145,13 +182,13 @@ export default function AuthorEditor() {
       </div>
 
       <div className="mb-1 flex items-center justify-between">
-        <label className="label !mb-0">{t("author.text")} *</label>
-        <label className="btn-ghost cursor-pointer text-xs">
-          <Icon name="image" size={14} /> {t("author.insertPhoto")}
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => insertPhoto(e.target.files?.[0])} />
+        <label className="label !mb-0">{t("author.text")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
+        <label className={`btn-ghost text-xs ${photoBusy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}>
+          <Icon name="image" size={14} /> {photoBusy ? t("author.uploading") : t("author.insertPhoto")}
+          <input type="file" accept="image/*" disabled={photoBusy} className="sr-only" onChange={(e) => insertPhoto(e.target.files?.[0])} />
         </label>
       </div>
-      <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={10}
+      <textarea ref={bodyRef} value={cur.body} onChange={(e) => setCur({ body: e.target.value })} rows={10}
         className="input resize-y font-mono text-sm" placeholder="![...](...)" />
 
       {/* author socials */}
@@ -162,7 +199,7 @@ export default function AuthorEditor() {
             <div key={i} className="flex gap-2">
               <input className="input w-32" value={s.label} onChange={(e) => setSocial(i, { label: e.target.value })} placeholder="Telegram" />
               <input className="input flex-1" value={s.url} onChange={(e) => setSocial(i, { url: e.target.value })} placeholder="https://t.me/username" />
-              <button className="btn-ghost !px-3 text-xs" onClick={() => removeSocial(i)} aria-label="Удалить">×</button>
+              <button className="btn-ghost !px-3 text-xs" onClick={() => removeSocial(i)} aria-label={t("wc.del")}>×</button>
             </div>
           ))}
         </div>

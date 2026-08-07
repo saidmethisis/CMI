@@ -40,7 +40,7 @@ export default function ArticleView({ a }: { a: Article }) {
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-2">
-        <Link href="/" className="text-sm text-black/50 hover:underline dark:text-white/50">← {t("article.back")}</Link>
+        <Link href="/" className="text-sm text-black/60 hover:underline dark:text-white/65">← {t("article.back")}</Link>
         <div className="flex items-center gap-2">
           <button onClick={listen} className="btn-ghost !px-3 !py-2 text-xs"><Icon name="listen" size={14} /> {t("article.listen")}</button>
           <button onClick={() => setFocus((v) => !v)} className={`btn-ghost !px-3 !py-2 text-xs ${focus ? "!bg-brand !text-white" : ""}`}>

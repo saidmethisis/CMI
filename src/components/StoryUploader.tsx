@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTaxonomy } from "@/lib/taxonomy";
 import { uploadDataUrl } from "@/lib/upload";
+import { useI18n } from "@/lib/i18n";
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(file); });
@@ -12,6 +13,7 @@ function fileToDataUrl(file: File): Promise<string> {
 // Posts to /api/stories (guarded by news.create).
 export default function StoryUploader() {
   const router = useRouter();
+  const { t } = useI18n();
   const { categories, refresh } = useTaxonomy();
   const [title, setTitle] = useState("");
   const [categorySlug, setCategorySlug] = useState(categories[0]?.slug ?? "tech");
@@ -23,19 +25,19 @@ export default function StoryUploader() {
 
   const pick = async (f?: File) => {
     if (!f) return;
-    if (f.size > 8 * 1024 * 1024) { setError("Изображение больше 8 МБ."); return; }
+    if (f.size > 8 * 1024 * 1024) { setError(t("acc.storyImgTooBig")); return; }
     setImage(await uploadDataUrl(await fileToDataUrl(f)));
   };
 
   const add = async () => {
     setError(""); setMsg("");
-    if (!title.trim() || !image) { setError("Нужны заголовок и изображение."); return; }
+    if (!title.trim() || !image) { setError(t("acc.storyNeedFields")); return; }
     setBusy(true);
     try {
       const r = await fetch("/api/stories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, categorySlug, image, articleSlug: articleSlug || undefined }) });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error?.message || "Ошибка");
-      setTitle(""); setArticleSlug(""); setImage(""); setMsg("Стори опубликована — она появится в ленте на главной.");
+      if (!r.ok) throw new Error(j.error?.message || t("acc.error"));
+      setTitle(""); setArticleSlug(""); setImage(""); setMsg(t("acc.storyPublished"));
       await refresh(); router.refresh();
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   };
@@ -50,19 +52,19 @@ export default function StoryUploader() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={image} alt="" className="h-full w-full object-cover" />
           ) : (
-            <span className="text-[10px] text-black/40 dark:text-white/40">фото</span>
+            <span className="text-[10px] text-black/60 dark:text-white/65">{t("acc.photo")}</span>
           )}
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+          <input type="file" accept="image/*" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
         </label>
         <div className="flex-1 space-y-2">
-          <input className="input" placeholder="Заголовок стори" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input className="input" placeholder={t("acc.storyTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} />
           <div className="grid grid-cols-2 gap-2">
             <select className="input" value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}>
               {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
             </select>
-            <input className="input" placeholder="slug статьи (опц.)" value={articleSlug} onChange={(e) => setArticleSlug(e.target.value)} />
+            <input className="input" placeholder={t("acc.storySlugPh")} value={articleSlug} onChange={(e) => setArticleSlug(e.target.value)} />
           </div>
-          <button className="btn-primary w-full text-xs" disabled={busy} onClick={add}>{busy ? "Загрузка…" : "Добавить стори"}</button>
+          <button className="btn-primary w-full text-xs" disabled={busy} onClick={add}>{busy ? t("author.uploading") : t("acc.addStory")}</button>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ const TONE: Record<string, string> = {
   new: "bg-accent/12 text-accent", processing: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   done: "bg-up/12 text-up", rejected: "bg-down/12 text-down",
 };
-const th = "px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-black/40 dark:text-white/40";
+const th = "px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-black/60 dark:text-white/65";
 const td = "px-3 py-2.5 border-t border-black/[0.04] dark:border-white/[0.06]";
 
 export default function CompanyRequests({ companyId }: { companyId: string }) {
@@ -47,7 +47,7 @@ export default function CompanyRequests({ companyId }: { companyId: string }) {
   const shown = filter === "all" ? rows : rows.filter((r) => r.status === filter);
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(loc, { day: "numeric", month: "long" });
 
-  if (loading) return <p className="text-sm text-black/40 dark:text-white/40">{t("crq.loading")}</p>;
+  if (loading) return <p className="text-sm text-black/60 dark:text-white/65">{t("crq.loading")}</p>;
 
   return (
     <div>
@@ -64,7 +64,7 @@ export default function CompanyRequests({ companyId }: { companyId: string }) {
         <table className="w-full text-sm">
           <thead><tr><th className={th}>{t("crq.client")}</th><th className={th}>{t("crq.topic")}</th><th className={th}>{t("crq.date")}</th><th className={th}>{t("crq.status")}</th><th className={`${th} text-right`}>{t("crq.action")}</th></tr></thead>
           <tbody>
-            {shown.length === 0 && <tr><td colSpan={5} className="px-3 py-6 text-center text-black/40 dark:text-white/40">{t("crq.empty")}</td></tr>}
+            {shown.length === 0 && <tr><td colSpan={5} className="px-3 py-6 text-center text-black/60 dark:text-white/65">{t("crq.empty")}</td></tr>}
             {shown.map((r) => (
               <tr key={r.id}>
                 <td className={`${td} font-medium`}>{r.client}</td>

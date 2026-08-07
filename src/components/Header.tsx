@@ -35,7 +35,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 bg-brand-700 text-white shadow-md">
       {/* top row: logo + utilities */}
       <div className="container-content flex h-14 items-center gap-3">
-        <button className="flex h-9 w-9 flex-col items-center justify-center gap-[5px] text-white md:hidden" aria-label={t("a11y.menu")} onClick={() => setOpen((v) => !v)}>
+        <button className="flex h-9 w-9 flex-col items-center justify-center gap-[5px] text-white md:hidden" aria-label={t("a11y.menu")} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           <span className="h-0.5 w-5 rounded bg-current" />
           <span className="h-0.5 w-5 rounded bg-current" />
           <span className="h-0.5 w-5 rounded bg-current" />

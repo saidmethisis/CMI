@@ -39,7 +39,7 @@ export default function ForCompaniesPage() {
           <div key={p.name} className={`card relative flex flex-col p-6 ${p.featured ? "ring-2 ring-brand" : ""}`}>
             {p.featured && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">{t("fc.popular")}</span>}
             <h3 className="font-serif text-xl font-bold">{p.name}</h3>
-            <div className="mt-2 text-3xl font-bold tabular-nums">{p.price === "contract" ? "—" : p.price}<span className="text-sm font-normal text-black/50 dark:text-white/50"> {p.price === "contract" ? t("fc.byContract") : t("fc.perMonth")}</span></div>
+            <div className="mt-2 text-3xl font-bold tabular-nums">{p.price === "contract" ? "—" : p.price}<span className="text-sm font-normal text-black/60 dark:text-white/65"> {p.price === "contract" ? t("fc.byContract") : t("fc.perMonth")}</span></div>
             <div className="mt-1 text-sm text-black/55 dark:text-white/55">{p.articles} · {p.ai}</div>
             <ul className="mt-5 flex-1 space-y-2 text-sm">
               {p.features.map((f) => <li key={f} className="flex gap-2"><span className="text-up">✓</span>{f}</li>)}
@@ -49,7 +49,7 @@ export default function ForCompaniesPage() {
         ))}
       </div>
 
-      <p className="mt-6 text-center text-xs text-black/40 dark:text-white/40">{t("fc.note")}</p>
+      <p className="mt-6 text-center text-xs text-black/60 dark:text-white/65">{t("fc.note")}</p>
     </div>
   );
 }

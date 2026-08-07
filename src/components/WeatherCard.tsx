@@ -20,7 +20,7 @@ export default function WeatherCard() {
     }).catch(() => setErr(true));
   }, []);
 
-  if (err) return <div className="card p-4 text-sm text-black/50 dark:text-white/50">{t("w.weatherNA")}</div>;
+  if (err) return <div className="card p-4 text-sm text-black/60 dark:text-white/65">{t("w.weatherNA")}</div>;
   if (!w) return <div className="card p-4"><div className="skeleton h-20 w-full rounded-lg" /></div>;
 
   const c = w.current;
@@ -43,9 +43,9 @@ export default function WeatherCard() {
         <div className="grid grid-cols-3 divide-x divide-black/5 dark:divide-white/10">
           {w.daily.slice(1, 4).map((d) => (
             <div key={d.date} className="p-2.5 text-center">
-              <div className="text-xs text-black/45 dark:text-white/45">{new Date(d.date).toLocaleDateString(loc, { weekday: "short" })}</div>
-              <div className="mt-0.5 text-sm font-semibold tabular-nums">{d.max}° <span className="text-black/40 dark:text-white/40">/ {d.min}°</span></div>
-              <div className="truncate text-[11px] text-black/45 dark:text-white/45">{d.label}</div>
+              <div className="text-xs text-black/60 dark:text-white/65">{new Date(d.date).toLocaleDateString(loc, { weekday: "short" })}</div>
+              <div className="mt-0.5 text-sm font-semibold tabular-nums">{d.max}° <span className="text-black/60 dark:text-white/65">/ {d.min}°</span></div>
+              <div className="truncate text-[11px] text-black/60 dark:text-white/65">{d.label}</div>
             </div>
           ))}
         </div>

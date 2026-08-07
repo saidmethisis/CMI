@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 // Compact weather chip for the mobile header (reuses /api/weather — IP geolocation).
 export default function HeaderWeather({ className = "" }: { className?: string }) {
+  const { t } = useI18n();
   const [w, setW] = useState<{ temp: number; city: string } | null>(null);
 
   useEffect(() => {
@@ -14,7 +16,7 @@ export default function HeaderWeather({ className = "" }: { className?: string }
 
   if (!w) return null;
   return (
-    <a href="/#weather" aria-label={`Погода: ${w.city} ${w.temp}°`} className={`items-center gap-1.5 rounded-full border border-white/25 px-2.5 py-1 text-xs text-white ${className}`}>
+    <a href="/#weather" aria-label={`${t("w.weather")}: ${w.city} ${w.temp}°`} className={`items-center gap-1.5 rounded-full border border-white/25 px-2.5 py-1 text-xs text-white ${className}`}>
       <b className="tabular-nums">{w.temp}°</b>
       <span className="max-w-[72px] truncate text-white/70">{w.city}</span>
     </a>

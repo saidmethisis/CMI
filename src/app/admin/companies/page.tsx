@@ -10,35 +10,44 @@ type Company = {
 };
 type User = { id: string; name: string; email: string };
 
-const groups: { title: string; fields: { key: string; label: string }[] }[] = [
-  { title: "Основная информация", fields: [
-    { key: "shortName", label: "Краткое название" }, { key: "legalName", label: "Полное юр. название" },
-    { key: "logo", label: "Логотип (URL)" }, { key: "cover", label: "Обложка (URL)" },
-    { key: "description", label: "Описание" }, { key: "history", label: "История компании" },
-    { key: "foundedYear", label: "Дата основания" }, { key: "country", label: "Страна" }, { key: "city", label: "Город" },
-    { key: "address", label: "Адрес" }, { key: "zip", label: "Индекс" }, { key: "geo", label: "Координаты (lat,lng)" },
+type T = (k: string) => string;
+
+const buildGroups = (t: T): { id: string; title: string; fields: { key: string; label: string }[] }[] => [
+  { id: "main", title: t("ad2.grpMain"), fields: [
+    { key: "shortName", label: t("ad2.shortName") }, { key: "legalName", label: t("ad2.legalName") },
+    { key: "logo", label: t("ad2.logoUrl") }, { key: "cover", label: t("ad2.coverUrl") },
+    { key: "description", label: t("ad2.description") }, { key: "history", label: t("ad2.companyHistory") },
+    { key: "foundedYear", label: t("ad2.foundedYear") }, { key: "country", label: t("ad2.country") }, { key: "city", label: t("ad2.city") },
+    { key: "address", label: t("ad2.address") }, { key: "zip", label: t("ad2.zip") }, { key: "geo", label: t("ad2.geo") },
   ]},
-  { title: "Контакты", fields: [
-    { key: "phone", label: "Телефон" }, { key: "phone2", label: "Доп. телефон" }, { key: "email", label: "Email" },
+  { id: "contacts", title: t("ap.contacts"), fields: [
+    { key: "phone", label: t("ap.phone") }, { key: "phone2", label: t("ad2.phone2") }, { key: "email", label: "Email" },
     { key: "website", label: "Website" }, { key: "telegram", label: "Telegram" }, { key: "instagram", label: "Instagram" },
     { key: "facebook", label: "Facebook" }, { key: "linkedin", label: "LinkedIn" }, { key: "youtube", label: "YouTube" }, { key: "tiktok", label: "TikTok" },
   ]},
-  { title: "Юридические данные", fields: [
-    { key: "inn", label: "ИНН" }, { key: "regNumber", label: "Рег. номер" }, { key: "license", label: "Лицензия" },
-    { key: "checkStatus", label: "Статус проверки" }, { key: "responsible", label: "Ответственное лицо" },
+  { id: "legal", title: t("ad2.legalData"), fields: [
+    { key: "inn", label: t("ad2.inn") }, { key: "regNumber", label: t("ad2.regNumber") }, { key: "license", label: t("ad2.license") },
+    { key: "checkStatus", label: t("a.verifyStatus") }, { key: "responsible", label: t("ad2.responsible") },
   ]},
-  { title: "SEO", fields: [
+  { id: "seo", title: "SEO", fields: [
     { key: "seoTitle", label: "SEO Title" }, { key: "seoDescription", label: "SEO Description" }, { key: "seoKeywords", label: "SEO Keywords" },
     { key: "og", label: "Open Graph (URL)" }, { key: "schema", label: "Schema.org (JSON)" },
   ]},
 ];
 
-const flags: { key: keyof Company; label: string }[] = [
-  { key: "active", label: "Активна" }, { key: "verified", label: "Проверена" }, { key: "premium", label: "Премиум" }, { key: "featured", label: "Рекомендуемая" },
+const buildFlags = (t: T): { key: keyof Company; label: string }[] => [
+  { key: "active", label: t("ad2.flagActive") }, { key: "verified", label: t("co.verified") }, { key: "premium", label: t("ad2.flagPremium") }, { key: "featured", label: t("ad2.flagFeatured") },
 ];
 
 export default function CompaniesPage() {
   const { t } = useI18n();
+  const groups = buildGroups(t);
+  const flags = buildFlags(t);
+  // c.label — это тоже i18n-ключ (см. permissions.ts), поэтому в фолбэке его надо
+  // перевести, а не выводить как есть: иначе новая возможность без ad2.cap.* показала
+  // бы админу сырой ключ вида «perm.cap.foo».
+  const capLabel = (c: { key: string; label: string }) => { const k = `ad2.cap.${c.key}`; const v = t(k); return v === k ? t(c.label) : v; };
+  const sectionLabel = (s: { key: string; label: string }) => { const k = `co.${s.key}`; const v = t(k); return v === k ? s.label : v; };
   const [companies, setCompanies] = useState<Company[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [sel, setSel] = useState<Company | null>(null);
@@ -58,15 +67,15 @@ export default function CompaniesPage() {
     if (!name) return;
     const r = await fetch("/api/admin/companies", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
     const j = await r.json();
-    if (r.ok) { setNewName(""); setCreating(false); await load(); setSel(j.data); } else setMsg(j.error?.message || "Ошибка");
+    if (r.ok) { setNewName(""); setCreating(false); await load(); setSel(j.data); } else setMsg(j.error?.message || t("ad2.error"));
   };
   const save = async () => {
     if (!sel) return;
     const r = await fetch("/api/admin/companies", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sel) });
-    setMsg(r.ok ? "Сохранено" : "Ошибка сохранения"); setTimeout(() => setMsg(""), 2000); if (r.ok) load();
+    setMsg(r.ok ? t("a.saved") : t("crq.saveErr")); setTimeout(() => setMsg(""), 2000); if (r.ok) load();
   };
   const remove = async () => {
-    if (!sel || !confirm(`Удалить компанию «${sel.name}»?`)) return;
+    if (!sel || !confirm(t("ad2.confirmDelCompany").replace("{name}", sel.name))) return;
     await fetch("/api/admin/companies", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: sel.id }) });
     setSel(null); load();
   };
@@ -84,7 +93,7 @@ export default function CompaniesPage() {
       </div>
       {creating && (
         <div className="card mb-3 flex flex-wrap gap-2 p-3">
-          <input className="input min-w-0 flex-1" placeholder="Название компании" value={newName} autoFocus onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && create()} />
+          <input className="input min-w-0 flex-1" placeholder={t("ad2.companyNamePh")} value={newName} autoFocus onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && create()} />
           <button className="btn-primary shrink-0" onClick={create}>{t("a.create")}</button>
         </div>
       )}
@@ -95,14 +104,14 @@ export default function CompaniesPage() {
           {companies.map((c) => (
             <button key={c.id} onClick={() => setSel(c)} className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm ${sel?.id === c.id ? "bg-accent/10" : "hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"}`}>
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-xs font-bold text-white">{c.name.charAt(0)}</span>
-              <div className="flex-1"><div className="font-medium">{c.name}</div><div className="text-xs text-black/40">/{c.slug}</div></div>
+              <div className="flex-1"><div className="font-medium">{c.name}</div><div className="text-xs text-black/60">/{c.slug}</div></div>
               {c.verified && <span className="chip !py-0 text-[10px] !border-up/40 text-up">✓</span>}
             </button>
           ))}
-          {companies.length === 0 && <p className="p-4 text-sm text-black/50">{t("a.noCompanies")}</p>}
+          {companies.length === 0 && <p className="p-4 text-sm text-black/60">{t("a.noCompanies")}</p>}
         </div>
 
-        {!sel ? <div className="card grid place-items-center p-10 text-sm text-black/50">Выберите или создайте компанию.</div> : (
+        {!sel ? <div className="card grid place-items-center p-10 text-sm text-black/60">{t("ad2.selectCompany")}</div> : (
           <div className="space-y-4">
             <div className="card p-5">
               <div className="mb-3 flex items-center justify-between">
@@ -116,7 +125,7 @@ export default function CompaniesPage() {
               <input className="input mb-4" value={sel.name} onChange={(e) => setSel({ ...sel, name: e.target.value })} />
 
               {groups.map((g) => (
-                <details key={g.title} className="mb-2 rounded-xl border border-black/[0.07] dark:border-white/10" open={g.title === "Основная информация"}>
+                <details key={g.id} className="mb-2 rounded-xl border border-black/[0.07] dark:border-white/10" open={g.id === "main"}>
                   <summary className="cursor-pointer px-3 py-2 text-sm font-semibold">{g.title}</summary>
                   <div className="grid gap-3 p-3 sm:grid-cols-2">
                     {g.fields.map((f) => (
@@ -137,18 +146,18 @@ export default function CompaniesPage() {
               </div>
               <label className="label mt-4">{t("a.owner")}</label>
               <select className="input max-w-sm" value={sel.ownerUserId ?? ""} onChange={(e) => setSel({ ...sel, ownerUserId: e.target.value || null })}>
-                <option value="">— не назначен —</option>
+                <option value="">{t("ad2.notAssigned")}</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
               </select>
             </div>
 
             {/* individual capabilities */}
             <div className="card p-5">
-              <h3 className="mb-3 font-semibold">Индивидуальные права компании</h3>
+              <h3 className="mb-3 font-semibold">{t("ad2.companyCaps")}</h3>
               <div className="grid gap-2 sm:grid-cols-2">
                 {COMPANY_CAPABILITIES.map((c) => (
                   <label key={c.key} className="flex items-center justify-between rounded-lg border border-black/[0.06] px-3 py-2 text-sm dark:border-white/10">
-                    {c.label}
+                    {capLabel(c)}
                     <button onClick={() => setCap(c.key, !sel.capabilities[c.key])} className={`h-5 w-9 rounded-full p-0.5 transition ${sel.capabilities[c.key] ? "bg-up" : "bg-black/20"}`}>
                       <span className={`block h-4 w-4 rounded-full bg-white transition ${sel.capabilities[c.key] ? "translate-x-4" : ""}`} />
                     </button>
@@ -159,14 +168,14 @@ export default function CompaniesPage() {
 
             {/* cabinet sections */}
             <div className="card p-5">
-              <h3 className="mb-1 font-semibold">Разделы кабинета компании</h3>
-              <p className="mb-3 text-xs text-black/50 dark:text-white/50">Отметьте, какие разделы доступны этой компании.</p>
+              <h3 className="mb-1 font-semibold">{t("ad2.companySections")}</h3>
+              <p className="mb-3 text-xs text-black/60 dark:text-white/65">{t("ad2.companySectionsHint")}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {COMPANY_SECTIONS.map((s) => (
-                  <label key={s.key} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={sel.sections.includes(s.key)} onChange={() => toggleSection(s.key)} />{s.label}</label>
+                  <label key={s.key} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={sel.sections.includes(s.key)} onChange={() => toggleSection(s.key)} />{sectionLabel(s)}</label>
                 ))}
               </div>
-              <Link href="/company" className="btn-ghost mt-4 inline-flex text-xs">Открыть кабинет компании →</Link>
+              <Link href="/company" className="btn-ghost mt-4 inline-flex text-xs">{t("ad2.openCompanyCab")}</Link>
             </div>
           </div>
         )}

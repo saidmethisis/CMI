@@ -3,9 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/useAuth";
+import Cover from "@/components/Cover";
 
 interface Node {
-  id: string; userId: string | null; author: string; authorAvatar: string; body: string; status: string;
+  id: string; mine: boolean; author: string; authorAvatar: string; body: string; status: string;
   likes: number; dislikes: number; reports: number; pinned: boolean; edited: boolean; createdAt: string;
   myReaction: "like" | "dislike" | null; replies: Node[];
 }
@@ -41,13 +42,16 @@ export default function Comments({ articleId }: { articleId: string }) {
   return (
     <section className="mt-10" id="comments">
       <h2 className="mb-4 font-serif text-xl font-bold">{t("comments.title")} ({count(tree)})</h2>
-      {flash && <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black/85 px-4 py-2 text-sm text-white shadow-lg md:bottom-6">{flash}</div>}
+      {/* role=status + aria-live: без них диктор молчал, и слепой читатель не узнавал
+          ни об ошибке отправки, ни об успешной жалобе */}
+      <div role="status" aria-live="polite" className="sr-only">{flash}</div>
+      {flash && <div aria-hidden className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black/85 px-4 py-2 text-sm text-white shadow-lg md:bottom-6">{flash}</div>}
 
       {user ? (
         <div className="card mb-5 p-3">
-          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder={t("comments.placeholder")} className="input resize-y" />
+          <textarea aria-label={t("comments.placeholder")} value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder={t("comments.placeholder")} className="input resize-y" />
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-xs text-black/40 dark:text-white/40">{t("comments.moderationNote")}</span>
+            <span className="text-xs text-black/60 dark:text-white/65">{t("comments.moderationNote")}</span>
             <button onClick={() => post(text)} disabled={busy} className="btn-primary">{t("comments.send")}</button>
           </div>
         </div>
@@ -56,7 +60,7 @@ export default function Comments({ articleId }: { articleId: string }) {
       )}
 
       {tree.length === 0 ? (
-        <p className="rounded-xl border border-black/5 bg-black/[0.02] px-4 py-6 text-center text-sm text-black/45 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/45">{t("comments.beFirst")}</p>
+        <p className="rounded-xl border border-black/5 bg-black/[0.02] px-4 py-6 text-center text-sm text-black/60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/65">{t("comments.beFirst")}</p>
       ) : (
         <ul className="space-y-3">
           {tree.map((c) => <CommentItem key={c.id} node={c} depth={0} me={user?.id ?? null} isMod={isMod} loggedIn={!!user} onChange={load} onReply={post} onFlash={notify} />)}
@@ -76,7 +80,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(node.body);
   const [reply, setReply] = useState("");
-  const mine = me && node.userId === me;
+  const mine = node.mine;
 
   const react = async (type: "like" | "dislike") => {
     const r = await fetch(`/api/comments/${node.id}/react`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type }) });
@@ -93,25 +97,25 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
       <div className={`card p-4 ${node.pinned ? "ring-1 ring-brand/40" : ""}`}>
         <div className="mb-1 flex items-center gap-2 text-sm">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-brand text-xs font-bold text-white">
-            {node.authorAvatar ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={node.authorAvatar} alt="" className="h-full w-full rounded-full object-cover" /> : node.author.charAt(0)}
+            {node.authorAvatar ? <Cover src={node.authorAvatar} alt="" width={56} height={56} sizes="28px" className="h-full w-full rounded-full object-cover" /> : node.author.charAt(0)}
           </span>
           <span className="font-semibold">{node.author}</span>
           {node.pinned && <span className="chip !py-0 text-[10px] !border-brand/40 text-brand dark:text-white">{t("comments.pinnedBadge")}</span>}
           {node.status === "pending" && <span className="chip !py-0 text-[10px]">{t("comments.pendingBadge")}</span>}
           {node.edited && <span className="text-xs text-black/30">{t("comments.editedMark")}</span>}
-          <span className="ml-auto text-xs text-black/40 dark:text-white/40">{new Date(node.createdAt).toLocaleDateString(loc)}</span>
+          <span className="ml-auto text-xs text-black/60 dark:text-white/65">{new Date(node.createdAt).toLocaleDateString(loc)}</span>
         </div>
 
         {editing ? (
           <div className="mt-1">
-            <textarea className="input resize-y" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} />
+            <textarea aria-label={t("wc.edit")} className="input resize-y" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} />
             <div className="mt-1 flex gap-2"><button className="btn-primary text-xs" onClick={saveEdit}>{t("comments.save")}</button><button className="btn-ghost text-xs" onClick={() => setEditing(false)}>{t("comments.cancel")}</button></div>
           </div>
         ) : (
           <p className="text-sm text-black/80 dark:text-white/80">{node.body}</p>
         )}
 
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-black/50 dark:text-white/50">
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-black/60 dark:text-white/65">
           <button onClick={() => react("like")} className={node.myReaction === "like" ? "font-semibold text-up" : "hover:text-up"}>▲ {node.likes}</button>
           <button onClick={() => react("dislike")} className={node.myReaction === "dislike" ? "font-semibold text-down" : "hover:text-down"}>▼ {node.dislikes}</button>
           {loggedIn && <button onClick={() => setReplying((v) => !v)} className="hover:text-brand dark:hover:text-white">{t("comments.reply")}</button>}
@@ -123,7 +127,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
 
         {replying && (
           <div className="mt-2">
-            <textarea className="input resize-y" rows={2} value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t("comments.replyPlaceholder")} />
+            <textarea aria-label={t("comments.replyPlaceholder")} className="input resize-y" rows={2} value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t("comments.replyPlaceholder")} />
             <div className="mt-1 flex gap-2"><button className="btn-primary text-xs" onClick={() => { onReply(reply, node.id); setReply(""); setReplying(false); }}>{t("comments.reply")}</button></div>
           </div>
         )}

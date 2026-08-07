@@ -16,7 +16,7 @@ export default function TrendPanel({ title, total, labels, values, color }: { ti
           <span className="text-sm font-bold tabular-nums text-white/80">{total}</span>
           <div className="flex overflow-hidden rounded-lg border border-white/15 text-[11px]">
             {([6, 12] as const).map((p) => (
-              <button key={p} onClick={() => setPeriod(p)} className={`px-2 py-1 font-semibold transition ${period === p ? "bg-white/15 text-white" : "text-white/45 hover:text-white"}`}>
+              <button key={p} onClick={() => setPeriod(p)} className={`px-2 py-1 font-semibold transition ${period === p ? "bg-white/15 text-white" : "text-white/65 hover:text-white"}`}>
                 {p}М
               </button>
             ))}

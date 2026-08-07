@@ -32,7 +32,7 @@ export default function CryptoTable() {
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-[11px] uppercase text-black/40 dark:text-white/40">
+          <tr className="text-left text-[11px] uppercase text-black/60 dark:text-white/65">
             <th className="px-4 py-2 font-semibold">{t("w.asset")}</th>
             <th className="px-4 py-2 text-right font-semibold">{t("w.price")}</th>
             <th className="px-4 py-2 text-right font-semibold">{t("w.chg24")}</th>
@@ -41,13 +41,13 @@ export default function CryptoTable() {
         <tbody>
           {data.length === 0
             ? (err
-                ? <tr><td colSpan={3} className="px-4 py-4 text-center text-xs text-black/45 dark:text-white/45">Данные временно недоступны.</td></tr>
+                ? <tr><td colSpan={3} className="px-4 py-4 text-center text-xs text-black/60 dark:text-white/65">{t("w.dataNA")}</td></tr>
                 : Array.from({ length: 6 }).map((_, i) => <tr key={i}><td className="px-4 py-2.5" colSpan={3}><div className="skeleton h-4 w-full rounded" /></td></tr>))
             : data.map((c) => {
                 const up = c.changePct >= 0;
                 return (
                   <tr key={c.symbol} className="border-t border-black/[0.04] dark:border-white/[0.05]">
-                    <td className="px-4 py-2.5"><span className="font-bold">{c.symbol}</span> <span className="text-xs text-black/40 dark:text-white/40">{c.name}</span></td>
+                    <td className="px-4 py-2.5"><span className="font-bold">{c.symbol}</span> <span className="text-xs text-black/60 dark:text-white/65">{c.name}</span></td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmtPrice(c.price)}</td>
                     <td className={`px-4 py-2.5 text-right tabular-nums font-semibold ${up ? "text-up" : "text-down"}`}>{up ? "▲" : "▼"} {Math.abs(c.changePct).toFixed(2)}%</td>
                   </tr>
@@ -55,7 +55,7 @@ export default function CryptoTable() {
               })}
         </tbody>
       </table>
-      {source === "fallback" && <div className="px-4 py-2 text-[11px] text-black/40 dark:text-white/40">{t("w.fallback")}</div>}
+      {source === "fallback" && <div className="px-4 py-2 text-[11px] text-black/60 dark:text-white/65">{t("w.fallback")}</div>}
     </section>
   );
 }

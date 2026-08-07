@@ -39,16 +39,16 @@ export default function RatesBoard() {
   }, [load]);
 
   return (
-    <section className="card overflow-hidden" aria-label={t("w.cbuTitle")}>
+    <section className="card overflow-hidden" aria-label={t("w.cbuTitle")} aria-live="polite">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-black/5 px-4 py-3 dark:border-white/10">
         <h2 className="font-serif text-lg font-bold">{t("w.cbuTitle")}</h2>
-        <span className="ml-auto text-xs text-black/45 dark:text-white/45">
+        <span className="ml-auto text-xs text-black/60 dark:text-white/65">
           {source === "fallback" ? t("w.fallback") : t("w.updated")}: {updatedAt ? new Date(updatedAt).toLocaleDateString(loc) : "…"}
         </span>
       </div>
 
       {err && rates.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-black/50 dark:text-white/50">{t("w.ratesNA")}</p>
+        <p className="px-4 py-6 text-sm text-black/60 dark:text-white/65">{t("w.ratesNA")}</p>
       ) : (
         <div className="grid grid-cols-2 gap-px bg-black/[0.06] sm:grid-cols-3 lg:grid-cols-5 dark:bg-white/[0.08]">
           {rates.length === 0
@@ -67,7 +67,7 @@ export default function RatesBoard() {
                     </div>
                     <div className="mt-0.5 text-base font-semibold tabular-nums">
                       {r.rate.toLocaleString(loc)}
-                      <span className="ml-1 text-xs font-normal text-black/40 dark:text-white/40">{t("w.sum")}</span>
+                      <span className="ml-1 text-xs font-normal text-black/60 dark:text-white/65">{t("w.sum")}</span>
                     </div>
                   </div>
                 );
