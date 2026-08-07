@@ -5,8 +5,10 @@ import RatesBoard from "@/components/RatesBoard";
 import BankRates from "@/components/BankRates";
 import StockBoard from "@/components/StockBoard";
 import Cover from "@/components/Cover";
+import CatalogTabs from "@/components/CatalogTabs";
 import { getBankRates } from "@/lib/bank-rates";
 import { getStockQuotes } from "@/lib/stock";
+import { publicCompanies, publicAuthors } from "@/lib/rbac-store";
 import VideoRow from "@/components/VideoRow";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
@@ -47,6 +49,10 @@ export default async function HomePage() {
   // курсы банков тянем на сервере (кэш 1 час) — блок виден сразу, без «прыжка» после гидрации
   const bankRates = await soft(getBankRates, { data: {}, updatedAt: "", source: "unavailable" });
   const stock = await soft(getStockQuotes, { data: [], updatedAt: "", source: "unavailable" });
+  // Каталоги для вкладок «Компании» и «Авторы» — критичное добавление из ТЗ:
+  // со сводного экрана должен быть вход и в бизнес-каталог, и к авторам.
+  const companies = await soft(publicCompanies, []);
+  const authors = await soft(publicAuthors, []);
   const pinnedRaw = await soft(pinnedArticle, undefined);
   // тексты — на языке интерфейса, с фолбэком на язык оригинала
   const pinned = pinnedRaw ? { ...pinnedRaw, ...localizedArticle(pinnedRaw, lang) } : pinnedRaw;
@@ -123,6 +129,9 @@ export default async function HomePage() {
 
           {/* TRENDING NOW */}
           <div className="mb-8"><TrendingNow items={trending} /></div>
+
+          {/* Компании и авторы площадки */}
+          <div className="mb-8"><CatalogTabs companies={companies} authors={authors} /></div>
 
           <div className="mb-8">
             <VideoRow title={<T k="home.video" />} items={videos} />

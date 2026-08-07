@@ -265,3 +265,49 @@ export async function listAudit() {
   await ensureRbacSeed();
   return prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 50 });
 }
+
+// ── Публичные каталоги (нижняя навигация, раздел «Главное») ──────────────────
+// Отдаём только то, что можно показать любому читателю, и сразу со счётчиком
+// материалов: без него в каталоге видны пустые карточки, а делать по запросу
+// на каждую компанию — лишняя нагрузка.
+
+export async function publicCompanies() {
+  await ensureRbacSeed();
+  const rows = await prisma.company.findMany({
+    where: { active: true },
+    select: { slug: true, name: true, verified: true, premium: true, featured: true, profile: true },
+    orderBy: [{ featured: "desc" }, { name: "asc" }],
+  });
+  const counts = await prisma.article.groupBy({ by: ["company"], where: { status: "published" }, _count: true });
+  const byName = new Map(counts.map((c) => [c.company ?? "", c._count]));
+  return rows.map((c) => {
+    const p = j(c.profile, {}) as Record<string, string>;
+    return {
+      slug: c.slug, name: c.name, verified: c.verified, premium: c.premium, featured: c.featured,
+      about: (p.about ?? p.description ?? "").slice(0, 200),
+      logo: p.logo ?? "",
+      materials: byName.get(c.name) ?? 0,
+    };
+  });
+}
+
+export async function publicAuthors() {
+  await ensureRbacSeed();
+  const rows = await prisma.author.findMany({
+    where: { verifyStatus: { not: "rejected" } },
+    select: { slug: true, firstName: true, lastName: true, avatar: true, verifyStatus: true, profile: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const counts = await prisma.article.groupBy({ by: ["authorName"], where: { status: "published" }, _count: true });
+  // Имена в статьях могут отличаться пробелами от справочника — сверяем нормализованно.
+  const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase();
+  const byName = new Map(counts.map((c) => [norm(c.authorName), c._count]));
+  return rows.map((a) => {
+    const p = j(a.profile, {}) as Record<string, string>;
+    const name = `${a.firstName} ${a.lastName}`.replace(/\s+/g, " ").trim();
+    return {
+      slug: a.slug, name, avatar: a.avatar, verified: a.verifyStatus === "verified",
+      position: p.position ?? "", materials: byName.get(norm(name)) ?? 0,
+    };
+  });
+}

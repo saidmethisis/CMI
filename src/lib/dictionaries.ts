@@ -10,6 +10,16 @@ type Dict = Record<string, string>;
 
 const ru: Dict = {
   // nav / header / footer
+  // Нижняя панель навигации (ТЗ, блок 1.2). tab.* — короткая подпись на кнопке,
+  // tabFull.* — полное название для озвучивания и заголовков разделов.
+  "tab.main": "Главная", "tab.feed": "Лента", "tab.numbers": "Цифры", "tab.my": "Моя",
+  "tabFull.main": "Главное", "tabFull.feed": "Лента новостей", "tabFull.numbers": "Цифры", "tabFull.my": "Моя страница",
+  "feed.title": "Лента новостей", "feed.subtitle": "Все публикации, от новых к старым", "feed.empty": "Публикаций пока нет",
+  "num.title": "Цифры", "num.subtitle": "Курсы, биржа, погода — в одном месте", "num.flights": "Табло полётов",
+  "num.flightsSoon": "Источник данных не подключён", "num.crypto": "Криптовалюты", "num.weather": "Погода",
+  "main.companies": "Компании", "main.authors": "Авторы", "main.latest": "Свежее",
+  "co.title": "Каталог компаний", "co.subtitle": "Бизнес, который публикуется на площадке", "co.empty": "Компаний пока нет",
+  "co.materials": "материалов", "au.title": "Авторы", "au.subtitle": "Журналисты и авторы площадки", "au.empty": "Авторов пока нет",
   "nav.home": "Главная", "a11y.close": "Закрыть", "a11y.menu": "Меню", "a11y.prev": "Назад", "a11y.next": "Далее", "nav.topics": "Темы", "nav.notifications": "Уведомления", "nav.profile": "Профиль", "nav.search": "Поиск",
   "header.cabinet": "Кабинет", "header.promo": "Реклама / Подписка",
   "menu.signedInAs": "Вы вошли как", "menu.profile": "Профиль и настройки", "menu.logout": "Выйти", "menu.admin": "Админ-панель", "menu.cabCompany": "Кабинет компании", "menu.cabAuthor": "Кабинет автора", "menu.allTopics": "Все темы", "menu.saved": "Избранное", "menu.appearance": "Тема и язык", "menu.account": "Личный кабинет",
@@ -469,6 +479,14 @@ const ru: Dict = {
 };
 
 const en: Dict = {
+  "tab.main": "Home", "tab.feed": "Feed", "tab.numbers": "Numbers", "tab.my": "My",
+  "tabFull.main": "Home", "tabFull.feed": "Newsfeed", "tabFull.numbers": "Numbers", "tabFull.my": "My Page",
+  "feed.title": "Newsfeed", "feed.subtitle": "Every publication, newest first", "feed.empty": "No publications yet",
+  "num.title": "Numbers", "num.subtitle": "Rates, exchange, weather — in one place", "num.flights": "Flight board",
+  "num.flightsSoon": "Data source not connected", "num.crypto": "Crypto", "num.weather": "Weather",
+  "main.companies": "Companies", "main.authors": "Authors", "main.latest": "Latest",
+  "co.title": "Company directory", "co.subtitle": "Businesses publishing on the platform", "co.empty": "No companies yet",
+  "co.materials": "materials", "au.title": "Authors", "au.subtitle": "Journalists and creators", "au.empty": "No authors yet",
   "nav.home": "Home", "a11y.close": "Close", "a11y.menu": "Menu", "a11y.prev": "Previous", "a11y.next": "Next", "nav.topics": "Topics", "nav.notifications": "Alerts", "nav.profile": "Profile", "nav.search": "Search",
   "header.cabinet": "Workspace", "header.promo": "Advertise / Subscribe",
   "menu.signedInAs": "Signed in as", "menu.profile": "Profile & settings", "menu.logout": "Sign out", "menu.admin": "Admin panel", "menu.cabCompany": "Company cabinet", "menu.cabAuthor": "Author cabinet", "menu.allTopics": "All topics", "menu.saved": "Saved", "menu.appearance": "Theme & language", "menu.account": "My account",
@@ -914,6 +932,14 @@ const en: Dict = {
 };
 
 const uz: Dict = {
+  "tab.main": "Bosh", "tab.feed": "Tasma", "tab.numbers": "Sonlar", "tab.my": "Sahifam",
+  "tabFull.main": "Bosh sahifa", "tabFull.feed": "Yangiliklar tasmasi", "tabFull.numbers": "Sonlar", "tabFull.my": "Mening sahifam",
+  "feed.title": "Yangiliklar tasmasi", "feed.subtitle": "Barcha nashrlar, yangilaridan eskilariga", "feed.empty": "Hozircha nashrlar yo'q",
+  "num.title": "Sonlar", "num.subtitle": "Kurslar, birja, ob-havo — bir joyda", "num.flights": "Parvozlar jadvali",
+  "num.flightsSoon": "Ma'lumot manbasi ulanmagan", "num.crypto": "Kriptovalyutalar", "num.weather": "Ob-havo",
+  "main.companies": "Kompaniyalar", "main.authors": "Mualliflar", "main.latest": "Yangi",
+  "co.title": "Kompaniyalar katalogi", "co.subtitle": "Platformada nashr qiladigan biznes", "co.empty": "Hozircha kompaniyalar yo'q",
+  "co.materials": "material", "au.title": "Mualliflar", "au.subtitle": "Platforma jurnalistlari va mualliflari", "au.empty": "Hozircha mualliflar yo'q",
   "nav.home": "Bosh sahifa", "a11y.close": "Yopish", "a11y.menu": "Menyu", "a11y.prev": "Orqaga", "a11y.next": "Keyingi", "nav.topics": "Mavzular", "nav.notifications": "Bildirishnomalar", "nav.profile": "Profil", "nav.search": "Qidiruv",
   "header.cabinet": "Kabinet", "header.promo": "Reklama / Obuna",
   "menu.signedInAs": "Kirdingiz:", "menu.profile": "Profil va sozlamalar", "menu.logout": "Chiqish", "menu.admin": "Admin panel", "menu.cabCompany": "Kompaniya kabineti", "menu.cabAuthor": "Muallif kabineti", "menu.allTopics": "Barcha mavzular", "menu.saved": "Saqlangan", "menu.appearance": "Mavzu va til", "menu.account": "Shaxsiy kabinet",
