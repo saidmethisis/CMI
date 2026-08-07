@@ -1,10 +1,12 @@
 "use client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/Icon";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 import { useI18n } from "@/lib/i18n";
 import { imageFileToUrl, fileToDataUrl, uploadDataUrl } from "@/lib/upload";
+import RichEditor from "@/components/RichEditor";
+import BulkImageUpload from "@/components/BulkImageUpload";
 
 type Social = { label: string; url: string };
 type LangCode = "ru" | "uz" | "en";
@@ -24,7 +26,9 @@ export default function AuthorEditor() {
   const { categories } = useTaxonomy();
   const catName = useCatName();
   const { t, lang: uiLang } = useI18n();
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  // Массовая загрузка (ТЗ, блок 3): окно открывается из панели редактора,
+  // а вставкой занимается сам редактор — он знает, где стоит курсор.
+  const [bulkInsert, setBulkInsert] = useState<((urls: string[]) => void) | null>(null);
 
   // Один материал — три языковые версии. Заполнять можно любую (минимум одну);
   // незаполненные языки на сайте показываются на языке-фолбэке.
@@ -43,28 +47,12 @@ export default function AuthorEditor() {
   const [socials, setSocials] = useState<Social[]>([{ label: "Telegram", url: "" }]);
   const [busy, setBusy] = useState(false);
   const [coverBusy, setCoverBusy] = useState(false);
-  const [photoBusy, setPhotoBusy] = useState(false);
   const [error, setError] = useState("");
 
   const onCover = async (f?: File) => {
     if (!f) return;
     setCoverBusy(true);
     try { setCover(await imageFileToUrl(f)); } finally { setCoverBusy(false); }
-  };
-
-  const insertPhoto = async (f?: File) => {
-    if (!f) return;
-    setPhotoBusy(true);
-    try {
-      const url = await imageFileToUrl(f);
-      const ta = bodyRef.current;
-      const marker = `\n\n![фото](${url})\n\n`;
-      const text = cur.body;
-      const pos = ta?.selectionStart ?? text.length;
-      setCur({ body: text.slice(0, pos) + marker + text.slice(pos) });
-    } finally {
-      setPhotoBusy(false);
-    }
   };
 
   const setSocial = (i: number, patch: Partial<Social>) => setSocials((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)));
@@ -183,13 +171,14 @@ export default function AuthorEditor() {
 
       <div className="mb-1 flex items-center justify-between">
         <label className="label !mb-0">{t("author.text")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
-        <label className={`btn-ghost text-xs ${photoBusy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}>
-          <Icon name="image" size={14} /> {photoBusy ? t("author.uploading") : t("author.insertPhoto")}
-          <input type="file" accept="image/*" disabled={photoBusy} className="sr-only" onChange={(e) => insertPhoto(e.target.files?.[0])} />
-        </label>
       </div>
-      <textarea ref={bodyRef} value={cur.body} onChange={(e) => setCur({ body: e.target.value })} rows={10}
-        className="input resize-y font-mono text-sm" placeholder="![...](...)" />
+      <RichEditor
+        value={cur.body}
+        onChange={(html) => setCur({ body: html })}
+        placeholder={t("author.text")}
+        onRequestImages={(insert) => setBulkInsert(() => insert)}
+      />
+      {bulkInsert && <BulkImageUpload onInsert={bulkInsert} onClose={() => setBulkInsert(null)} />}
 
       {/* author socials */}
       <div className="mt-4">

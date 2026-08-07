@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { slugify } from "./slug";
 import { notify } from "./notifications";
 import { pingIndexing, articlePaths } from "./indexing";
+import { sanitizeHtml, looksLikeHtml, htmlToText } from "./sanitize-html";
 import type { Article, ArticleTranslations, LangCode, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
 import { categories, stories } from "./seed";
 
@@ -188,6 +189,9 @@ export function localizeList(items: Article[], lang: LangCode): Article[] {
 // Нормализует объект переводов от клиента. В translations сохраняются ВСЕ заполненные
 // языки (включая основной) — так всегда однозначно известно, на каких языках есть текст.
 // Базовые title/lead/body дублируют основной язык и служат фолбэком для остальных.
+// Заголовок и лид не должны содержать разметку вообще.
+const stripTags = (s: string) => (looksLikeHtml(s) || s.includes("<") ? htmlToText(s) : s);
+
 function normalizeTranslations(input: unknown): { base: { title: string; lead: string; body: string } | null; translations: ArticleTranslations } {
   const src = (input && typeof input === "object" ? input : {}) as Record<string, { title?: string; lead?: string; body?: string }>;
   const order: LangCode[] = ["ru", "uz", "en"];
@@ -195,7 +199,16 @@ function normalizeTranslations(input: unknown): { base: { title: string; lead: s
   for (const l of order) {
     const v = src[l];
     if (v && (v.title?.trim() || v.lead?.trim() || v.body?.trim())) {
-      translations[l] = { title: (v.title ?? "").trim(), lead: (v.lead ?? "").trim(), body: (v.body ?? "").trim() };
+      const rawBody = (v.body ?? "").trim();
+      translations[l] = {
+        // Заголовок и лид — всегда простой текст: разметка в них не нужна,
+        // а в карточках и мета-тегах теги выглядели бы как мусор.
+        title: stripTags((v.title ?? "").trim()),
+        lead: stripTags((v.lead ?? "").trim()),
+        // Текст из редактора приходит размеченным. Моем его здесь, на сервере:
+        // клиент — не граница доверия, запрос можно отправить и мимо формы.
+        body: looksLikeHtml(rawBody) ? sanitizeHtml(rawBody) : rawBody,
+      };
     }
   }
   // основной язык = первый, где заполнены все три поля; иначе первый непустой
@@ -425,9 +438,12 @@ function buildAiSummary(title: string, lead: string): string {
   return l ? `• ${title}\n• ${l}` : `• ${title}`;
 }
 
-// Слов в минуту при подсчёте времени чтения.
+// Слов в минуту при подсчёте времени чтения. Считаем по видимому тексту:
+// после появления редактора в теле лежит разметка, и теги раздували счёт —
+// статья на три абзаца обещала читателю восемь минут.
 const WPM = 180;
-const readingTime = (body: string) => Math.max(1, Math.round(body.split(/\s+/).filter(Boolean).length / WPM));
+const readingTime = (body: string) =>
+  Math.max(1, Math.round(htmlToText(body).split(/\s+/).filter(Boolean).length / WPM));
 
 // Инкремент просмотров опубликованной статьи (dashboard «Ko'rishlar» и топ материалов).
 //

@@ -105,3 +105,66 @@ body {
   .marquee-track { animation: none; transform: none; }
   .marquee { overflow-x: auto; }
 }
+
+/* ── Текст статьи и редактор (ТЗ, блок 2) ────────────────────────────────────
+   Один набор правил на две задачи: так автор в редакторе видит ровно то, что
+   потом увидит читатель. Классы .ta-* и .fs-* ставит редактор, и только они
+   пропускаются санитайзером — произвольный class внутрь не попадает. */
+.article-html,
+.rich-editor {
+  --flow: 1rem;
+}
+.article-html > * + *,
+.rich-editor > * + * { margin-top: var(--flow); }
+
+.article-html p,
+.rich-editor p { line-height: 1.75; }
+
+.article-html h2,
+.rich-editor h2 { @apply font-serif text-2xl font-extrabold leading-tight; margin-top: 2rem; }
+.article-html h3,
+.rich-editor h3 { @apply font-serif text-xl font-bold leading-snug; margin-top: 1.5rem; }
+
+.article-html ul,
+.rich-editor ul { @apply list-disc space-y-1.5 pl-6; }
+.article-html ol,
+.rich-editor ol { @apply list-decimal space-y-1.5 pl-6; }
+
+.article-html a,
+.rich-editor a { @apply font-medium text-accent underline underline-offset-2; }
+
+.article-html figure,
+.rich-editor figure { margin-top: 1.5rem; }
+.article-html figure img,
+.rich-editor figure img { @apply w-full rounded-xl; }
+.article-html figcaption,
+.rich-editor figcaption { @apply mt-1.5 text-center text-xs text-black/60 dark:text-white/65; }
+
+/* Цитата — отдельный фирменный блок (ТЗ: «собственная цветокоррекция, строго
+   деловой минимализм»). Акцентная линия слева, крупнее основного текста,
+   без кавычек-картинок: в деловом издании они выглядят дёшево. */
+.article-html blockquote,
+.rich-editor blockquote {
+  @apply border-l-4 border-accent bg-brand/[0.04] py-3 pl-5 pr-4 font-serif text-lg leading-relaxed text-brand dark:bg-white/[0.04] dark:text-white/90;
+  margin-top: 1.75rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.article-html blockquote p,
+.rich-editor blockquote p { margin-top: 0.5rem; }
+.article-html blockquote p:first-child,
+.rich-editor blockquote p:first-child { margin-top: 0; }
+
+/* Выравнивание и размеры — из панели редактора */
+.ta-left { text-align: left; }
+.ta-center { text-align: center; }
+.ta-right { text-align: right; }
+.fs-sm { font-size: 0.9375rem; }
+.fs-lg { font-size: 1.125rem; }
+.fs-xl { font-size: 1.3125rem; line-height: 1.5; }
+
+/* Подсказка в пустом редакторе: без неё поле выглядит сломанным */
+.rich-editor:empty::before,
+.rich-editor > p:only-child:empty::before {
+  content: attr(data-placeholder);
+  @apply text-black/40 dark:text-white/40;
+}
