@@ -8,14 +8,21 @@
 //   node scripts/migrate-sqlite-to-postgres.mjs <путь-к-dev.db>
 //   node scripts/migrate-sqlite-to-postgres.mjs ./backup/dev.db --dry-run
 //
+// Чтение .db требует Node 22 (там появился встроенный node:sqlite). Если под
+// рукой Node 20 — как в нашем образе, — выгрузите базу в JSON чем угодно и
+// скормите его сюда: формат {"Имя таблицы": [ {строка}, ... ]}. Например,
+// питоном, который есть на любом сервере:
+//
+//   python3 -c "import sqlite3,json;c=sqlite3.connect('dev.db');c.row_factory=sqlite3.Row;//   t=[r[0] for r in c.execute(\"select name from sqlite_master where type='table'\")];//   print(json.dumps({n:[dict(r) for r in c.execute(f'select * from \\\"{n}\\\"')] for n in t}))" > dump.json
+//   node scripts/migrate-sqlite-to-postgres.mjs dump.json
+//
 // Требования: Postgres поднят, миграции применены (npx prisma migrate deploy),
 // DATABASE_URL указывает на него.
 //
 // Безопасность: скрипт НИЧЕГО не удаляет. Записи, чей id уже есть в Postgres,
 // пропускаются — значит его можно запускать повторно после сбоя.
 
-import { DatabaseSync } from "node:sqlite";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 
 const SRC = process.argv[2];
@@ -26,8 +33,22 @@ if (!SRC || !existsSync(SRC)) {
   process.exit(1);
 }
 
-const sqlite = new DatabaseSync(SRC, { readOnly: true });
+// Источник: либо готовый JSON-дамп, либо сам файл SQLite (нужен Node 22+).
+const isJson = SRC.toLowerCase().endsWith(".json");
+let dump = null, sqlite = null;
+if (isJson) {
+  dump = JSON.parse(readFileSync(SRC, "utf8"));
+} else {
+  const { DatabaseSync } = await import("node:sqlite").catch(() => {
+    console.error("Этот Node не умеет читать SQLite напрямую (нужен 22+).");
+    console.error("Выгрузите базу в JSON — как это сделать, написано в шапке файла.");
+    process.exit(1);
+  });
+  sqlite = new DatabaseSync(SRC, { readOnly: true });
+}
 const prisma = new PrismaClient();
+
+const tableRows = (name) => (isJson ? dump[name] ?? null : (sqlite.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name) ? sqlite.prepare(`SELECT * FROM "${name}"`).all() : null));
 
 // В SQLite Prisma хранит DateTime числом (мс от эпохи) либо строкой — приводим к Date.
 const toDate = (v) => {
@@ -62,15 +83,12 @@ const TABLES = [
   // недействительны после переезда — пользователи просто войдут заново.
 ];
 
-const tableExists = (name) =>
-  sqlite.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name) !== undefined;
-
 console.log(DRY ? "РЕЖИМ ПРОВЕРКИ — ничего не записывается\n" : "Перенос данных\n");
 let totalNew = 0, totalSkip = 0;
 
 for (const [table, model, map] of TABLES) {
-  if (!tableExists(table)) { console.log(`  ${table.padEnd(22)} нет в старой базе — пропуск`); continue; }
-  const rows = sqlite.prepare(`SELECT * FROM "${table}"`).all();
+  const rows = tableRows(table);
+  if (rows === null) { console.log(`  ${table.padEnd(22)} нет в старой базе — пропуск`); continue; }
   if (rows.length === 0) { console.log(`  ${table.padEnd(22)} пусто`); continue; }
 
   let created = 0, skipped = 0, failed = 0;
@@ -94,5 +112,5 @@ for (const [table, model, map] of TABLES) {
 console.log(`\nИтого: перенесено ${totalNew}, пропущено как существующие ${totalSkip}`);
 if (DRY) console.log("Это была проверка. Запустите без --dry-run, чтобы записать.");
 
-sqlite.close();
+sqlite?.close();
 await prisma.$disconnect();
