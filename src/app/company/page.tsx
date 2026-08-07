@@ -72,7 +72,7 @@ export default async function CompanyCabinet() {
     <div className="container-content grid gap-6 py-6 md:grid-cols-[220px_1fr]">
       <aside className="md:sticky md:top-20 md:self-start">
         <div className="mb-3 flex items-center gap-2 px-2">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand font-bold text-white">{company.name.charAt(0)}</span>
+
           <div><div className="text-sm font-bold">{company.name}</div><div className="text-[11px] text-black/60 dark:text-white/65">{t("co.cabinet")}</div></div>
         </div>
         <CompanyNav items={sections.map((s) => ({ key: s.key, label: secLabel(s.key, s.label) }))} />

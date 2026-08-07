@@ -18,7 +18,6 @@ export default function AdIntegrations({ compact = false, max }: { compact?: boo
       <div className={`grid gap-3 ${cols}`}>
         {items.map((i) => (
           <div key={i.id} className="card flex items-center gap-3 p-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand/10 text-sm font-bold text-brand dark:bg-white/10 dark:text-white">{i.name.charAt(0)}</span>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold">{i.name}</div>
               <div className="truncate text-xs text-black/60 dark:text-white/65">{i.note}</div>

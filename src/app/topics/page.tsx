@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getCategories, categoryCounts } from "@/lib/store";
 import { serverT } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
-import CatMark from "@/components/CatMark";
 
 export async function generateMetadata() {
   const { t } = await serverT();
@@ -19,7 +18,9 @@ export default async function TopicsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {categories.map((c) => (
           <Link key={c.slug} href={`/category/${c.slug}`} className="card card-hover flex items-center gap-4 p-5">
-            <CatMark cat={c} label={localizeName(lang, c)} size={56} className="!rounded-xl" />
+            {/* Цвет рубрики — полосой, а не буквой в квадрате: буква имитирует
+                значок, которого нет, и на трёх языках выглядит по-разному. */}
+            <span aria-hidden className="h-12 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: c.color }} />
             <div>
               <div className="font-serif text-lg font-bold">{localizeName(lang, c)}</div>
               <div className="text-sm text-black/60 dark:text-white/65">{counts[c.slug] ?? 0} {t("common.materials")}</div>

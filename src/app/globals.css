@@ -75,3 +75,33 @@ body {
 /* hide scrollbar for horizontal rails */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Бегущая строка срочных новостей ─────────────────────────────────────────
+   Дорожка содержит два одинаковых списка подряд и сдвигается ровно на половину
+   своей ширины: в момент, когда первая копия уезжает, её место занимает вторая,
+   поэтому стык не виден и цикл повторяется без прыжка.
+
+   Направление — вправо: анимация идёт от -50% к нулю. Чтобы пустить строку
+   в привычную для новостных лент сторону, поменяйте эти два значения местами. */
+.marquee { overflow: hidden; }
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation-name: marquee-right;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+/* Остановка при наведении и при фокусе внутри: по движущейся ссылке
+   невозможно попасть, а WCAG 2.2.2 требует управляемости движением. */
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track { animation-play-state: paused; }
+
+/* Кто отключил анимации в системе — видит неподвижную строку. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; transform: none; }
+  .marquee { overflow-x: auto; }
+}

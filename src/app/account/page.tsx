@@ -48,9 +48,11 @@ export default function AccountPage() {
     <div className="container-content grid gap-6 py-6 md:grid-cols-[220px_1fr]">
       <aside className="md:sticky md:top-20 md:self-start">
         <div className="mb-3 flex items-center gap-2 px-1">
-          <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-brand text-white">
-            {user.avatar ? <Cover src={user.avatar} alt="" width={80} height={80} sizes="40px" className="h-full w-full object-cover" /> : (user.displayName || user.name).charAt(0)}
-          </span>
+          {user.avatar && (
+            <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full">
+              <Cover src={user.avatar} alt="" width={80} height={80} sizes="40px" className="h-full w-full object-cover" />
+            </span>
+          )}
           <div className="min-w-0"><div className="truncate text-sm font-semibold">{user.displayName || user.name}</div><div className="truncate text-xs text-black/60">{user.email}</div></div>
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col">

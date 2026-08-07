@@ -26,7 +26,8 @@ export default function AdSlot({ zone = "leaderboard", native = false }: { zone?
           <span className="min-w-0 truncate text-xs text-black/60 dark:text-white/65">{cr.advertiser}</span>
         </div>
         <div className="flex gap-3">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-lg font-bold text-white" style={{ backgroundColor: cr.color }}>{cr.advertiser.charAt(0)}</span>
+          {/* Полоса цветом рекламодателя вместо квадрата с буквой. */}
+          <span aria-hidden className="w-1.5 shrink-0 rounded-full" style={{ backgroundColor: cr.color }} />
           <div className="min-w-0">
             <div className="line-clamp-2 font-semibold leading-snug">{cr.title}</div>
             <div className="line-clamp-2 text-sm text-black/55 dark:text-white/55">{cr.subtitle}</div>

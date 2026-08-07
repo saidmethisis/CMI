@@ -5,7 +5,6 @@ import { getCategories, listPublished, localizeList } from "@/lib/store";
 import { serverT, langAlternates } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 import { subsectionPairs } from "@/lib/nav";
-import CatMark from "@/components/CatMark";
 import Feed from "@/components/Feed";
 import AdSlot from "@/components/AdSlot";
 import FollowButton from "@/components/FollowButton";
@@ -41,7 +40,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   return (
     <div className="container-content py-6">
       <div className="mb-4 flex items-center gap-3">
-        <CatMark cat={c} label={localizeName(lang, c)} size={48} className="!rounded-xl" />
+        <span aria-hidden className="h-12 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: c.color }} />
         <div>
           <h1 className="font-serif text-3xl font-bold">{localizeName(lang, c)}</h1>
           <p className="text-sm text-black/60 dark:text-white/65">{items.length} {t("common.materials")}{sub ? ` · ${subs.find((s) => s.value === sub)?.label ?? sub}` : ""}</p>

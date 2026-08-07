@@ -89,9 +89,13 @@ export default async function AuthorPage({ params }: Props) {
       <div className="card overflow-hidden">
         <div className="h-32 bg-gradient-to-r from-brand to-brand-700" style={p.banner ? { backgroundImage: `url(${p.banner})`, backgroundSize: "cover" } : undefined} />
         <div className="flex flex-wrap items-center gap-4 p-5">
-          <span className="-mt-14 grid h-24 w-24 place-items-center overflow-hidden rounded-2xl bg-brand text-3xl font-bold text-white ring-4 ring-[var(--surface)] dark:ring-ink-surface">
-            {a.avatar ? <Cover src={a.avatar} alt="" width={192} height={192} sizes="96px" className="h-full w-full object-cover" /> : a.firstName.charAt(0)}
-          </span>
+          {/* Аватар показываем только настоящий. Раньше без фотографии тут стоял
+              квадрат с первой буквой имени — подделка под значок, которой нет. */}
+          {a.avatar && (
+            <span className="-mt-14 grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl ring-4 ring-[var(--surface)] dark:ring-ink-surface">
+              <Cover src={a.avatar} alt="" width={192} height={192} sizes="96px" className="h-full w-full object-cover" />
+            </span>
+          )}
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h1 className="font-serif text-2xl font-bold">{a.firstName} {a.lastName}</h1>

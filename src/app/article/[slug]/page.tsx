@@ -153,9 +153,6 @@ export default async function ArticlePage({ params, searchParams }: Props) {
             {/* compact teaser / summary line */}
             <p className="mt-3 text-lg text-black/60 dark:text-white/70">{L.lead}</p>
             <div className="mt-4 flex flex-wrap items-center gap-3 border-y border-black/5 py-3 text-sm dark:border-white/10">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-bold text-white">
-                {(a.company ?? a.authorName).charAt(0)}
-              </span>
               <div>
                 <span className="font-semibold">{a.company ?? a.authorName}</span>
                 <div className="text-xs text-black/60 dark:text-white/65">
