@@ -96,9 +96,11 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
     <li id={`c-${node.id}`} className={depth > 0 ? "ml-4 border-l border-black/10 pl-4 dark:border-white/10 sm:ml-6" : "scroll-mt-24"}>
       <div className={`card p-4 ${node.pinned ? "ring-1 ring-brand/40" : ""}`}>
         <div className="mb-1 flex items-center gap-2 text-sm">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-brand text-xs font-bold text-white">
-            {node.authorAvatar ? <Cover src={node.authorAvatar} alt="" width={56} height={56} sizes="28px" className="h-full w-full rounded-full object-cover" /> : node.author.charAt(0)}
-          </span>
+          {node.authorAvatar && (
+            <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full">
+              <Cover src={node.authorAvatar} alt="" width={56} height={56} sizes="28px" className="h-full w-full rounded-full object-cover" />
+            </span>
+          )}
           <span className="font-semibold">{node.author}</span>
           {node.pinned && <span className="chip !py-0 text-[10px] !border-brand/40 text-brand dark:text-white">{t("comments.pinnedBadge")}</span>}
           {node.status === "pending" && <span className="chip !py-0 text-[10px]">{t("comments.pendingBadge")}</span>}

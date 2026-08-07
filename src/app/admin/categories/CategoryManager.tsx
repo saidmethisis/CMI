@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Category } from "@/lib/types";
-import CatMark from "@/components/CatMark";
 import { useTaxonomy } from "@/lib/taxonomy";
 import { useI18n } from "@/lib/i18n";
 
@@ -96,7 +95,7 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
       <ul className="divide-y divide-black/5 dark:divide-white/10">
         {categories.map((c) => (
           <li key={c.slug} className="flex flex-wrap items-center gap-3 py-3">
-            <CatMark cat={c} size={36} className="!rounded-lg" />
+            <span aria-hidden className="h-7 w-7 shrink-0 rounded-lg" style={{ backgroundColor: c.color }} title={c.color} />
             {editSlug === c.slug ? (
               <div className="flex-1">
                 <div className="grid gap-2 sm:grid-cols-3">

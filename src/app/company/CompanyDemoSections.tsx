@@ -83,7 +83,6 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
             <div className="divide-y divide-black/5 dark:divide-white/10">
               {data.authors.map((a) => (
                 <div key={a.id} className="flex items-center gap-3 py-2.5 text-sm">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-xs font-bold text-white">{a.name.charAt(0)}</span>
                   <Link href={`/author/${a.slug}`} className="flex-1 font-medium hover:text-accent">{a.name}</Link>
                   {a.position && <span className="text-xs text-black/60 dark:text-white/65">{a.position}</span>}
                   {a.verified && <span className="chip !py-0 text-[10px] !border-up/40 text-up">{t("cds.verified")}</span>}

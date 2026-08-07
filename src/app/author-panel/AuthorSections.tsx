@@ -89,7 +89,6 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
     <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
       <aside className="md:sticky md:top-20 md:self-start">
         <div className="mb-3 flex items-center gap-2 px-2">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent font-bold text-white">{name.charAt(0)}</span>
           <div className="min-w-0"><div className="truncate text-sm font-bold">{name}</div><div className="text-[11px] text-black/60 dark:text-white/65">{t("menu.cabAuthor")}</div></div>
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col">
