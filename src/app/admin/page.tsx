@@ -1,4 +1,4 @@
-import { adminMetrics, listPublished, getCategories } from "@/lib/store";
+import { adminMetrics, listPublished, getCategories, commentsByMonth } from "@/lib/store";
 import CampaignBoard from "@/components/CampaignBoard";
 import { serverT } from "@/lib/i18n-server";
 
@@ -12,6 +12,7 @@ export default async function AdminDashboard() {
   const m = await adminMetrics();
   const all = await listPublished();
   const cats = await getCategories();
+  const commentMonths = await commentsByMonth(12).catch(() => []);
 
   // ── помесячные корзины за последние 12 месяцев (график умеет 6/12) ───────────
   const N = 12;
@@ -44,6 +45,8 @@ export default async function AdminDashboard() {
 
   const metrics = { ...m, cats: catStats.length };
   const labels = months.map((x) => x.label);
+  // Ряд комментариев выравниваем по тем же корзинам, что и остальные графики.
+  const commentSeries = months.map((k) => commentMonths.find((c) => c.y === k.y && c.m === k.m)?.count ?? 0);
 
   return (
     <CampaignBoard
@@ -53,6 +56,7 @@ export default async function AdminDashboard() {
       labels={labels}
       pubSeries={pubSeries}
       viewSeries={viewSeries}
+      commentSeries={commentSeries}
     />
   );
 }

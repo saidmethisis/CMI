@@ -9,6 +9,7 @@ import { getAuth } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { findAuthorByFullName } from "@/lib/rbac-store";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { htmlToText } from "@/lib/sanitize-html";
 import ArticleView from "@/components/ArticleView";
 import LeadMedia from "@/components/LeadMedia";
 import Comments from "@/components/Comments";
@@ -125,7 +126,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
     articleSection: catLabel || cat?.name,
     ...(a.tags?.length ? { keywords: a.tags.join(", ") } : {}),
     isAccessibleForFree: true,
-    wordCount: L.body.split(/\s+/).filter(Boolean).length,
+    wordCount: htmlToText(L.body).split(/\s+/).filter(Boolean).length,
   };
 
   return (

@@ -1,10 +1,22 @@
 "use client";
 import Icon from "./Icon";
 import Cover from "./Cover";
+import { sanitizeHtml, looksLikeHtml } from "@/lib/sanitize-html";
 
 const IMG_RE = /^!\[(.*?)\]\((.+)\)$/;
 
+// Текст статьи бывает двух видов. Новые материалы приходят из редактора уже
+// размеченными; всё, что написано до него, лежит простым текстом с пустой
+// строкой между абзацами. Определяем по содержимому и рисуем как надо —
+// старые статьи от появления редактора не должны развалиться.
+//
+// Разметку чистим ещё раз прямо перед выводом. В базе она уже чистая (её моет
+// сервер при сохранении), но статья могла попасть туда до того, как санитайзер
+// появился, — а цена пропущенного скрипта слишком высока, чтобы экономить.
 export function Paragraphs({ text }: { text: string }) {
+  if (looksLikeHtml(text)) {
+    return <div className="article-html" dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} />;
+  }
   return (
     <>
       {text.split("\n\n").map((block, i) => {
