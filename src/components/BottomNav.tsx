@@ -3,22 +3,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 
-// Нижняя панель навигации по ТЗ (блок 1.2). Четыре раздела вместо прежних
-// «Главная / Темы / Уведомления / Профиль»:
+// Нижняя панель навигации. Пять разделов:
 //
-//   Главное      — сводный экран со всеми форматами, включая компании и авторов
-//   Лента        — строгая хронология всех публикаций
-//   Цифры        — дата-центр: курсы, биржа, погода. Крупнее остальных
-//   Моя страница — сохранённое, подписки, архив. Крайняя правая, ближе к руке
+//   Главное — сводный экран со всеми форматами, включая компании и авторов
+//   Лента   — строгая хронология всех публикаций
+//   Цифры   — дата-центр: курсы, биржа, погода. Крупнее остальных
+//   Видео   — материалы с видео
+//   Меню    — «Моя страница», кабинеты, рубрики, язык, правовые страницы
+//
+// «Моя страница» живёт внутри «Меню», а не отдельной кнопкой: так в панель
+// помещаются пять входов, и туда же переехало всё, что раньше пряталось под
+// гамбургером в шапке.
 //
 // Подписи короткие (tab.*), полные названия уходят в aria-label (tabFull.*):
-// «Yangiliklar tasmasi» на кнопке шириной в четверть экрана не помещается,
+// «Yangiliklar tasmasi» на кнопке шириной в пятую часть экрана не помещается,
 // но для читалки с экрана нужно полное имя.
 const ITEMS = [
   { href: "/", short: "tab.main", full: "tabFull.main" },
   { href: "/feed", short: "tab.feed", full: "tabFull.feed" },
   { href: "/numbers", short: "tab.numbers", full: "tabFull.numbers", accent: true },
-  { href: "/account", short: "tab.my", full: "tabFull.my" },
+  { href: "/video", short: "tab.video", full: "tabFull.video" },
+  { href: "/menu", short: "tab.menu", full: "tabFull.menu" },
 ] as const;
 
 export default function BottomNav() {
@@ -31,7 +36,7 @@ export default function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label={t("a11y.menu")}
     >
-      <div className="grid grid-cols-4 items-stretch">
+      <div className="grid grid-cols-5 items-stretch">
         {ITEMS.map((it) => {
           const active = it.href === "/" ? path === "/" : path.startsWith(it.href);
           // «Цифры» по ТЗ должны выделяться: крупнее подпись и фирменный
@@ -44,7 +49,7 @@ export default function BottomNav() {
               aria-label={t(it.full)}
               aria-current={active ? "page" : undefined}
               className={`relative flex items-center justify-center px-1 py-3.5 text-center font-bold ${
-                accent ? "text-[15px]" : "text-[13px]"
+                accent ? "text-[14px]" : "text-[12px]"
               } ${
                 active
                   ? "text-accent"
@@ -53,8 +58,8 @@ export default function BottomNav() {
                     : "text-black/70 dark:text-white/70"
               }`}
             >
-              {active && <span className="absolute inset-x-3 top-0 h-1 rounded-b bg-accent" />}
-              {active && <span className="absolute inset-x-2 inset-y-1.5 -z-10 rounded-xl bg-accent/10" />}
+              {active && <span className="absolute inset-x-2 top-0 h-1 rounded-b bg-accent" />}
+              {active && <span className="absolute inset-x-1 inset-y-1.5 -z-10 rounded-xl bg-accent/10" />}
               <span className="truncate">{t(it.short)}</span>
             </Link>
           );
