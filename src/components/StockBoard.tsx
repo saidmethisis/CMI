@@ -59,6 +59,7 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
           {rows.map((q) => (
             <article key={q.ticker || q.name} className="w-64 shrink-0 rounded-xl border border-black/[0.07] p-4 dark:border-white/10">
               <h3 className="truncate font-semibold text-brand dark:text-white/90" title={q.name}>{q.name}</h3>
+              {q.ticker && <div className="mt-0.5 text-[11px] font-bold uppercase tracking-wide text-black/45 dark:text-white/45">{q.ticker}</div>}
               <dl className="mt-3 space-y-1.5 text-sm">
                 <div className="flex items-baseline justify-between gap-2">
                   <dt className="text-black/60 dark:text-white/65">{t("stock.close")}</dt>
@@ -68,9 +69,12 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
                   <dt className="text-black/60 dark:text-white/65">{t("stock.last")}</dt>
                   <dd className="font-semibold tabular-nums">
                     {fmt(q.last)}
-                    {q.changePct !== null && (
-                      <span className={`ml-1 text-xs font-semibold ${q.changePct >= 0 ? "text-up" : "text-down"}`}>
-                        ({q.changePct >= 0 ? "+" : ""}{q.changePct.toFixed(2)}%)
+                    {/* Изменение — ровно то, что отдала биржа: направление и
+                        величина. Проценты не считаем: источник даёт изменение
+                        к другой базе, и наш расчёт был бы выдумкой. */}
+                    {q.change !== null && q.direction && (
+                      <span className={`ml-1 text-xs font-semibold ${q.direction === "up" ? "text-up" : "text-down"}`}>
+                        {q.direction === "up" ? "▲" : "▼"} {fmt(q.change)}
                       </span>
                     )}
                   </dd>
