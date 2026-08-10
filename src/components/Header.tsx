@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-brand-700 text-white shadow-md">
       {/* top row: logo + utilities */}
-      <div className="container-content flex h-14 items-center gap-3">
+      <div className="container-content flex h-14 items-center gap-2 lg:gap-3">
         {/* Название издания — узбекской латиницей и всегда одинаковое: это имя
             бренда, а не переводимая надпись. Раньше слева был квадрат с буквой
             «A» — имитация значка, которого нет. */}
@@ -32,12 +32,14 @@ export default function Header() {
 
 
         {/* desktop nav with mega-menu */}
-        <nav className="ml-4 hidden items-center gap-0.5 md:flex" onMouseLeave={() => setHover(null)}>
+        {/* Рубрики отдают место первыми: их семь, а справа стоят вещи, которые
+            обрезать нельзя — переключатель языка, поиск, вход. */}
+        <nav className="no-scrollbar ml-2 hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto md:flex lg:ml-4" onMouseLeave={() => setHover(null)}>
           {categories.slice(0, 7).map((c) => {
             const subs = subsections[c.slug];
             return (
-              <div key={c.slug} className="relative" onMouseEnter={() => setHover(c.slug)}>
-                <Link href={`/category/${c.slug}`} className="flex items-center gap-1 px-2.5 py-1.5 text-sm font-bold text-white/85 hover:text-white">
+              <div key={c.slug} className="relative shrink-0" onMouseEnter={() => setHover(c.slug)}>
+                <Link href={`/category/${c.slug}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1.5 text-sm font-bold text-white/85 hover:text-white lg:px-2.5">
                   {catName(c)}
                   {subs && <span className="text-[9px] opacity-60">▾</span>}
                 </Link>
@@ -55,18 +57,18 @@ export default function Header() {
 
         {/* «Цифры» рядом с рубриками: на десктопе это единственный вход в
             дата-центр, где собраны все показатели разом. Подпись переводится. */}
-        <Link href="/numbers" className="ml-2 hidden shrink-0 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-bold text-white hover:bg-white/25 md:inline-flex">
+        <Link href="/numbers" className="ml-1 hidden shrink-0 rounded-lg bg-white/15 px-2.5 py-1.5 text-sm font-bold text-white hover:bg-white/25 lg:inline-flex">
           {t("tabFull.numbers")}
         </Link>
 
         {/* Название канала не переводится — это бренд, как и само издание. */}
-        <Link href="/video" className="hidden shrink-0 rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-white hover:bg-accent-700 md:inline-flex">
+        <Link href="/video" className="hidden shrink-0 whitespace-nowrap rounded-lg bg-accent px-2.5 py-1.5 text-sm font-bold text-white hover:bg-accent-700 xl:inline-flex">
           Asosiy Aktiv TV
         </Link>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:gap-2">
           <LangSwitcher dark />
-          <Link href="/search" className="rounded-lg border border-white/25 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-white/10">
+          <Link href="/search" className="hidden shrink-0 whitespace-nowrap rounded-lg border border-white/25 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-white/10 sm:inline-flex">
             {t("nav.search")}
           </Link>
           <ThemeToggle onDark />
