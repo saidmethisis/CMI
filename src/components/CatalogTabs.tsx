@@ -15,7 +15,7 @@ export type AuthorCard = { slug: string; name: string; avatar: string; verified:
 
 export default function CatalogTabs({ companies, authors }: { companies: CompanyCard[]; authors: AuthorCard[] }) {
   const { t } = useI18n();
-  const [tab, setTab] = useState<"companies" | "authors">("companies");
+  const [tab, setTab] = useState<"companies" | "authors">(companies.length ? "companies" : "authors");
   if (!companies.length && !authors.length) return null;
 
   const tabs = [
@@ -42,6 +42,11 @@ export default function CatalogTabs({ companies, authors }: { companies: Company
       </div>
 
       <div className="divide-y divide-black/5 p-2 dark:divide-white/10">
+        {(tab === "companies" ? companies : authors).length === 0 && (
+          <p className="px-3 py-6 text-center text-sm text-black/55 dark:text-white/55">
+            {tab === "companies" ? t("co.empty") : t("au.empty")}
+          </p>
+        )}
         {tab === "companies"
           ? companies.slice(0, 6).map((c) => (
               <Link key={c.slug} href={`/companies/${c.slug}`} className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-black/[0.03] dark:hover:bg-white/5">
