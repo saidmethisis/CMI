@@ -2,18 +2,40 @@
 import { useEffect, useState } from "react";
 import { creatives, type Creative } from "@/lib/ads";
 import { useI18n } from "@/lib/i18n";
+import NetworkAd from "./NetworkAd";
 
-// Renders a mock ad creative for a zone. Picks after mount to avoid SSR/CSR mismatch.
+// Рекламное место.
+//
+// Если подключена сеть — Google AdSense или РСЯ, — отдаём место ей: это живые
+// объявления и живые деньги. Пока сети не настроены, показываем собственный
+// баннер из кампаний площадки. Нет ни того ни другого — не рисуем ничего:
+// пустая серая рамка «здесь могла быть ваша реклама» удешевляет издание.
 export default function AdSlot({ zone = "leaderboard", native = false }: { zone?: string; native?: boolean }) {
   const { t } = useI18n();
   const [cr, setCr] = useState<Creative | null>(null);
+
+  // Настроена ли внешняя сеть — видно по переменным сборки.
+  const networkOn = Boolean(
+    process.env.NEXT_PUBLIC_ADSENSE_CLIENT ||
+    process.env.NEXT_PUBLIC_YANDEX_RTB_TOP ||
+    process.env.NEXT_PUBLIC_YANDEX_RTB_SIDE ||
+    process.env.NEXT_PUBLIC_YANDEX_RTB_INLINE,
+  );
 
   useEffect(() => {
     const pool = creatives.filter((c) => (native ? c.kind === "native" : c.kind === "banner"));
     if (pool.length) setCr(pool[Math.floor(Math.random() * pool.length)]);
   }, [native]);
 
-  // No ad to serve → render nothing (no fake advertisers, no empty placeholder box).
+  // Нативный блок сети не бывает — там всегда свой формат, поэтому сеть
+  // подставляем только в баннерные места.
+  if (networkOn && !native) {
+    const z = zone === "mpu" ? "mpu" : zone === "in-content" ? "in-content" : "leaderboard";
+    return <NetworkAd zone={z} />;
+  }
+
+  // Нечего показать → не показываем ничего: ни выдуманных рекламодателей,
+  // ни пустой рамки.
   if (!cr) return null;
 
   const heights: Record<string, string> = { leaderboard: "min-h-[96px]", mpu: "min-h-[250px]", "in-content": "min-h-[96px]" };

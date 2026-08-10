@@ -10,6 +10,7 @@ import { can } from "@/lib/permissions";
 import { findAuthorByFullName } from "@/lib/rbac-store";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import { htmlToText } from "@/lib/sanitize-html";
+import { tagLabel } from "@/lib/tags";
 import ArticleView from "@/components/ArticleView";
 import LeadMedia from "@/components/LeadMedia";
 import Comments from "@/components/Comments";
@@ -75,7 +76,9 @@ export default async function ArticlePage({ params, searchParams }: Props) {
 
   const { t, lang } = await serverT();
   const L = localizedArticle(a, lang);
-  const localized = { ...a, title: L.title, lead: L.lead, body: L.body };
+  // aiSummary тоже берём из локализованной версии: в базе он один на статью
+  // и на языке оригинала, поэтому над узбекским текстом висела русская выжимка.
+  const localized = { ...a, title: L.title, lead: L.lead, body: L.body, aiSummary: L.aiSummary };
   const categories = await getCategories();
   const cat = categories.find((c) => c.slug === a.categorySlug);
   const catLabel = cat ? localizeName(lang, cat) : "";
@@ -124,7 +127,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
     ],
     publisher: { "@type": "NewsMediaOrganization", name: SITE_NAME, url: SITE_URL },
     articleSection: catLabel || cat?.name,
-    ...(a.tags?.length ? { keywords: a.tags.join(", ") } : {}),
+    ...(a.tags?.length ? { keywords: a.tags.map((x) => tagLabel(x, lang)).join(", ") } : {}),
     isAccessibleForFree: true,
     wordCount: htmlToText(L.body).split(/\s+/).filter(Boolean).length,
   };
@@ -168,9 +171,13 @@ export default async function ArticlePage({ params, searchParams }: Props) {
 
           <ArticleView a={localized} />
 
+          {/* Теги подписываются на языке страницы: в базе хранится код, а не
+              слово, поэтому под узбекским текстом больше не висит «#экспорт». */}
           <div className="mt-8 flex flex-wrap gap-2">
-            {a.tags.map((t) => (
-              <Link key={t} href={`/search?q=${encodeURIComponent(t)}`} className="chip hover:bg-black/5 dark:hover:bg-white/10">#{t}</Link>
+            {a.tags.map((tag) => (
+              <Link key={tag} href={`/search?q=${encodeURIComponent(tagLabel(tag, lang))}`} className="chip hover:bg-black/5 dark:hover:bg-white/10">
+                #{tagLabel(tag, lang)}
+              </Link>
             ))}
           </div>
 

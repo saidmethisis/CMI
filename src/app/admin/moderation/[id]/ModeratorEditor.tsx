@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import { useTaxonomy, useCatName } from "@/lib/taxonomy";
 import RichEditor from "@/components/RichEditor";
 import BulkImageUpload from "@/components/BulkImageUpload";
+import TagPicker from "@/components/TagPicker";
 import ImageUpload from "@/components/ImageUpload";
 
 // Страница проверки материала (ТЗ, блок 3): «абсолютная копия страницы автора
@@ -138,7 +139,7 @@ export default function ModeratorEditor({ article }: { article: ModerationArticl
         </div>
         <div>
           <label className="label">{t("author.tags")}</label>
-          <input className="input" value={tags} onChange={(e) => setTags(e.target.value)} />
+          <TagPicker value={tags} onChange={setTags} />
         </div>
       </div>
 

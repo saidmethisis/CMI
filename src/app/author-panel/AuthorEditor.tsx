@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { imageFileToUrl, fileToDataUrl, uploadDataUrl } from "@/lib/upload";
 import RichEditor from "@/components/RichEditor";
 import BulkImageUpload from "@/components/BulkImageUpload";
+import TagPicker from "@/components/TagPicker";
 
 type Social = { label: string; url: string };
 type LangCode = "ru" | "uz" | "en";
@@ -165,7 +166,7 @@ export default function AuthorEditor() {
         </div>
         <div>
           <label className="label">{t("author.tags")}</label>
-          <input className="input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="startup, ..." />
+          <TagPicker value={tags} onChange={setTags} />
         </div>
       </div>
 

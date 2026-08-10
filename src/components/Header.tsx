@@ -53,6 +53,17 @@ export default function Header() {
           })}
         </nav>
 
+        {/* «Цифры» рядом с рубриками: на десктопе это единственный вход в
+            дата-центр, где собраны все показатели разом. Подпись переводится. */}
+        <Link href="/numbers" className="ml-2 hidden shrink-0 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-bold text-white hover:bg-white/25 md:inline-flex">
+          {t("tabFull.numbers")}
+        </Link>
+
+        {/* Название канала не переводится — это бренд, как и само издание. */}
+        <Link href="/video" className="hidden shrink-0 rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-white hover:bg-accent-700 md:inline-flex">
+          Asosiy Aktiv TV
+        </Link>
+
         <div className="ml-auto flex items-center gap-2">
           <LangSwitcher dark />
           <Link href="/search" className="rounded-lg border border-white/25 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-white/10">
