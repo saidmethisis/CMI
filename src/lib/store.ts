@@ -173,12 +173,15 @@ function safeTranslations(t?: string): ArticleTranslations {
 
 // Возвращает title/lead/body статьи на нужном языке: если перевод заполнен — он,
 // иначе базовые (язык-фолбэк). Используется на странице статьи и в карточках.
-export function localizedArticle(a: Article, lang: LangCode): { title: string; lead: string; body: string } {
+export function localizedArticle(a: Article, lang: LangCode): { title: string; lead: string; body: string; aiSummary: string } {
   const tr = a.translations?.[lang];
-  if (tr && tr.title?.trim()) {
-    return { title: tr.title, lead: tr.lead?.trim() ? tr.lead : a.lead, body: tr.body?.trim() ? tr.body : a.body };
-  }
-  return { title: a.title, lead: a.lead, body: a.body };
+  const picked = tr && tr.title?.trim()
+    ? { title: tr.title, lead: tr.lead?.trim() ? tr.lead : a.lead, body: tr.body?.trim() ? tr.body : a.body }
+    : { title: a.title, lead: a.lead, body: a.body };
+  // Сводку собираем здесь, из уже выбранной языковой версии, а не берём из базы.
+  // В базе она одна на всю статью и написана на языке оригинала — поэтому над
+  // узбекским и английским текстом висела русская выжимка.
+  return { ...picked, aiSummary: buildAiSummary(picked.title, picked.lead) };
 }
 
 // Применяет localizedArticle ко всему списку — для лент, рубрик, поиска и карточек.

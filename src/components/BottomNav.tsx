@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
+import Icon, { type IconName } from "./Icon";
 
 // Нижняя панель навигации. Пять разделов:
 //
@@ -19,11 +20,11 @@ import { useI18n } from "@/lib/i18n";
 // «Yangiliklar tasmasi» на кнопке шириной в пятую часть экрана не помещается,
 // но для читалки с экрана нужно полное имя.
 const ITEMS = [
-  { href: "/", short: "tab.main", full: "tabFull.main" },
-  { href: "/feed", short: "tab.feed", full: "tabFull.feed" },
-  { href: "/numbers", short: "tab.numbers", full: "tabFull.numbers", accent: true },
-  { href: "/video", short: "tab.video", full: "tabFull.video" },
-  { href: "/menu", short: "tab.menu", full: "tabFull.menu" },
+  { href: "/", short: "tab.main", full: "tabFull.main", icon: "home" },
+  { href: "/feed", short: "tab.feed", full: "tabFull.feed", icon: "feed" },
+  { href: "/numbers", short: "tab.numbers", full: "tabFull.numbers", icon: "numbers", accent: true },
+  { href: "/video", short: "tab.video", full: "tabFull.video", icon: "video" },
+  { href: "/menu", short: "tab.menu", full: "tabFull.menu", icon: "menu" },
 ] as const;
 
 export default function BottomNav() {
@@ -48,8 +49,8 @@ export default function BottomNav() {
               href={it.href}
               aria-label={t(it.full)}
               aria-current={active ? "page" : undefined}
-              className={`relative flex items-center justify-center px-1 py-3.5 text-center font-bold ${
-                accent ? "text-[14px]" : "text-[12px]"
+              className={`relative flex flex-col items-center justify-center gap-0.5 px-1 py-2 text-center font-bold ${
+                accent ? "text-[12px]" : "text-[11px]"
               } ${
                 active
                   ? "text-accent"
@@ -60,7 +61,8 @@ export default function BottomNav() {
             >
               {active && <span className="absolute inset-x-2 top-0 h-1 rounded-b bg-accent" />}
               {active && <span className="absolute inset-x-1 inset-y-1.5 -z-10 rounded-xl bg-accent/10" />}
-              <span className="truncate">{t(it.short)}</span>
+              <Icon name={it.icon as IconName} size={accent ? 24 : 21} />
+              <span className="w-full truncate leading-none">{t(it.short)}</span>
             </Link>
           );
         })}

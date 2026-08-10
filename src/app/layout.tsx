@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 import PWARegister from "@/components/PWARegister";
 import Analytics from "@/components/Analytics";
+import AdNetworks from "@/components/AdNetworks";
 import CookieConsent from "@/components/CookieConsent";
 import Providers from "@/components/Providers";
 import { getLang, serverT } from "@/lib/i18n-server";
@@ -118,6 +119,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <CookieConsent />
         </Providers>
         <Analytics />
+        <AdNetworks />
       </body>
     </html>
   );

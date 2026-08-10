@@ -9,14 +9,13 @@ import CatalogTabs from "@/components/CatalogTabs";
 import { getBankRates } from "@/lib/bank-rates";
 import { getStockQuotes } from "@/lib/stock";
 import { publicCompanies, publicAuthors } from "@/lib/rbac-store";
-import VideoRow from "@/components/VideoRow";
+import VideoHero from "@/components/VideoHero";
 import FeedWithChips from "@/components/FeedWithChips";
 import AdSlot from "@/components/AdSlot";
 import BreakingNews from "@/components/BreakingNews";
 import SaveButton from "@/components/SaveButton";
 import NewsTimeline from "@/components/NewsTimeline";
 import WeatherCard from "@/components/WeatherCard";
-import CurrencyWidget from "@/components/CurrencyWidget";
 import CryptoTable from "@/components/CryptoTable";
 import SpecialReports from "@/components/SpecialReports";
 import TrendingNow from "@/components/TrendingNow";
@@ -73,6 +72,13 @@ export default async function HomePage() {
         <BreakingNews items={breaking} />
       </div>
 
+      {/* Растяжка сразу под разделами — первый экран, самое дорогое место.
+          Ниже по странице остаются нативный блок в правой колонке и врезки
+          внутри статей: так реклама не толкает контент вниз бесконечно. */}
+      <div className="container-content pt-4">
+        <AdSlot zone="leaderboard" />
+      </div>
+
       {/* Официальный курс ЦБ — компактной строкой сразу под срочными новостями.
           Таблица банков стоит ниже, прямо над лентой (см. основную колонку). */}
       <div className="container-content pt-4">
@@ -81,10 +87,6 @@ export default async function HomePage() {
 
       <div className="container-content py-4">
         <StoriesBar />
-      </div>
-
-      <div className="container-content">
-        <AdSlot zone="leaderboard" />
       </div>
 
       {/* vaqt.uz-style left rail + Fox-style main + market rail */}
@@ -133,16 +135,13 @@ export default async function HomePage() {
           {/* Компании и авторы площадки */}
           <div className="mb-8"><CatalogTabs companies={companies} authors={authors} /></div>
 
+          {/* Asosiy Aktiv TV — крупный видео-блок. Название бренда не переводится. */}
           <div className="mb-8">
-            <VideoRow title={<T k="home.video" />} items={videos} />
+            <VideoHero items={videos} title="Asosiy Aktiv TV" moreLabel={t("tv.more")} />
           </div>
 
           {/* Курсы валют в банках — прямо над лентой, под ними начинается лента */}
           <div className="mb-8"><BankRates initial={bankRates} /></div>
-
-          {/* Котировки Республиканской фондовой биржи. Блок скрывается сам,
-              если нет данных (не задан PARSE_API_KEY или биржа недоступна). */}
-          <div className="mb-8"><StockBoard initial={stock} /></div>
 
           <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold"><T k="home.feed" /></h2>
           <FeedWithChips items={feed} />
@@ -151,7 +150,7 @@ export default async function HomePage() {
         {/* right rail: weather + market futures + native ad + most popular (independent scroll) */}
         <aside className="space-y-6">
           <div className="no-scrollbar space-y-6 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:overscroll-auto">
-            <CurrencyWidget />
+            <StockBoard initial={stock} compact />
             <WeatherCard />
             <CryptoTable />
             <AdSlot native />

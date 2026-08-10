@@ -11,7 +11,10 @@ import ScrollRow from "./ScrollRow";
 // показывать нельзя.
 const REFRESH_MS = 15 * 60 * 1000;
 
-export default function StockBoard({ initial }: { initial?: { data: StockQuote[]; updatedAt: string; source: string } }) {
+// compact — вид для узкой правой колонки: вертикальный список вместо карусели.
+// Карточки шириной 256 пикселей в колонку 300 не помещаются с полями, а
+// горизонтальная прокрутка внутри вертикальной ленты раздражает.
+export default function StockBoard({ initial, compact = false }: { initial?: { data: StockQuote[]; updatedAt: string; source: string }; compact?: boolean }) {
   const { t, lang } = useI18n();
   const loc = lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU";
   const [rows, setRows] = useState<StockQuote[]>(initial?.data ?? []);
@@ -46,7 +49,7 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
   return (
     <section className="card overflow-hidden" aria-label={t("stock.title")}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-black/5 px-4 py-3 dark:border-white/10">
-        <h2 className="font-serif text-lg font-bold">{t("stock.title")}</h2>
+        <h2 className={`font-serif font-bold ${compact ? "text-sm" : "text-lg"}`}>{t("stock.title")}</h2>
         <span className="ml-auto text-xs text-black/60 dark:text-white/65">
           {t("w.source")}:{" "}
           <a href={SOURCE_URL} target="_blank" rel="noopener nofollow" className="font-semibold hover:underline">{SOURCE_NAME}</a>
@@ -54,6 +57,24 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
         </span>
       </div>
 
+      {compact ? (
+        <ul className="divide-y divide-black/5 dark:divide-white/10">
+          {rows.slice(0, 8).map((q) => (
+            <li key={q.ticker || q.name} className="flex items-baseline gap-2 px-4 py-2 text-sm">
+              <span className="w-16 shrink-0 truncate text-xs font-bold uppercase text-black/55 dark:text-white/55" title={q.name}>
+                {q.ticker || q.name}
+              </span>
+              <span className="flex-1 truncate text-xs text-black/60 dark:text-white/65">{q.name}</span>
+              <span className="shrink-0 font-semibold tabular-nums">{fmt(q.last ?? q.close)}</span>
+              {q.change !== null && q.direction && (
+                <span className={`shrink-0 text-xs font-semibold ${q.direction === "up" ? "text-up" : "text-down"}`}>
+                  {q.direction === "up" ? "▲" : "▼"}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
       <div className="p-4">
         <ScrollRow gap="gap-3">
           {rows.map((q) => (
@@ -69,9 +90,6 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
                   <dt className="text-black/60 dark:text-white/65">{t("stock.last")}</dt>
                   <dd className="font-semibold tabular-nums">
                     {fmt(q.last)}
-                    {/* Изменение — ровно то, что отдала биржа: направление и
-                        величина. Проценты не считаем: источник даёт изменение
-                        к другой базе, и наш расчёт был бы выдумкой. */}
                     {q.change !== null && q.direction && (
                       <span className={`ml-1 text-xs font-semibold ${q.direction === "up" ? "text-up" : "text-down"}`}>
                         {q.direction === "up" ? "▲" : "▼"} {fmt(q.change)}
@@ -90,6 +108,7 @@ export default function StockBoard({ initial }: { initial?: { data: StockQuote[]
           ))}
         </ScrollRow>
       </div>
+      )}
     </section>
   );
 }

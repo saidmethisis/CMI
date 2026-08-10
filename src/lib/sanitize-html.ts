@@ -94,6 +94,68 @@ function cleanAttrs(tag: string, attrsRaw: string): string {
   return out.length ? " " + out.join(" ") : "";
 }
 
+/**
+ * Приводит текст к нормальной блочной структуре.
+ *
+ * Редакторы и вставка из Word/Telegram оставляют абзацы «голыми» — текст лежит
+ * между блоками сам по себе, без <p>. В браузере всё это слипается в одно
+ * полотно: у одной из статей узбекская версия читалась сплошняком, а
+ * подзаголовок склеивался со следующим предложением («…roliShuni alohida…»).
+ *
+ * Делаем две вещи:
+ *   • всё, что лежит между блоками, заворачиваем в отдельный абзац;
+ *   • если жирный кусок вплотную упирается в обычный текст, разрываем абзац
+ *     между ними: так автор и задумывал подзаголовок.
+ *
+ * Работает и на уже сохранённых статьях — санитайзер вызывается при выводе,
+ * поэтому чинить базу миграцией не нужно.
+ */
+const BLOCK_TAGS = new Set(["p", "h2", "h3", "ul", "ol", "blockquote", "figure"]);
+
+function normalizeBlocks(html: string): string {
+  const re = /<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g;
+  let out = "";
+  let buf = "";
+  let depth = 0;
+  let last = 0;
+  let m: RegExpExecArray | null;
+
+  const flush = () => {
+    const inner = buf.trim();
+    buf = "";
+    if (!inner) return;
+    // Пустышку выбрасываем, но картинка — это содержимое, даже если рядом нет
+    // ни буквы: иначе одиночный снимок между абзацами исчезал бы из статьи.
+    const hasText = /[^\s<>]/.test(inner.replace(/<[^>]+>/g, ""));
+    if (!hasText && !/<img\b/i.test(inner)) return;
+    // Жирный, упирающийся в текст, — это подзаголовок: разрываем абзац.
+    const parts = inner.split(/(?<=<\/(?:b|strong)>)(?=[^\s<])/);
+    for (const part of parts) if (part.trim()) out += `<p>${part.trim()}</p>`;
+  };
+
+  while ((m = re.exec(html))) {
+    const tag = m[1].toLowerCase();
+    const closing = m[0].startsWith("</");
+    const text = html.slice(last, m.index);
+    last = re.lastIndex;
+
+    if (depth > 0) { buf += text + m[0]; }
+    else if (BLOCK_TAGS.has(tag) && !closing) { buf += text; flush(); out += m[0]; }
+    else { buf += text + m[0]; }
+
+    if (BLOCK_TAGS.has(tag)) {
+      if (!closing) depth++;
+      else if (depth > 0) {
+        depth--;
+        if (depth === 0) { out += buf; buf = ""; }
+      }
+    }
+  }
+  buf += html.slice(last);
+  flush();
+  return out;
+}
+
 export function sanitizeHtml(input: string): string {
   if (!input) return "";
   let html = String(input);
@@ -136,6 +198,8 @@ export function sanitizeHtml(input: string): string {
   while (open.length) out += `</${open.pop()}>`;
 
   // Пустые абзацы после чистки только раздувают текст.
+  out = out.replace(/<p(\s[^>]*)?>(\s|&nbsp;|<br>)*<\/p>/gi, "");
+  out = normalizeBlocks(out);
   out = out.replace(/<p(\s[^>]*)?>(\s|&nbsp;|<br>)*<\/p>/gi, "");
   return out.trim();
 }
