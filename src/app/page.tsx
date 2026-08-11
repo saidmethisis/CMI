@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { listPublished, pinnedArticle, getCategories, localizeList, localizedArticle } from "@/lib/store";
 import StoriesBar from "@/components/StoriesBar";
-import RatesBoard from "@/components/RatesBoard";
 import BankRates from "@/components/BankRates";
 import StockBoard from "@/components/StockBoard";
 import Cover from "@/components/Cover";
@@ -77,12 +76,6 @@ export default async function HomePage() {
           внутри статей: так реклама не толкает контент вниз бесконечно. */}
       <div className="container-content pt-4">
         <AdSlot zone="leaderboard" />
-      </div>
-
-      {/* Официальный курс ЦБ — компактной строкой сразу под срочными новостями.
-          Таблица банков стоит ниже, прямо над лентой (см. основную колонку). */}
-      <div className="container-content pt-4">
-        <RatesBoard />
       </div>
 
       <div className="container-content py-4">
