@@ -55,15 +55,15 @@ export default function Header() {
           })}
         </nav>
 
+        {/* Название канала не переводится — это бренд, как и само издание. */}
+        <Link href="/video" className="hidden shrink-0 whitespace-nowrap rounded-lg bg-accent px-2.5 py-1.5 text-sm font-bold text-white hover:bg-accent-700 xl:inline-flex">
+          Asosiy Aktiv TV
+        </Link>
+
         {/* «Цифры» рядом с рубриками: на десктопе это единственный вход в
             дата-центр, где собраны все показатели разом. Подпись переводится. */}
         <Link href="/numbers" className="ml-1 hidden shrink-0 rounded-lg bg-white/15 px-2.5 py-1.5 text-sm font-bold text-white hover:bg-white/25 lg:inline-flex">
           {t("tabFull.numbers")}
-        </Link>
-
-        {/* Название канала не переводится — это бренд, как и само издание. */}
-        <Link href="/video" className="hidden shrink-0 whitespace-nowrap rounded-lg bg-accent px-2.5 py-1.5 text-sm font-bold text-white hover:bg-accent-700 xl:inline-flex">
-          Asosiy Aktiv TV
         </Link>
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:gap-2">
