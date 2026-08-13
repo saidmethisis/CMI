@@ -35,7 +35,7 @@ export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?
           <span className="text-black/60 dark:text-white/65">· {a.readingMinutes} {t("common.min")}</span>
         </div>
         {/* stretched link: makes the whole card clickable + hover styling like a link */}
-        <h3 className={`font-serif font-bold leading-snug transition-colors group-hover:text-accent group-hover:underline ${large ? "text-2xl" : "text-lg"}`}>
+        <h3 className={`line-clamp-3 font-serif font-bold leading-snug transition-colors group-hover:text-accent group-hover:underline ${large ? "text-2xl" : "text-lg"}`}>
           <Link href={`/n/${a.slug}`} className="after:absolute after:inset-0 after:z-0">{a.title}</Link>
         </h3>
         {/* compact teaser/summary line for every article */}

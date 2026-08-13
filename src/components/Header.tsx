@@ -15,9 +15,11 @@ export default function Header() {
   const subsections = subsectionsFor(lang);
   const { categories } = useTaxonomy();
   const catName = useCatName();
+  // Подрубрики той рубрики, на которой сейчас курсор.
+  const hoverSubs = (hover && subsections[hover]) || [];
 
   return (
-    <header className="sticky top-0 z-40 bg-brand-700 text-white shadow-md">
+    <header className="sticky top-0 z-40 bg-brand-700 text-white shadow-md" onMouseLeave={() => setHover(null)}>
       {/* top row: logo + utilities */}
       <div className="container-content flex h-14 items-center gap-2 lg:gap-3">
         {/* Название издания — узбекской латиницей и всегда одинаковое: это имя
@@ -31,26 +33,28 @@ export default function Header() {
         <HeaderWeather className="hidden min-[480px]:inline-flex md:hidden" />
 
 
-        {/* desktop nav with mega-menu */}
         {/* Рубрики отдают место первыми: их семь, а справа стоят вещи, которые
-            обрезать нельзя — переключатель языка, поиск, вход. */}
-        <nav className="no-scrollbar ml-2 hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto md:flex lg:ml-4" onMouseLeave={() => setHover(null)}>
+            обрезать нельзя — переключатель языка, поиск, вход. Когда места не
+            хватает, список прокручивается вбок.
+
+            Подрубрики рисуются НЕ здесь, а строкой под шапкой: прокрутка
+            обрезает всё, что выходит за её пределы, и выпадающий список
+            оставался внутри полосы навигации, наполовину невидимый. */}
+        <nav className="no-scrollbar ml-2 hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto md:flex lg:ml-4">
           {categories.slice(0, 7).map((c) => {
             const subs = subsections[c.slug];
             return (
-              <div key={c.slug} className="relative shrink-0" onMouseEnter={() => setHover(c.slug)}>
-                <Link href={`/category/${c.slug}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1.5 text-sm font-bold text-white/85 hover:text-white lg:px-2.5">
-                  {catName(c)}
-                  {subs && <span className="text-[9px] opacity-60">▾</span>}
-                </Link>
-                {subs && hover === c.slug && (
-                  <div className="absolute left-0 top-full z-50 w-56 animate-slide-up rounded-b-lg border border-t-0 border-black/10 bg-[var(--surface)] p-2 shadow-xl dark:border-white/10 dark:bg-ink-surface">
-                    {subs.map((s) => (
-                      <Link key={s} href={`/category/${c.slug}?sub=${encodeURIComponent(s)}`} onClick={() => setHover(null)} className="block rounded px-3 py-2 text-sm font-semibold text-brand hover:bg-black/[0.04] hover:text-accent dark:text-white/80 dark:hover:bg-white/10">{s}</Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <Link
+                key={c.slug}
+                href={`/category/${c.slug}`}
+                onMouseEnter={() => setHover(c.slug)}
+                className={`flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1.5 text-sm font-bold hover:text-white lg:px-2.5 ${
+                  hover === c.slug ? "text-white" : "text-white/85"
+                }`}
+              >
+                {catName(c)}
+                {subs && <span className="text-[9px] opacity-60">▾</span>}
+              </Link>
             );
           })}
         </nav>

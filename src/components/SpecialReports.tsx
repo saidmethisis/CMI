@@ -30,9 +30,12 @@ export default function SpecialReports({ items }: { items: Item[] }) {
           <Link key={a.slug} href={`/n/${a.slug}`} className="group relative block aspect-[16/9] overflow-hidden rounded-xl">
             {a.cover && <Cover src={a.cover} alt={a.title} width={800} height={450} sizes="(max-width: 768px) 100vw, 400px" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />}
             <span className="absolute inset-0 bg-gradient-to-t from-brand-900/95 via-brand-900/55 to-brand-900/10" />
-            <div className="absolute inset-x-0 bottom-0 p-5">
-              <h3 className="font-serif text-xl font-extrabold leading-tight text-white underline decoration-2 underline-offset-4 md:text-2xl">{a.title}</h3>
-              <div className="mt-2 text-sm font-semibold text-gold">{a.author}</div>
+            {/* Подпись прижата к низу и ограничена тремя строками: длинный
+                заголовок раньше вырастал вверх и вылезал за карточку, налезая
+                на соседнюю. Кегль тоже меньше — на 16:9 больше не помещается. */}
+            <div className="absolute inset-x-0 bottom-0 max-h-full overflow-hidden p-4 md:p-5">
+              <h3 className="line-clamp-3 font-serif text-lg font-extrabold leading-snug text-white underline decoration-2 underline-offset-4 md:text-xl">{a.title}</h3>
+              <div className="mt-1.5 truncate text-sm font-semibold text-gold">{a.author}</div>
             </div>
           </Link>
         ))}
