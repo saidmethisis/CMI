@@ -88,7 +88,7 @@ export async function addComment(input: { articleId: string; userId: string; aut
         type: "reply",
         title: "notif.reply",
         body: `${input.author}: ${input.body.slice(0, 120)}`,
-        link: `/article/${article.slug}#comments`,
+        link: `/n/${article.slug}#comments`,
       });
     }
   }

@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categories.map((c) => entry(`/category/${c.slug}`, { lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
     ...authors.map((a) => entry(`/author/${a.slug}`, { lastModified: now, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...published.map((a) =>
-      entry(`/article/${a.slug}`, {
+      entry(`/n/${a.slug}`, {
         lastModified: new Date(a.createdAt),
         changeFrequency: "daily" as const,
         priority: 0.8,

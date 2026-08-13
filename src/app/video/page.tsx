@@ -34,7 +34,7 @@ export default async function VideoPage() {
           {items.map((a) => {
             const cat = catOf(a.categorySlug);
             return (
-              <Link key={a.id} href={`/article/${a.slug}`} className="group">
+              <Link key={a.id} href={`/n/${a.slug}`} className="group">
                 <div className="relative aspect-video overflow-hidden rounded-xl bg-black/[0.06] dark:bg-white/[0.08]">
                   {a.cover && (
                     <Cover src={a.cover} alt={a.title} width={640} height={360} sizes="(max-width: 640px) 100vw, 360px"

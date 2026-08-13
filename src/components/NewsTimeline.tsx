@@ -7,11 +7,13 @@ import { useI18n } from "@/lib/i18n";
 type Item = { slug: string; title: string; createdAt: string };
 
 // vaqt.uz-style chronological left rail with "Лента / Срочные" tabs.
-export default function NewsTimeline({ items }: { items: Item[] }) {
+export default function NewsTimeline({ items, urgent }: { items: Item[]; urgent?: Item[] }) {
   const { t, lang } = useI18n();
   const loc = lang === "en" ? "en-US" : lang === "uz" ? "uz-UZ" : "ru-RU";
   const [tab, setTab] = useState<"feed" | "urgent">("feed");
-  const list = (tab === "urgent" ? items.slice(0, 5) : items).slice(0, 14);
+  // Во вкладке «Срочные» — материалы, отмеченные редакцией, а не первые пять
+  // из общей ленты, как было раньше.
+  const list = (tab === "urgent" ? (urgent ?? []) : items).slice(0, 14);
 
   const timeLabel = (iso: string) => {
     const d = new Date(iso);
@@ -36,7 +38,7 @@ export default function NewsTimeline({ items }: { items: Item[] }) {
           return (
             <Fragment key={a.slug}>
               <li>
-                <Link href={`/article/${a.slug}`} className="flex gap-3 px-3 py-2.5 transition hover:bg-black/[0.03] dark:hover:bg-white/[0.04]">
+                <Link href={`/n/${a.slug}`} className="flex gap-3 px-3 py-2.5 transition hover:bg-black/[0.03] dark:hover:bg-white/[0.04]">
                   <span className="flex w-11 shrink-0 flex-col items-center border-r border-black/[0.06] pr-2 text-center dark:border-white/[0.08]">
                     <span className="text-sm font-bold tabular-nums text-brand dark:text-white">{time}</span>
                     <span className="text-[10px] text-black/60 dark:text-white/65">{day}</span>

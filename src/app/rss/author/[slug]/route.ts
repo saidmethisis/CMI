@@ -14,7 +14,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   const a = await getAuthor(slug);
   const name = a ? `${a.firstName} ${a.lastName}` : slug;
   const items: RssItem[] = (await listPublished()).filter((x) => x.authorName === name).slice(0, 40).map((x) => ({
-    title: x.title, path: `/article/${x.slug}`, description: x.lead, author: x.authorName, category: x.categorySlug, date: x.createdAt, image: x.cover,
+    title: x.title, path: `/n/${x.slug}`, description: x.lead, author: x.authorName, category: x.categorySlug, date: x.createdAt, image: x.cover,
   }));
   return rssResponse(buildRss({ title: `${SITE_NAME} — ${name}`, description: `Материалы автора: ${name}`, selfPath: `/rss/author/${slug}`, items }));
 }

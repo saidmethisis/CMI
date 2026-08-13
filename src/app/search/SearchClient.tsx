@@ -66,7 +66,7 @@ export default function SearchClient({ index }: { index: Row[] }) {
             const c = categories.find((x) => x.slug === r.category);
             return (
               <li key={r.slug}>
-                <Link href={`/article/${r.slug}`} className="card card-hover flex gap-4 overflow-hidden p-3">
+                <Link href={`/n/${r.slug}`} className="card card-hover flex gap-4 overflow-hidden p-3">
                   {r.cover && <Cover src={r.cover} alt="" width={224} height={160} sizes="112px" className="h-20 w-28 shrink-0 rounded-lg object-cover" />}
                   <div>
                     <span className="text-xs font-semibold" style={{ color: c?.color }}>{c ? catName(c) : ""}</span>

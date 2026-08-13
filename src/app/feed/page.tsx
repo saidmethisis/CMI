@@ -52,7 +52,7 @@ export default async function FeedPage() {
                       </time>
                     </div>
                     <h2 className="font-serif text-lg font-bold leading-snug">
-                      <Link href={`/article/${a.slug}`} className="hover:text-accent">{a.title}</Link>
+                      <Link href={`/n/${a.slug}`} className="hover:text-accent">{a.title}</Link>
                     </h2>
                     <p className="mt-1 line-clamp-2 text-sm text-black/60 dark:text-white/65">{a.lead}</p>
                     <div className="mt-1.5 text-xs text-black/55 dark:text-white/55">
@@ -60,7 +60,7 @@ export default async function FeedPage() {
                     </div>
                   </div>
                   {a.cover && (
-                    <Link href={`/article/${a.slug}`} className="shrink-0">
+                    <Link href={`/n/${a.slug}`} className="shrink-0">
                       <Cover src={a.cover} alt="" width={224} height={160} sizes="112px" className="h-20 w-28 rounded-lg object-cover" />
                     </Link>
                   )}

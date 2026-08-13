@@ -73,7 +73,7 @@ export default async function AuthorPage({ params }: Props) {
           hasPart: mine.slice(0, 10).map((x) => ({
             "@type": "NewsArticle",
             headline: x.title,
-            url: `${SITE_URL}/article/${x.slug}`,
+            url: `${SITE_URL}/n/${x.slug}`,
             datePublished: x.createdAt,
             author: { "@id": `${authorUrl}#person` },
           })),

@@ -147,8 +147,14 @@ export async function deleteOwnStory(id: string, userId: string, isModerator = f
 // ── mappers ──────────────────────────────────────────────────────────────────
 type Row = Awaited<ReturnType<typeof prisma.article.findFirst>> & { comments?: unknown[] };
 function toArticle(r: NonNullable<Row>): Article {
+  const short = (r as { shortId?: string | null }).shortId;
   return {
     ...r,
+    // Наружу отдаём короткий адрес: все ссылки на сайте строятся из `slug`,
+    // поэтому одной подменой они становятся вида /n/08121429. Настоящая
+    // транслитерация остаётся в fullSlug — по ней открываются старые ссылки.
+    slug: short || r.slug,
+    fullSlug: r.slug,
     tags: safeTags(r.tags),
     authorSocials: safeSocials((r as any).authorSocials),
     translations: safeTranslations((r as any).translations),
@@ -230,7 +236,7 @@ function normalizeTranslations(input: unknown): { base: { title: string; lead: s
 // главная и страница статьи вычитывали весь архив с полными текстами всех трёх
 // языков и отправляли его в браузер. На 500 материалах это ~9 МБ на каждый заход.
 const CARD_FIELDS = {
-  id: true, slug: true, title: true, lead: true, translations: true, cover: true, videoUrl: true,
+  id: true, slug: true, shortId: true, breaking: true, breakingUntil: true, title: true, lead: true, translations: true, cover: true, videoUrl: true,
   categorySlug: true, tags: true, authorName: true, authorUserId: true, authorKind: true,
   company: true, createdAt: true, readingMinutes: true, premium: true, pinned: true,
   status: true, views: true,
@@ -293,7 +299,9 @@ export async function getArticle(slug: string): Promise<Article | undefined> {
   await ensureSeed();
   // Комментарии грузит отдельный запрос из клиента (Comments.tsx) — здесь они
   // не нужны, а include без лимита разрастался вместе с обсуждением.
-  const r = await prisma.article.findUnique({ where: { slug } });
+  // Ищем и по короткому адресу, и по исходной транслитерации: разосланные
+  // раньше ссылки вида /n/ugc-… должны продолжать открываться.
+  const r = await prisma.article.findFirst({ where: { OR: [{ shortId: slug }, { slug }] } });
   return r ? toArticle(r) : undefined;
 }
 
@@ -413,6 +421,70 @@ export async function commentsByMonth(months = 12): Promise<{ y: number; m: numb
 // (visitorsToday: 18420, mrr: 12750, adRevenue: 3820) вперемешку с реальными
 // счётчиками и нигде не вызывалась. Реальные метрики дашборда — в adminMetrics().
 
+/**
+ * Короткий публичный адрес статьи: ММДД + четыре цифры, например 08121429.
+ *
+ * Формат выбран как у местных изданий: ссылка помещается в сообщение целиком
+ * и не превращается в три строки транслитерации. Дата в начале заодно даёт
+ * человеку понять, когда материал вышел.
+ *
+ * Четыре последних знака — просто счётчик свободного номера в этот день;
+ * при совпадении берём следующий, поэтому гонка двух публикаций не страшна.
+ */
+async function makeShortId(): Promise<string> {
+  const d = new Date();
+  const head = String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+  for (let i = 0; i < 40; i++) {
+    const tail = String(Math.floor(1000 + Math.random() * 9000));
+    const candidate = head + tail;
+    if (!(await prisma.article.findUnique({ where: { shortId: candidate }, select: { id: true } }))) return candidate;
+  }
+  // Крайне маловероятно: в этот день заняты все попытки — уходим в секунды.
+  return head + String(Date.now()).slice(-4);
+}
+
+/**
+ * Срочные новости для бегущей строки.
+ *
+ * Раньше туда попадали просто десять последних публикаций — то есть «срочным»
+ * оказывался любой материал, включая аналитику на пять тысяч слов. Теперь это
+ * редакционное решение: пометку ставит модератор, и она снимается сама, когда
+ * истекает срок. Просроченные не показываем, даже если флаг остался.
+ *
+ * Если ничего не отмечено, отдаём пусто — полоса тогда просто не рисуется.
+ * Показывать свежие «как бы срочные» нельзя: читатель перестанет верить полосе.
+ */
+export async function listBreaking(take = 10): Promise<Article[]> {
+  await ensureSeed();
+  const now = new Date();
+  const rows = await prisma.article.findMany({
+    where: {
+      status: "published",
+      breaking: true,
+      OR: [{ breakingUntil: null }, { breakingUntil: { gt: now } }],
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    select: CARD_FIELDS,
+  });
+  return rows.map(toCard);
+}
+
+/**
+ * Отметить или снять срочность. `hours` — на сколько: по умолчанию сутки,
+ * ноль означает «без срока», пока не снимут вручную.
+ */
+export async function setBreaking(id: string, on: boolean, hours = 24) {
+  await ensureSeed();
+  const until = on && hours > 0 ? new Date(Date.now() + hours * 3600_000) : null;
+  const a = await prisma.article.update({
+    where: { id },
+    data: { breaking: on, breakingUntil: until },
+    select: { id: true, breaking: true, breakingUntil: true },
+  });
+  return { id: a.id, breaking: a.breaking, breakingUntil: a.breakingUntil?.toISOString() ?? null };
+}
+
 // ── mutations ────────────────────────────────────────────────────────────────
 export async function submitPrArticle(input: { title: string; lead: string; body: string; company: string; categorySlug: string }) {
   await ensureSeed();
@@ -422,7 +494,7 @@ export async function submitPrArticle(input: { title: string; lead: string; body
   const slug = "pr-" + slugify(input.title, 40) + "-" + Date.now().toString(36) + rid.slice(0, 4);
   await prisma.article.create({
     data: {
-      id: "a-" + randomUUID(), slug, title: input.title, lead: input.lead, body: input.body,
+      id: "a-" + randomUUID(), slug, shortId: await makeShortId(), title: input.title, lead: input.lead, body: input.body,
       aiSummary: `• ${input.company} — материал от партнёра.\n• Прошёл AI-генерацию и отправлен на модерацию.`,
       cover: "", categorySlug: input.categorySlug || "business",
       tags: JSON.stringify(["PR", input.company]), authorName: `Пресс-служба ${input.company}`, authorKind: "pr",
@@ -443,9 +515,10 @@ export async function submitUgcArticle(input: { title: string; lead: string; bod
   const translations = norm?.translations ?? {};
   const rid = randomUUID().slice(0, 8);
   const slug = "ugc-" + slugify(title, 40) + "-" + Date.now().toString(36) + rid.slice(0, 4);
+  const shortId = await makeShortId();
   const a = await prisma.article.create({
     data: {
-      id: "a-" + randomUUID(), slug, title, lead, body,
+      id: "a-" + randomUUID(), slug, shortId, title, lead, body,
       translations: JSON.stringify(translations),
       aiSummary: buildAiSummary(title, lead),
       cover: input.cover || "", videoUrl: input.videoUrl || "", categorySlug: input.categorySlug || "business",
@@ -496,7 +569,12 @@ export async function bumpViews(slug: string, viewerKey?: string) {
       for (const [key, ts] of viewSeen) if (now - ts > VIEW_DEDUP_MS) viewSeen.delete(key);
     }
   }
-  try { await prisma.article.update({ where: { slug }, data: { views: { increment: 1 } } }); } catch { /* статья могла быть удалена — молча игнорируем */ }
+  // Сюда приходит публичный адрес — он же короткий идентификатор. Ищем по
+  // обоим полям: иначе после перехода на короткие ссылки просмотры перестали
+  // засчитываться совсем, а страница молчала — ошибка глотается.
+  try {
+    await prisma.article.updateMany({ where: { OR: [{ shortId: slug }, { slug }] }, data: { views: { increment: 1 } } });
+  } catch { /* статья могла быть удалена — молча игнорируем */ }
 }
 
 // ── writer-owned articles (edit/delete own) ──────────────────────────────────
@@ -562,7 +640,7 @@ export async function moderateArticle(id: string, action: string, pinned?: boole
     const u = await prisma.article.update({ where: { id }, data: { status: "published", createdAt: new Date(), pinned: pinned ?? a.pinned } });
     // В title кладём i18n-КЛЮЧ, а не готовую фразу: уведомление живёт в базе, а читать
     // его могут на любом языке. Заголовок статьи идёт отдельно в body.
-    await notify(a.authorUserId, { type: "status", title: "notif.published", body: a.title, link: `/article/${u.slug}` });
+    await notify(a.authorUserId, { type: "status", title: "notif.published", body: a.title, link: `/n/${u.slug}` });
     // Сообщаем Google о новой публикации — без этого новость ждёт обхода часами.
     // Намеренно не ждём ответа: модерация не должна зависеть от Google, а при
     // отсутствии ключей вызов сразу возвращается ни с чем.
@@ -642,7 +720,8 @@ export async function articleForModeration(id: string) {
   const a = await prisma.article.findUnique({ where: { id } });
   if (!a) return null;
   return {
-    id: a.id, slug: a.slug, status: a.status, categorySlug: a.categorySlug,
+    id: a.id, slug: a.shortId || a.slug, status: a.status, categorySlug: a.categorySlug,
+    breaking: a.breaking && (!a.breakingUntil || a.breakingUntil > new Date()),
     cover: a.cover, tags: safeTags(a.tags).join(", "),
     authorName: a.authorName, company: a.company,
     translations: safeTranslations(a.translations),

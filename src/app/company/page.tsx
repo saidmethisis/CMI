@@ -104,7 +104,7 @@ export default async function CompanyCabinet() {
                 <div key={a.id} className="flex items-center gap-3 py-2.5 text-sm">
                   <span className="flex-1">{a.title}</span>
                   <span className="chip !py-0.5 text-[11px]">{t(`status.${a.status}`)}</span>
-                  {a.status === "published" && <Link href={`/article/${a.slug}`} className="btn-ghost text-xs">{t("co.open")}</Link>}
+                  {a.status === "published" && <Link href={`/n/${a.slug}`} className="btn-ghost text-xs">{t("co.open")}</Link>}
                 </div>
               ))}
             </div>
