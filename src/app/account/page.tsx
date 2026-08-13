@@ -116,7 +116,7 @@ function SavedTab({ slugs }: { slugs: string[] }) {
         <ul className="divide-y divide-black/5 dark:divide-white/10">
           {items.map((a) => (
             <li key={a.slug} className="py-2.5">
-              <Link href={`/article/${a.slug}`} className="flex items-center gap-3 text-sm hover:text-accent">
+              <Link href={`/n/${a.slug}`} className="flex items-center gap-3 text-sm hover:text-accent">
                 {a.cover && <Cover src={a.cover} alt="" width={112} height={80} sizes="56px" className="h-10 w-14 shrink-0 rounded object-cover" />}
                 <span className="line-clamp-2">{a.title}</span>
               </Link>
@@ -148,7 +148,7 @@ function MyCommentsTab() {
             <li key={c.id} className="py-3 text-sm">
               <p className="text-black/70 dark:text-white/70">{c.body}</p>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                <Link href={`/article/${c.articleSlug}#c-${c.id}`} className="text-accent hover:underline">→ {c.articleTitle}</Link>
+                <Link href={`/n/${c.articleSlug}#c-${c.id}`} className="text-accent hover:underline">→ {c.articleTitle}</Link>
                 {c.status !== "approved" && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">{c.status === "pending" ? t("comments.pending") : c.status}</span>}
               </div>
             </li>

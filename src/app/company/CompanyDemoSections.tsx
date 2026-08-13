@@ -53,7 +53,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
             <div className="divide-y divide-black/5 dark:divide-white/10">
               {data.press.map((r) => (
                 <div key={r.slug} className="flex flex-wrap items-center gap-3 py-2.5 text-sm">
-                  <Link href={`/article/${r.slug}`} className="flex-1 hover:text-accent">{r.title}</Link>
+                  <Link href={`/n/${r.slug}`} className="flex-1 hover:text-accent">{r.title}</Link>
                   <span className="shrink-0 text-xs text-black/60 dark:text-white/65">{fmtDate(r.date)}</span>
                   <span className={chip(TONE[r.status] ?? TONE.draft)}>{t(`status.${r.status}`)}</span>
                 </div>
@@ -120,7 +120,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead><tr><th className={th}>{t("cds.colMaterial")}</th><th className={`${th} text-right`}>{t("cds.colViews")}</th></tr></thead>
-                  <tbody>{data.topArts.map((a) => <tr key={a.slug}><td className={td}><Link href={`/article/${a.slug}`} className="hover:text-accent">{a.title}</Link></td><td className={`${td} text-right tabular-nums`}>{nf(a.views)}</td></tr>)}</tbody>
+                  <tbody>{data.topArts.map((a) => <tr key={a.slug}><td className={td}><Link href={`/n/${a.slug}`} className="hover:text-accent">{a.title}</Link></td><td className={`${td} text-right tabular-nums`}>{nf(a.views)}</td></tr>)}</tbody>
                 </table>
               </div>
             </>
@@ -151,7 +151,7 @@ export default function CompanyDemoSections({ keys, t, lang, comments, companyId
                 <span className={chip(TONE[c.status] ?? "bg-amber-500/15 text-amber-600 dark:text-amber-400")}>{c.status}</span>
                 <div className="flex w-full items-center gap-2 pl-0 sm:w-auto sm:pl-3">
                   <span className="max-w-[220px] truncate text-xs text-black/60 dark:text-white/65">→ {c.articleTitle}</span>
-                  <Link href={`/article/${c.articleSlug}#c-${c.id}`} className="btn-ghost shrink-0 text-xs">{t("co.open")}</Link>
+                  <Link href={`/n/${c.articleSlug}#c-${c.id}`} className="btn-ghost shrink-0 text-xs">{t("co.open")}</Link>
                 </div>
               </div>
             ))}

@@ -110,5 +110,5 @@ export async function pingIndexing(paths: string[], type: "URL_UPDATED" | "URL_D
  * должны попадать в индекс вместе с основной.
  */
 export function articlePaths(slug: string, langs: string[] = []): string[] {
-  return [`/article/${slug}`, ...langs.filter((l) => l === "uz" || l === "en").map((l) => `/${l}/article/${slug}`)];
+  return [`/n/${slug}`, ...langs.filter((l) => l === "uz" || l === "en").map((l) => `/${l}/n/${slug}`)];
 }

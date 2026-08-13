@@ -14,7 +14,7 @@ export default function VideoRow({ title, items }: { title: React.ReactNode; ite
       <h2 className="mb-4 border-b-2 border-brand pb-1 font-serif text-2xl font-extrabold">{title}</h2>
       <div className="grid gap-5 sm:grid-cols-3">
         {items.map((a) => (
-          <Link key={a.id} href={`/article/${a.slug}`} className="group">
+          <Link key={a.id} href={`/n/${a.slug}`} className="group">
             <div className="relative aspect-video overflow-hidden rounded-lg">
               {a.cover && <Cover src={a.cover} alt={a.title} width={640} height={360} sizes="(max-width: 768px) 60vw, 300px" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
               <span className="absolute inset-0 grid place-items-center">

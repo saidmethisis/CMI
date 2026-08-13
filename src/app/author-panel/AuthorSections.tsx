@@ -108,7 +108,7 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
           <div className="card mb-4 space-y-3 p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-serif text-lg font-bold">{t("wc.editing")}</h3>
-              <Link href={`/article/${editing.slug}?preview=1`} target="_blank" className="btn-ghost text-xs">{t("wc.preview")}</Link>
+              <Link href={`/n/${editing.slug}?preview=1`} target="_blank" className="btn-ghost text-xs">{t("wc.preview")}</Link>
             </div>
 
             {/* языковые вкладки — как в форме создания */}
@@ -151,8 +151,8 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
                 <span className="min-w-0 flex-1 truncate">{a.title}</span>
                 <span className="chip !py-0.5 text-[11px]">{t(`status.${a.status}`)}</span>
                 {a.status === "published"
-                  ? <Link href={`/article/${a.slug}`} target="_blank" className="btn-ghost text-xs">{t("wc.open")}</Link>
-                  : <Link href={`/article/${a.slug}?preview=1`} target="_blank" className="btn-ghost text-xs">{t("wc.preview")}</Link>}
+                  ? <Link href={`/n/${a.slug}`} target="_blank" className="btn-ghost text-xs">{t("wc.open")}</Link>
+                  : <Link href={`/n/${a.slug}?preview=1`} target="_blank" className="btn-ghost text-xs">{t("wc.preview")}</Link>}
                 <button className="btn-ghost text-xs" onClick={() => openEditor(a)}>{t("wc.edit")}</button>
                 <button className="btn-ghost text-xs !text-down" onClick={() => del(a)}>{t("wc.del")}</button>
               </div>

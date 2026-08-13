@@ -13,6 +13,10 @@ datasource db {
 model Article {
   id             String    @id
   slug           String    @unique
+  // Короткий публичный адрес: /n/08121429. Длинная транслитерация в ссылке
+  // мешала делиться материалом в мессенджерах — строка занимала три экрана.
+  // Старый slug остаётся: по нему работают уже разосланные ссылки.
+  shortId        String?   @unique
   title          String
   lead           String
   body           String
@@ -33,6 +37,11 @@ model Article {
   readingMinutes Int       @default(3)
   premium        Boolean   @default(false)
   pinned         Boolean   @default(false)
+  // Срочная новость: редакция отмечает материал вручную, он идёт в бегущую
+  // строку. Срок обязателен по смыслу — новость, «срочная» вторую неделю,
+  // обесценивает саму полосу, поэтому пометка снимается сама.
+  breaking       Boolean   @default(false)
+  breakingUntil  DateTime?
   status         String // draft | review | returned | published | rejected | unpublished
   views          Int       @default(0)
   comments       Comment[]

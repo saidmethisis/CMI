@@ -38,7 +38,7 @@ export default function VideoHero({ items, title, moreLabel }: { items: Article[
 
       <div className="grid gap-4 p-5 lg:grid-cols-[1.6fr_1fr]">
         {/* Главное видео */}
-        <Link href={`/article/${lead.slug}`} className="group block">
+        <Link href={`/n/${lead.slug}`} className="group block">
           <div className="relative aspect-video overflow-hidden rounded-xl bg-black/40">
             {lead.cover && (
               <Cover src={lead.cover} alt={lead.title} width={960} height={540} sizes="(max-width: 1024px) 100vw, 620px"
@@ -54,7 +54,7 @@ export default function VideoHero({ items, title, moreLabel }: { items: Article[
           <ul className="space-y-3">
             {rest.slice(0, 4).map((a) => (
               <li key={a.id}>
-                <Link href={`/article/${a.slug}`} className="group flex gap-3">
+                <Link href={`/n/${a.slug}`} className="group flex gap-3">
                   <span className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-lg bg-black/40">
                     {a.cover && (
                       <Cover src={a.cover} alt="" width={224} height={126} sizes="112px"

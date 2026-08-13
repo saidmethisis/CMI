@@ -30,7 +30,7 @@ export default function InfiniteArticles({ queue }: { queue: string[] }) {
           const j = await r.json();
           setLoaded((prev) => [...prev, j.data]);
           setIdx((i) => i + 1);
-          history.replaceState(null, "", `/article/${j.data.slug}`);
+          history.replaceState(null, "", `/n/${j.data.slug}`);
           document.title = `${j.data.title} — Asosiy Aktiv`;
         } else {
           setIdx((i) => i + 1);
@@ -52,7 +52,7 @@ export default function InfiniteArticles({ queue }: { queue: string[] }) {
             <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-accent">{t("article.next")}</div>
             <span className="text-xs font-semibold" style={{ color: cat?.color }}>{cat ? catName(cat) : ""}</span>
             <h2 className="mt-1 font-serif text-3xl font-bold leading-tight">
-              <Link href={`/article/${a.slug}`}>{a.title}</Link>
+              <Link href={`/n/${a.slug}`}>{a.title}</Link>
             </h2>
             <p className="mt-2 text-lg text-black/60 dark:text-white/70">{a.lead}</p>
             {a.cover && <Cover src={a.cover} alt={a.title} width={1200} height={675} sizes="(max-width: 1024px) 100vw, 720px" className="my-5 aspect-[16/9] w-full rounded-2xl object-cover" />}

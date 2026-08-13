@@ -20,7 +20,7 @@ export async function GET() {
     ...cats.map((c) => `- [${c.name}](${SITE_URL}/category/${c.slug})`),
     "",
     "## Последние материалы",
-    ...arts.slice(0, 50).map((a) => `- [${a.title}](${SITE_URL}/article/${a.slug}): ${a.lead}`),
+    ...arts.slice(0, 50).map((a) => `- [${a.title}](${SITE_URL}/n/${a.slug}): ${a.lead}`),
     "",
     "## Каналы",
     `- RSS (последние): ${SITE_URL}/feed.xml`,

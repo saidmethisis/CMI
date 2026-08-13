@@ -15,7 +15,7 @@ export default function ShareButton({ title, slug }: { title: string; slug: stri
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const url = () => `${window.location.origin}/article/${slug}`;
+  const url = () => `${window.location.origin}/n/${slug}`;
 
   const onClick = async () => {
     // на мобильных с системным share — сразу нативный лист

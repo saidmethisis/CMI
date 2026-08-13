@@ -74,7 +74,7 @@ export default function WriterComments() {
               <span className="min-w-0 flex-1 truncate text-black/60 dark:text-white/60">{c.body}</span>
               <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${TONE[c.status] ?? TONE.pending}`}>{statusLabel(c.status)}</span>
               <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto">
-                <Link href={`/article/${c.articleSlug}#c-${c.id}`} className="btn-ghost text-xs">{t("wc.viewArticle")}</Link>
+                <Link href={`/n/${c.articleSlug}#c-${c.id}`} className="btn-ghost text-xs">{t("wc.viewArticle")}</Link>
                 {c.status !== "approved" && <button onClick={() => moderate(c.id, "approved")} className="btn-ghost text-xs !text-up">{t("wc.approve")}</button>}
                 {c.status !== "spam" && <button onClick={() => moderate(c.id, "spam")} className="btn-ghost text-xs">{t("wc.spam")}</button>}
                 <button onClick={() => del(c.id)} className="btn-ghost text-xs !text-down">{t("wc.del")}</button>

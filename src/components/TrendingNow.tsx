@@ -16,7 +16,7 @@ export default function TrendingNow({ items }: { items: { slug: string; title: s
         {items.map((a, i) => (
           <li key={a.slug} className="border-t-2 border-black/10 pt-2 dark:border-white/15">
             <span className="font-serif text-4xl font-extrabold leading-none text-black/15 dark:text-white/20">{i + 1}</span>
-            <Link href={`/article/${a.slug}`} className="mt-1.5 block text-sm font-semibold leading-snug hover:text-accent">{a.title}</Link>
+            <Link href={`/n/${a.slug}`} className="mt-1.5 block text-sm font-semibold leading-snug hover:text-accent">{a.title}</Link>
           </li>
         ))}
       </ol>

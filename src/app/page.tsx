@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listPublished, pinnedArticle, getCategories, localizeList, localizedArticle } from "@/lib/store";
+import { listPublished, pinnedArticle, getCategories, localizeList, localizedArticle, listBreaking } from "@/lib/store";
 import StoriesBar from "@/components/StoriesBar";
 import BankRates from "@/components/BankRates";
 import StockBoard from "@/components/StockBoard";
@@ -58,7 +58,10 @@ export default async function HomePage() {
   // separate video-first articles from photo-first articles
   const videos = all.filter((a) => a.videoUrl && a.slug !== pinned?.slug).slice(0, 6);
   const feed = all.filter((a) => !a.videoUrl && a.slug !== pinned?.slug);
-  const breaking = all.slice(0, 10).map((a) => ({ slug: a.slug, title: a.title }));
+  // Срочные — только отмеченные редакцией. Пусто → полоса не рисуется:
+  // выдавать за срочное десять последних публикаций значит обесценить её.
+  const breakingRaw = localizeList(await soft(() => listBreaking(10), []), lang);
+  const breaking = breakingRaw.map((a) => ({ slug: a.slug, title: a.title }));
   const timeline = all.map((a) => ({ slug: a.slug, title: a.title, createdAt: a.createdAt }));
   const byViews = [...all].sort((a, b) => b.views - a.views);
   const special = byViews.slice(0, 6).map((a) => ({ slug: a.slug, title: a.title, cover: a.cover, author: a.company ?? a.authorName }));
@@ -87,7 +90,7 @@ export default async function HomePage() {
         {/* left chronological rail — independent scroll, then continues the page */}
         <aside className="hidden xl:block">
           <div className="no-scrollbar sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-auto">
-            <NewsTimeline items={timeline} />
+            <NewsTimeline items={timeline} urgent={breakingRaw.map((a) => ({ slug: a.slug, title: a.title, createdAt: a.createdAt }))} />
           </div>
         </aside>
 
@@ -97,7 +100,7 @@ export default async function HomePage() {
               <div className="mb-3 flex items-center gap-2">
                 <span className="rounded-md bg-accent px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">Asosiy Aktiv</span>
               </div>
-              <Link href={`/article/${pinned.slug}`} className="group block">
+              <Link href={`/n/${pinned.slug}`} className="group block">
                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-black/[0.06] dark:bg-white/[0.08]">
                   {/* Без обложки — нейтральная заглушка: пустой src даёт значок
                       «битая картинка» в самом заметном блоке главной. */}
@@ -153,7 +156,7 @@ export default async function HomePage() {
                 {byViews.slice(0, 6).map((a, i) => (
                   <li key={a.id} className="flex gap-3 border-b border-black/5 pb-3 text-sm dark:border-white/10">
                     <span className="font-serif text-xl font-bold text-accent">{i + 1}</span>
-                    <Link href={`/article/${a.slug}`} className="font-semibold leading-snug hover:text-accent">{a.title}</Link>
+                    <Link href={`/n/${a.slug}`} className="font-semibold leading-snug hover:text-accent">{a.title}</Link>
                   </li>
                 ))}
               </ol>

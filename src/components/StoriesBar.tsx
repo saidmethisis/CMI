@@ -78,7 +78,7 @@ export default function StoriesBar() {
               <span className="chip !border-white/30 text-white">{cat(story.categorySlug) ? catName(cat(story.categorySlug)!) : ""}</span>
               <h3 className="mt-2 text-lg font-bold text-white">{story.title}</h3>
               {story.articleSlug && (
-                <Link href={`/article/${story.articleSlug}`} onClick={close} className="btn-accent mt-3 w-full">
+                <Link href={`/n/${story.articleSlug}`} onClick={close} className="btn-accent mt-3 w-full">
                   {t("stories.read")}
                 </Link>
               )}

@@ -28,7 +28,7 @@ export default function BreakingNews({ items }: { items: { slug: string; title: 
     items.map((n) => (
       <Link
         key={`${key}-${n.slug}`}
-        href={`/article/${n.slug}`}
+        href={`/n/${n.slug}`}
         className="shrink-0 font-medium transition-colors hover:text-accent"
       >
         {n.title}

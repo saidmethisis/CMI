@@ -24,7 +24,7 @@ const CONFIGURED_HOST = (() => {
 // Теперь у каждого языка свой префикс: /uz/... и /en/... Русский остаётся без
 // префикса, чтобы уже существующие ссылки и поисковая выдача не сломались.
 // Префикс снимается переписыванием (rewrite), поэтому структура маршрутов
-// в src/app не меняется — /uz/article/x рендерит тот же /article/x.
+// в src/app не меняется — /uz/n/x рендерит тот же /n/x.
 export const LANG_PREFIXES = ["uz", "en"] as const;
 export const LANG_HEADER = "x-aktiv-lang";
 
@@ -55,7 +55,7 @@ export function middleware(req: NextRequest) {
   const lang = (LANG_PREFIXES as readonly string[]).includes(seg) ? seg : null;
   if (lang) {
     const url = req.nextUrl.clone();
-    // /uz → /, /uz/article/x → /article/x
+    // /uz → /, /uz/n/x → /n/x
     url.pathname = pathname.slice(lang.length + 1) || "/";
     const headers = new Headers(req.headers);
     headers.set(LANG_HEADER, lang);

@@ -50,6 +50,10 @@ export interface Comment {
 export interface Article {
   id: string;
   slug: string;
+  // Публичный адрес материала: в slug лежит короткий идентификатор (/n/08121429).
+  // Исходная транслитерация остаётся в fullSlug — по ней открываются ссылки,
+  // разосланные до перехода на короткие адреса.
+  fullSlug?: string;
   title: string;
   lead: string; // dek / краткое описание
   body: string; // markdown-ish plain blocks separated by \n\n

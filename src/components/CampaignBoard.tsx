@@ -127,7 +127,7 @@ export default async function CampaignBoard({ metrics, top, catStats, labels, pu
           </div>
           <div className="divide-y divide-white/5">
             {top.map((a, i) => (
-              <Link key={a.id} href={`/article/${a.slug}`} className="flex items-center gap-3 py-2.5 text-sm hover:opacity-80">
+              <Link key={a.id} href={`/n/${a.slug}`} className="flex items-center gap-3 py-2.5 text-sm hover:opacity-80">
                 <span className="w-4 text-center font-serif text-base font-bold text-white/30">{i + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="line-clamp-1">{a.title}</span>
