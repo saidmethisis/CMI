@@ -80,6 +80,30 @@ export default function Header() {
         </div>
       </div>
 
+      {/* Подрубрики выбранной рубрики — отдельной строкой под шапкой.
+          Раньше это был выпадающий список внутри полосы навигации, но список
+          рубрик прокручивается вбок, а прокрутка обрезает всё, что выходит за
+          её пределы: меню было видно наполовину. Здесь оно вне прокрутки,
+          показывается целиком и вмещает длинные названия.
+
+          Полоса держится, пока курсор на рубрике или на ней самой; уводя мышь
+          из шапки, читатель её закрывает. */}
+      {hoverSubs.length > 0 && (
+        <div className="hidden animate-slide-up border-t border-white/10 bg-brand-900 md:block">
+          <div className="container-content flex flex-wrap items-center gap-1 py-2">
+            {hoverSubs.map((s) => (
+              <Link
+                key={s}
+                href={`/category/${hover}?sub=${encodeURIComponent(s)}`}
+                onClick={() => setHover(null)}
+                className="rounded-md px-2.5 py-1 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                {s}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
