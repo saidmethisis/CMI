@@ -76,7 +76,7 @@ export default function StoriesBar() {
             <div className="aspect-[9/16] w-full bg-cover bg-center" style={{ backgroundImage: `url(${story.image})` }} />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-5">
               <span className="chip !border-white/30 text-white">{cat(story.categorySlug) ? catName(cat(story.categorySlug)!) : ""}</span>
-              <h3 className="mt-2 text-lg font-bold text-white">{story.title}</h3>
+              <h3 className="mt-2 line-clamp-3 text-lg font-bold text-white">{story.title}</h3>
               {story.articleSlug && (
                 <Link href={`/n/${story.articleSlug}`} onClick={close} className="btn-accent mt-3 w-full">
                   {t("stories.read")}
