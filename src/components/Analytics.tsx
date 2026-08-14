@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Script from "next/script";
+import MetrikaRouteHits from "./MetrikaRouteHits";
 
 // Аналитика/теги — подключаются, только если задан соответствующий env-ID.
 // Google Analytics 4, Google Tag Manager, Яндекс.Метрика. Без ID ничего не грузится.
@@ -25,9 +27,20 @@ export default function Analytics() {
       )}
 
       {YM && (
-        <Script id="ym" strategy="afterInteractive">
-          {`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');ym(${YM},'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});`}
-        </Script>
+        <>
+          {/* ssr:true — страницы приходят готовыми с сервера, и Метрике надо
+              об этом сказать, иначе она считает время загрузки неверно. */}
+          <Script id="ym" strategy="afterInteractive">
+            {`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=${YM}','ym');ym(${YM},'init',{ssr:true,clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});`}
+          </Script>
+          {/* Переходы внутри сайта Метрика сама не считает — см. компонент. */}
+          <Suspense fallback={null}>
+            <MetrikaRouteHits id={YM} />
+          </Suspense>
+          <noscript>
+            <div><img src={`https://mc.yandex.ru/watch/${YM}`} style={{ position: "absolute", left: "-9999px" }} alt="" /></div>
+          </noscript>
+        </>
       )}
     </>
   );
