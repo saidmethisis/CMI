@@ -51,6 +51,10 @@ export default async function PrivacyPage() {
 
       <h2>{t("lg.privacyH6")}</h2>
       <p>{t("lg.privacyThirdParty")}</p>
+      {/* Счётчик назван прямо: он пишет не только просмотры, но и действия на
+          странице. Общей формулировки «используемые сервисы аналитики» для
+          такой записи мало. */}
+      <p>{t("lg.privacyAnalytics")}</p>
 
       <h2>{t("lg.privacyH7")}</h2>
       <ul>
