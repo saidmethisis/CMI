@@ -93,7 +93,7 @@ export default function CompaniesPage() {
       </div>
       {creating && (
         <div className="card mb-3 flex flex-wrap gap-2 p-3">
-          <input className="input min-w-0 flex-1" placeholder={t("ad2.companyNamePh")} value={newName} autoFocus onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && create()} />
+          <input className="ym-disable-keys input min-w-0 flex-1" placeholder={t("ad2.companyNamePh")} value={newName} autoFocus onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && create()} />
           <button className="btn-primary shrink-0" onClick={create}>{t("a.create")}</button>
         </div>
       )}
@@ -122,14 +122,14 @@ export default function CompaniesPage() {
                 </div>
               </div>
               <label className="label">{t("a.title")}</label>
-              <input className="input mb-4" value={sel.name} onChange={(e) => setSel({ ...sel, name: e.target.value })} />
+              <input className="ym-disable-keys input mb-4" value={sel.name} onChange={(e) => setSel({ ...sel, name: e.target.value })} />
 
               {groups.map((g) => (
                 <details key={g.id} className="mb-2 rounded-xl border border-black/[0.07] dark:border-white/10" open={g.id === "main"}>
                   <summary className="cursor-pointer px-3 py-2 text-sm font-semibold">{g.title}</summary>
                   <div className="grid gap-3 p-3 sm:grid-cols-2">
                     {g.fields.map((f) => (
-                      <div key={f.key}><label className="label">{f.label}</label><input className="input" value={sel.profile[f.key] ?? ""} onChange={(e) => setProfile(f.key, e.target.value)} /></div>
+                      <div key={f.key}><label className="label">{f.label}</label><input className="ym-disable-keys input" value={sel.profile[f.key] ?? ""} onChange={(e) => setProfile(f.key, e.target.value)} /></div>
                     ))}
                   </div>
                 </details>
@@ -145,7 +145,7 @@ export default function CompaniesPage() {
                 ))}
               </div>
               <label className="label mt-4">{t("a.owner")}</label>
-              <select className="input max-w-sm" value={sel.ownerUserId ?? ""} onChange={(e) => setSel({ ...sel, ownerUserId: e.target.value || null })}>
+              <select className="ym-disable-keys input max-w-sm" value={sel.ownerUserId ?? ""} onChange={(e) => setSel({ ...sel, ownerUserId: e.target.value || null })}>
                 <option value="">{t("ad2.notAssigned")}</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
               </select>

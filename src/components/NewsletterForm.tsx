@@ -19,7 +19,7 @@ export default function NewsletterForm() {
 
   return (
     <form className="flex flex-wrap gap-2" onSubmit={submit}>
-      <input className="input min-w-0 flex-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e-mail" aria-label="e-mail" />
+      <input className="ym-disable-keys input min-w-0 flex-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e-mail" aria-label="e-mail" />
       <button className="btn-primary shrink-0" type="submit">OK</button>
       {err && <p className="w-full text-xs text-down">{err}</p>}
     </form>

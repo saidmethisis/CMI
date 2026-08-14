@@ -58,7 +58,7 @@ export default function AdsManager({ initial }: { initial: AdBanner[] }) {
             <label className="flex items-center gap-1.5 text-xs">
               {t("ad2.frequency")}
               <input type="number" min={1} max={20} value={a.frequency} onChange={(e) => setFreq(a.id, +e.target.value)}
-                className="w-16 rounded-lg border border-black/10 bg-transparent px-2 py-1 dark:border-white/15" />
+                className="ym-disable-keys w-16 rounded-lg border border-black/10 bg-transparent px-2 py-1 dark:border-white/15" />
             </label>
             <button onClick={() => toggle(a.id)} className={`h-6 w-11 rounded-full p-0.5 transition ${a.active ? "bg-up" : "bg-black/20"}`}>
               <span className={`block h-5 w-5 rounded-full bg-white transition ${a.active ? "translate-x-5" : ""}`} />
@@ -70,8 +70,8 @@ export default function AdsManager({ initial }: { initial: AdBanner[] }) {
         <button className="btn-primary text-sm" onClick={() => setCreating((v) => !v)}>+ {t("a.uploadBanner")}</button>
         {creating && (
           <div className="card mt-2 flex flex-wrap items-center gap-2 p-3">
-            <input className="input min-w-0 flex-1" placeholder={t("ad2.bannerNamePh")} value={nf.title} autoFocus onChange={(e) => setNf({ ...nf, title: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
-            <select className="input w-40" value={nf.slot} onChange={(e) => setNf({ ...nf, slot: e.target.value })}>
+            <input className="ym-disable-keys input min-w-0 flex-1" placeholder={t("ad2.bannerNamePh")} value={nf.title} autoFocus onChange={(e) => setNf({ ...nf, title: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
+            <select className="ym-disable-keys input w-40" value={nf.slot} onChange={(e) => setNf({ ...nf, slot: e.target.value })}>
               {(["top", "in-article", "sidebar"] as const).map((s) => <option key={s} value={s}>{slotLabel[s]}</option>)}
             </select>
             <button className="btn-primary shrink-0" onClick={create}>{t("a.create")}</button>

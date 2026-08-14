@@ -41,12 +41,12 @@ export default function SearchClient({ index }: { index: Row[] }) {
     <div className="container-content py-6">
       <h1 className="mb-4 font-serif text-3xl font-bold">{t("search.title")}</h1>
       <div className="flex flex-col gap-3 sm:flex-row">
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search.placeholder")} className="input" />
-        <select value={cat} onChange={(e) => setCat(e.target.value)} className="input sm:max-w-xs">
+        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search.placeholder")} className="ym-disable-keys input" />
+        <select value={cat} onChange={(e) => setCat(e.target.value)} className="ym-disable-keys input sm:max-w-xs">
           <option value="">{t("search.allSections")}</option>
           {categories.map((c) => <option key={c.slug} value={c.slug}>{catName(c)}</option>)}
         </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value as "rel" | "new" | "pop")} className="input sm:max-w-[190px]">
+        <select value={sort} onChange={(e) => setSort(e.target.value as "rel" | "new" | "pop")} className="ym-disable-keys input sm:max-w-[190px]">
           <option value="rel">{t("search.relevance")}</option>
           <option value="new">{t("search.new")}</option>
           <option value="pop">{t("search.popular")}</option>

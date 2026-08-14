@@ -116,7 +116,7 @@ export default function AuthorEditor() {
       {/* lead video for the header — link or upload from device */}
       <label className="label">{t("author.videoHeader")}</label>
       <div className="mb-1 flex gap-2">
-        <input className="input" value={videoUrl.startsWith("data:") || videoUrl.startsWith("/uploads/") ? "" : videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtu.be/… , https://…/video.mp4" />
+        <input className="ym-disable-keys input" value={videoUrl.startsWith("data:") || videoUrl.startsWith("/uploads/") ? "" : videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtu.be/… , https://…/video.mp4" />
         <label className="btn-ghost shrink-0 cursor-pointer text-xs">
           <Icon name="upload" size={14} /> {t("author.fromDevice")}
           <input type="file" accept="video/mp4,video/webm,video/ogg" className="sr-only" onChange={async (e) => {
@@ -152,15 +152,15 @@ export default function AuthorEditor() {
       </div>
 
       <label className="label">{t("author.titleField")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
-      <input className="input mb-3 font-serif text-lg" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} placeholder={t("author.titleField")} />
+      <input className="ym-disable-keys input mb-3 font-serif text-lg" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} placeholder={t("author.titleField")} />
 
       <label className="label">{t("author.lead")} * <span className="text-black/35 dark:text-white/35">({tab.toUpperCase()})</span></label>
-      <textarea className="input mb-3 resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} placeholder={t("author.lead")} />
+      <textarea className="ym-disable-keys input mb-3 resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} placeholder={t("author.lead")} />
 
       <div className="mb-3 grid grid-cols-2 gap-3">
         <div>
           <label className="label">{t("author.category")} *</label>
-          <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select className="ym-disable-keys input" value={category} onChange={(e) => setCategory(e.target.value)}>
             {categories.map((c) => <option key={c.slug} value={c.slug}>{catName(c)}</option>)}
           </select>
         </div>
@@ -187,8 +187,8 @@ export default function AuthorEditor() {
         <div className="space-y-2">
           {socials.map((s, i) => (
             <div key={i} className="flex gap-2">
-              <input className="input w-32" value={s.label} onChange={(e) => setSocial(i, { label: e.target.value })} placeholder="Telegram" />
-              <input className="input flex-1" value={s.url} onChange={(e) => setSocial(i, { url: e.target.value })} placeholder="https://t.me/username" />
+              <input className="ym-disable-keys input w-32" value={s.label} onChange={(e) => setSocial(i, { label: e.target.value })} placeholder="Telegram" />
+              <input className="ym-disable-keys input flex-1" value={s.url} onChange={(e) => setSocial(i, { url: e.target.value })} placeholder="https://t.me/username" />
               <button className="btn-ghost !px-3 text-xs" onClick={() => removeSocial(i)} aria-label={t("wc.del")}>×</button>
             </div>
           ))}

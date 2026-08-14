@@ -49,10 +49,10 @@ export default function StaffPage() {
 
       {creating && (
         <div className="card mb-4 flex flex-wrap items-end gap-2 p-3">
-          <div><label className="label">{t("a.name")}</label><input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div><label className="label">Email</label><input className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-          <div><label className="label">{t("a.password")}</label><input className="input" type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
-          <div><label className="label">{t("a.role")}</label><select className="input" value={form.roleSlug} onChange={(e) => setForm({ ...form, roleSlug: e.target.value })}>{roles.map((r) => <option key={r.slug} value={r.slug}>{r.name}</option>)}</select></div>
+          <div><label className="label">{t("a.name")}</label><input className="ym-disable-keys input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div><label className="label">Email</label><input className="ym-disable-keys input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+          <div><label className="label">{t("a.password")}</label><input className="ym-disable-keys input" type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
+          <div><label className="label">{t("a.role")}</label><select className="ym-disable-keys input" value={form.roleSlug} onChange={(e) => setForm({ ...form, roleSlug: e.target.value })}>{roles.map((r) => <option key={r.slug} value={r.slug}>{r.name}</option>)}</select></div>
           <button className="btn-primary" onClick={create}>{t("a.create")}</button>
         </div>
       )}

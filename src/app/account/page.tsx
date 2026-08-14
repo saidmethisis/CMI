@@ -80,7 +80,7 @@ export default function AccountPage() {
             <button onClick={saveNotif} className="btn-primary mt-3 text-sm">{t("a.save")}</button>
             <div className="mt-4 flex items-center gap-3">
               <span className="text-sm">{t("acc.uiLang")}</span>
-              <select className="input max-w-[120px]" onChange={(e) => setLang(e.target.value as never)} defaultValue={user.locale}>{LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}</select>
+              <select className="ym-disable-keys input max-w-[120px]" onChange={(e) => setLang(e.target.value as never)} defaultValue={user.locale}>{LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}</select>
               <label className="ml-auto flex items-center gap-2 text-sm">{t("acc.darkTheme")}<button onClick={toggleDark} className={`h-6 w-11 rounded-full p-0.5 transition ${dark ? "bg-brand" : "bg-black/20"}`}><span className={`block h-5 w-5 rounded-full bg-white transition ${dark ? "translate-x-5" : ""}`} /></button></label>
             </div>
           </Panel>
@@ -202,13 +202,13 @@ function ProfileTab({ onSaved }: { onSaved: () => void }) {
     <Panel title={t("acc.profile")}>
       {msg && <div className="mb-3 rounded-lg bg-up/10 px-3 py-2 text-sm text-up">{msg}</div>}
       <div className="grid gap-3 sm:grid-cols-2">
-        <div><label className="label">{t("auth.name")}</label><input className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
-        <div><label className="label">{t("acc.displayName")}</label><input className="input" value={f.displayName} onChange={(e) => setF({ ...f, displayName: e.target.value })} /></div>
-        <div><label className="label">{t("auth.email")} {user!.emailVerified ? "✓" : t("acc.emailUnverified")}</label><input className="input" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></div>
-        <div><label className="label">{t("ap.phone")}</label><input className="input" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></div>
+        <div><label className="label">{t("auth.name")}</label><input className="ym-disable-keys input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+        <div><label className="label">{t("acc.displayName")}</label><input className="ym-disable-keys input" value={f.displayName} onChange={(e) => setF({ ...f, displayName: e.target.value })} /></div>
+        <div><label className="label">{t("auth.email")} {user!.emailVerified ? "✓" : t("acc.emailUnverified")}</label><input className="ym-disable-keys input" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></div>
+        <div><label className="label">{t("ap.phone")}</label><input className="ym-disable-keys input" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></div>
         <ImageUpload label={t("acc.avatarLabel")} value={f.avatar} onChange={(v) => setF({ ...f, avatar: v })} variant="avatar" maxW={512} />
         <ImageUpload label={t("acc.bannerLabel")} value={f.banner} onChange={(v) => setF({ ...f, banner: v })} variant="banner" maxW={1600} />
-        <div className="sm:col-span-2"><label className="label">{t("a.bio")}</label><textarea className="input resize-y" rows={2} value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} /></div>
+        <div className="sm:col-span-2"><label className="label">{t("a.bio")}</label><textarea className="ym-disable-keys input resize-y" rows={2} value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} /></div>
       </div>
       <button className="btn-primary mt-4" onClick={save}>{t("acc.saveProfile")}</button>
     </Panel>
@@ -235,8 +235,8 @@ function SecurityTab({ user, sessions, onChange }: { user: { twoFactor: boolean;
       {msg && <div className="rounded-lg bg-up/10 px-3 py-2 text-sm text-up">{msg}</div>}
       <Panel title={t("acc.changePw")}>
         <div className="grid max-w-md gap-3">
-          <input className="input" type="password" placeholder={t("acc.currentPw")} value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} />
-          <input className="input" type="password" placeholder={t("acc.newPw")} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} />
+          <input className="ym-disable-keys input" type="password" placeholder={t("acc.currentPw")} value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} />
+          <input className="ym-disable-keys input" type="password" placeholder={t("acc.newPw")} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} />
           <button className="btn-primary w-fit" onClick={changePw}>{t("acc.changePwBtn")}</button>
         </div>
       </Panel>
@@ -253,7 +253,7 @@ function SecurityTab({ user, sessions, onChange }: { user: { twoFactor: boolean;
             <a href={tf.otpauth} className="text-xs text-accent hover:underline">{t("acc.twoFaOpenApp")}</a>
             {tfErr && <div className="text-xs text-down">{tfErr}</div>}
             <div className="flex flex-wrap items-end gap-2">
-              <div><label className="label">{t("acc.twoFaCode")}</label><input className="input tracking-[0.3em]" inputMode="numeric" maxLength={6} value={tfCode} onChange={(e) => setTfCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" /></div>
+              <div><label className="label">{t("acc.twoFaCode")}</label><input className="ym-disable-keys input tracking-[0.3em]" inputMode="numeric" maxLength={6} value={tfCode} onChange={(e) => setTfCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" /></div>
               <button className="btn-primary" disabled={tfCode.length < 6} onClick={enable2fa}>{t("acc.twoFaConfirm")}</button>
               <button className="btn-ghost" onClick={() => setTf(null)}>{t("a.cancel")}</button>
             </div>

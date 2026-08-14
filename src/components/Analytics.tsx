@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Script from "next/script";
 import MetrikaRouteHits from "./MetrikaRouteHits";
+import MetrikaFieldGuard from "./MetrikaFieldGuard";
 
 // Аналитика/теги — подключаются, только если задан соответствующий env-ID.
 // Google Analytics 4, Google Tag Manager, Яндекс.Метрика. Без ID ничего не грузится.
@@ -37,6 +38,8 @@ export default function Analytics() {
           <Suspense fallback={null}>
             <MetrikaRouteHits id={YM} />
           </Suspense>
+          {/* Вебвизор пишет нажатия клавиш; поля с вводом закрываем от записи. */}
+          <MetrikaFieldGuard />
           <noscript>
             <div><img src={`https://mc.yandex.ru/watch/${YM}`} style={{ position: "absolute", left: "-9999px" }} alt="" /></div>
           </noscript>

@@ -74,7 +74,7 @@ export default function WriterDashboard({ articles, name, onNav, onEdit }: { art
         <div className="card p-4">
           <div className="mb-2 border-b border-black/5 pb-2 text-sm font-bold dark:border-white/10">{t("wc.notes")} · {t("wc.todo")}</div>
           <div className="mb-3 flex gap-2">
-            <input className="input !py-1.5 text-sm" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTodo()} placeholder={t("wc.notePlaceholder")} />
+            <input className="ym-disable-keys input !py-1.5 text-sm" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTodo()} placeholder={t("wc.notePlaceholder")} />
             <button className="btn-ghost shrink-0 text-xs" onClick={addTodo}>{t("wc.addNote")}</button>
           </div>
           <ul className="space-y-1">

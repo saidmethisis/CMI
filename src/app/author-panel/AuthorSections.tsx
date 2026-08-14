@@ -125,15 +125,15 @@ export default function AuthorSections({ articles, name }: { articles: A[]; name
               <span className="text-xs text-black/60 dark:text-white/65">{t("author.langHint")}</span>
             </div>
 
-            <div><label className="label">{t("author.titleField")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><input className="input" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} /></div>
-            <div><label className="label">{t("author.lead")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><textarea className="input resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} /></div>
+            <div><label className="label">{t("author.titleField")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><input className="ym-disable-keys input" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} /></div>
+            <div><label className="label">{t("author.lead")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><textarea className="ym-disable-keys input resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} /></div>
             <div>
               <label className="label">{t("author.category")}</label>
-              <select className="input" value={editing.categorySlug} onChange={(e) => setEditing({ ...editing, categorySlug: e.target.value })}>
+              <select className="ym-disable-keys input" value={editing.categorySlug} onChange={(e) => setEditing({ ...editing, categorySlug: e.target.value })}>
                 {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
               </select>
             </div>
-            <div><label className="label">{t("author.text")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><textarea className="input resize-y font-mono text-sm" rows={8} value={cur.body} onChange={(e) => setCur({ body: e.target.value })} /></div>
+            <div><label className="label">{t("author.text")} <span className="text-black/35 dark:text-white/35">({editLang.toUpperCase()})</span></label><textarea className="ym-disable-keys input resize-y font-mono text-sm" rows={8} value={cur.body} onChange={(e) => setCur({ body: e.target.value })} /></div>
             {editing.status === "published" && <p className="text-xs text-amber-600 dark:text-amber-400">{t("wc.republishNote")}</p>}
             <div className="flex flex-wrap justify-end gap-2">
               <button className="btn-ghost" onClick={() => setEditing(null)}>{t("wc.cancel")}</button>

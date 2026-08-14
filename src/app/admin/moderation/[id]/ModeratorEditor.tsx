@@ -134,10 +134,10 @@ export default function ModeratorEditor({ article }: { article: ModerationArticl
       </div>
 
       <label className="label">{t("author.title")} ({tab.toUpperCase()})</label>
-      <input className="input mb-3" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} />
+      <input className="ym-disable-keys input mb-3" value={cur.title} onChange={(e) => setCur({ title: e.target.value })} />
 
       <label className="label">{t("author.lead")} ({tab.toUpperCase()})</label>
-      <textarea className="input mb-3 resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} />
+      <textarea className="ym-disable-keys input mb-3 resize-y" rows={2} value={cur.lead} onChange={(e) => setCur({ lead: e.target.value })} />
 
       <label className="label">{t("author.text")} ({tab.toUpperCase()})</label>
       <RichEditor
@@ -151,7 +151,7 @@ export default function ModeratorEditor({ article }: { article: ModerationArticl
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">{t("author.category")}</label>
-          <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select className="ym-disable-keys input" value={category} onChange={(e) => setCategory(e.target.value)}>
             {categories.map((c) => <option key={c.slug} value={c.slug}>{catName(c)}</option>)}
           </select>
         </div>
