@@ -26,6 +26,18 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: desc,
     manifest: "/manifest.webmanifest",
+    // Значки. PNG обязательны: iPhone не понимает SVG для домашнего экрана —
+    // вместо иконки показывал бы уменьшенный снимок страницы. SVG оставлен
+    // первым для браузеров, которые умеют его масштабировать без потерь.
+    icons: {
+      icon: [
+        { url: "/icons/icon.svg", type: "image/svg+xml" },
+        { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+        { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+      shortcut: ["/icons/favicon-32.png"],
+    },
     applicationName: "Asosiy Aktiv",
     // canonical здесь НЕ задаём: Next наследует alternates во все дочерние страницы,
     // и каждая рубрика/автор/поиск объявляли себя копией главной — Google выкидывал
@@ -59,7 +71,7 @@ const siteJsonLd = {
       name: SITE_NAME,
       url: SITE_URL,
       description: SITE_DESC,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon.svg` },
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/icons/icon-512.png`, width: 512, height: 512 },
     },
     {
       "@type": "WebSite",
