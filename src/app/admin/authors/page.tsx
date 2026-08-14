@@ -75,12 +75,12 @@ export default function AuthorsPage() {
       {creating && (
         <div className="card mb-3 space-y-2 p-3">
           <div className="flex flex-wrap gap-2">
-            <input className="input min-w-0 flex-1" placeholder={t("a.name")} value={nf.firstName} autoFocus onChange={(e) => setNf({ ...nf, firstName: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
-            <input className="input min-w-0 flex-1" placeholder={t("a.lastName")} value={nf.lastName} onChange={(e) => setNf({ ...nf, lastName: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
+            <input className="ym-disable-keys input min-w-0 flex-1" placeholder={t("a.name")} value={nf.firstName} autoFocus onChange={(e) => setNf({ ...nf, firstName: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
+            <input className="ym-disable-keys input min-w-0 flex-1" placeholder={t("a.lastName")} value={nf.lastName} onChange={(e) => setNf({ ...nf, lastName: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
           </div>
           <div className="flex flex-wrap gap-2">
-            <input className="input min-w-0 flex-1" type="email" placeholder={`${t("a.loginEmail")} (${t("a.optional")})`} value={nf.email} onChange={(e) => setNf({ ...nf, email: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
-            <input className="input min-w-0 flex-1" type="text" placeholder={t("a.loginPassword")} value={nf.password} onChange={(e) => setNf({ ...nf, password: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
+            <input className="ym-disable-keys input min-w-0 flex-1" type="email" placeholder={`${t("a.loginEmail")} (${t("a.optional")})`} value={nf.email} onChange={(e) => setNf({ ...nf, email: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
+            <input className="ym-disable-keys input min-w-0 flex-1" type="text" placeholder={t("a.loginPassword")} value={nf.password} onChange={(e) => setNf({ ...nf, password: e.target.value })} onKeyDown={(e) => e.key === "Enter" && create()} />
             <button className="btn-primary shrink-0" onClick={create}>{t("a.create")}</button>
           </div>
           <p className="text-xs text-black/60 dark:text-white/65">{t("a.loginHint")}</p>
@@ -112,18 +112,18 @@ export default function AuthorsPage() {
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div><label className="label">{t("a.name")}</label><input className="input" value={sel.firstName} onChange={(e) => setSel({ ...sel, firstName: e.target.value })} /></div>
-                <div><label className="label">{t("a.lastName")}</label><input className="input" value={sel.lastName} onChange={(e) => setSel({ ...sel, lastName: e.target.value })} /></div>
-                <div><label className="label">{t("a.photoUrl")}</label><input className="input" value={sel.avatar} onChange={(e) => setSel({ ...sel, avatar: e.target.value })} /></div>
+                <div><label className="label">{t("a.name")}</label><input className="ym-disable-keys input" value={sel.firstName} onChange={(e) => setSel({ ...sel, firstName: e.target.value })} /></div>
+                <div><label className="label">{t("a.lastName")}</label><input className="ym-disable-keys input" value={sel.lastName} onChange={(e) => setSel({ ...sel, lastName: e.target.value })} /></div>
+                <div><label className="label">{t("a.photoUrl")}</label><input className="ym-disable-keys input" value={sel.avatar} onChange={(e) => setSel({ ...sel, avatar: e.target.value })} /></div>
                 <div>
                   <label className="label">{t("a.verifyStatus")}</label>
-                  <select className="input" value={sel.verifyStatus} onChange={(e) => setSel({ ...sel, verifyStatus: e.target.value })}>
+                  <select className="ym-disable-keys input" value={sel.verifyStatus} onChange={(e) => setSel({ ...sel, verifyStatus: e.target.value })}>
                     <option value="pending">{t("status.review")}</option><option value="verified">{t("a.verified")}</option><option value="rejected">{t("a.rejected")}</option>
                   </select>
                 </div>
                 <div>
                   <label className="label">{t("a.company")}</label>
-                  <select className="input" value={sel.companyId ?? ""} onChange={(e) => setSel({ ...sel, companyId: e.target.value || null })}>
+                  <select className="ym-disable-keys input" value={sel.companyId ?? ""} onChange={(e) => setSel({ ...sel, companyId: e.target.value || null })}>
                     <option value="">{t("ad2.none")}</option>
                     {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -133,9 +133,9 @@ export default function AuthorsPage() {
               <details className="mt-3 rounded-xl border border-black/[0.07] dark:border-white/10" open>
                 <summary className="cursor-pointer px-3 py-2 text-sm font-semibold">{t("co.profile")}</summary>
                 <div className="grid gap-3 p-3 sm:grid-cols-2">
-                  <div className="sm:col-span-2"><label className="label">{t("a.bio")}</label><textarea className="input resize-y" rows={2} value={sel.profile.bio ?? ""} onChange={(e) => setProfile("bio", e.target.value)} /></div>
+                  <div className="sm:col-span-2"><label className="label">{t("a.bio")}</label><textarea className="ym-disable-keys input resize-y" rows={2} value={sel.profile.bio ?? ""} onChange={(e) => setProfile("bio", e.target.value)} /></div>
                   {fields.map((f) => (
-                    <div key={f.key}><label className="label">{f.label}</label><input className="input" value={sel.profile[f.key] ?? ""} onChange={(e) => setProfile(f.key, e.target.value)} /></div>
+                    <div key={f.key}><label className="label">{f.label}</label><input className="ym-disable-keys input" value={sel.profile[f.key] ?? ""} onChange={(e) => setProfile(f.key, e.target.value)} /></div>
                   ))}
                 </div>
               </details>

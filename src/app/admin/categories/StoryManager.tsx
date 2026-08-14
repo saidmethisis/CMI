@@ -63,12 +63,12 @@ export default function StoryManager({ stories, categories }: { stories: Story[]
             <input type="file" accept="image/*" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
           </label>
           <div className="flex-1 space-y-2">
-            <input className="input" placeholder={t("ad2.storyTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input className="ym-disable-keys input" placeholder={t("ad2.storyTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="grid grid-cols-2 gap-2">
-              <select className="input" value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}>
+              <select className="ym-disable-keys input" value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}>
                 {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
               </select>
-              <input className="input" placeholder={t("ad2.storySlugPh")} value={articleSlug} onChange={(e) => setArticleSlug(e.target.value)} />
+              <input className="ym-disable-keys input" placeholder={t("ad2.storySlugPh")} value={articleSlug} onChange={(e) => setArticleSlug(e.target.value)} />
             </div>
             <button className="btn-primary w-full text-xs" disabled={busy} onClick={add}>{busy ? t("author.uploading") : t("ad2.addStory")}</button>
           </div>

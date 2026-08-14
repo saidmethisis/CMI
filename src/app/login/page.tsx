@@ -46,14 +46,14 @@ export default function LoginPage() {
         <div className="mt-5 space-y-3">
           {!twoFA ? (
             <>
-              <div><label className="label" htmlFor="login-email">{t("auth.email")}</label><input id="login-email" autoComplete="email" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@mail.com" /></div>
-              <div><label className="label" htmlFor="login-password">{t("auth.password")}</label><input id="login-password" autoComplete="current-password" className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
+              <div><label className="label" htmlFor="login-email">{t("auth.email")}</label><input id="login-email" autoComplete="email" className="ym-disable-keys input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@mail.com" /></div>
+              <div><label className="label" htmlFor="login-password">{t("auth.password")}</label><input id="login-password" autoComplete="current-password" className="ym-disable-keys input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" /></div>
               <GoogleRecaptcha onToken={setHuman} />
             </>
           ) : (
             <div>
               <label className="label" htmlFor="login-2fa">{t("auth.twoFACode")}</label>
-              <input id="login-2fa" autoComplete="one-time-code" autoFocus className="input tracking-[0.4em]" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" onKeyDown={(e) => e.key === "Enter" && submit()} />
+              <input id="login-2fa" autoComplete="one-time-code" autoFocus className="ym-disable-keys input tracking-[0.4em]" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" onKeyDown={(e) => e.key === "Enter" && submit()} />
               <p className="mt-1 text-xs text-black/60 dark:text-white/65">{t("auth.twoFAHint")}</p>
             </div>
           )}

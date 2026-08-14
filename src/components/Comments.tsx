@@ -49,7 +49,7 @@ export default function Comments({ articleId }: { articleId: string }) {
 
       {user ? (
         <div className="card mb-5 p-3">
-          <textarea aria-label={t("comments.placeholder")} value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder={t("comments.placeholder")} className="input resize-y" />
+          <textarea aria-label={t("comments.placeholder")} value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder={t("comments.placeholder")} className="ym-disable-keys input resize-y" />
           <div className="mt-2 flex items-center justify-between">
             <span className="text-xs text-black/60 dark:text-white/65">{t("comments.moderationNote")}</span>
             <button onClick={() => post(text)} disabled={busy} className="btn-primary">{t("comments.send")}</button>
@@ -110,7 +110,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
 
         {editing ? (
           <div className="mt-1">
-            <textarea aria-label={t("wc.edit")} className="input resize-y" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} />
+            <textarea aria-label={t("wc.edit")} className="ym-disable-keys input resize-y" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} />
             <div className="mt-1 flex gap-2"><button className="btn-primary text-xs" onClick={saveEdit}>{t("comments.save")}</button><button className="btn-ghost text-xs" onClick={() => setEditing(false)}>{t("comments.cancel")}</button></div>
           </div>
         ) : (
@@ -129,7 +129,7 @@ function CommentItem({ node, depth, me, isMod, loggedIn, onChange, onReply, onFl
 
         {replying && (
           <div className="mt-2">
-            <textarea aria-label={t("comments.replyPlaceholder")} className="input resize-y" rows={2} value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t("comments.replyPlaceholder")} />
+            <textarea aria-label={t("comments.replyPlaceholder")} className="ym-disable-keys input resize-y" rows={2} value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t("comments.replyPlaceholder")} />
             <div className="mt-1 flex gap-2"><button className="btn-primary text-xs" onClick={() => { onReply(reply, node.id); setReply(""); setReplying(false); }}>{t("comments.reply")}</button></div>
           </div>
         )}

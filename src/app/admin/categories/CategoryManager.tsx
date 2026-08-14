@@ -78,9 +78,9 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
         <div className="mb-4 rounded-xl border border-black/10 p-3 dark:border-white/10">
           {error && <div className="mb-2 text-xs text-down">{error}</div>}
           <div className="grid gap-2 sm:grid-cols-3">
-            <input className="input" placeholder={t("ad2.nameRu")} value={name} onChange={(e) => setName(e.target.value)} />
-            <input className="input" placeholder="Nomi (UZ)" value={nameUz} onChange={(e) => setNameUz(e.target.value)} />
-            <input className="input" placeholder="Name (EN)" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
+            <input className="ym-disable-keys input" placeholder={t("ad2.nameRu")} value={name} onChange={(e) => setName(e.target.value)} />
+            <input className="ym-disable-keys input" placeholder="Nomi (UZ)" value={nameUz} onChange={(e) => setNameUz(e.target.value)} />
+            <input className="ym-disable-keys input" placeholder="Name (EN)" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
           </div>
           <div className="mt-2 flex items-center gap-1.5">
             <span className="text-xs text-black/60 dark:text-white/65">{t("a.color")}:</span>
@@ -99,9 +99,9 @@ export default function CategoryManager({ categories, counts }: { categories: Ca
             {editSlug === c.slug ? (
               <div className="flex-1">
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <input className="input" placeholder={t("ad2.nameRu")} value={eName} onChange={(e) => setEName(e.target.value)} />
-                  <input className="input" placeholder="Nomi (UZ)" value={eNameUz} onChange={(e) => setENameUz(e.target.value)} />
-                  <input className="input" placeholder="Name (EN)" value={eNameEn} onChange={(e) => setENameEn(e.target.value)} />
+                  <input className="ym-disable-keys input" placeholder={t("ad2.nameRu")} value={eName} onChange={(e) => setEName(e.target.value)} />
+                  <input className="ym-disable-keys input" placeholder="Nomi (UZ)" value={eNameUz} onChange={(e) => setENameUz(e.target.value)} />
+                  <input className="ym-disable-keys input" placeholder="Name (EN)" value={eNameEn} onChange={(e) => setENameEn(e.target.value)} />
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {palette.map((p) => (

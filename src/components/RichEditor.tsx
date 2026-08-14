@@ -183,7 +183,7 @@ export default function RichEditor({ value, onChange, placeholder, onRequestImag
         onInput={() => { setDirty(true); push(); }}
         onBlur={() => { setDirty(false); push(); }}
         onPaste={onPaste}
-        className="rich-editor min-h-[320px] w-full px-4 py-3 text-[15px] leading-relaxed outline-none"
+        className="ym-disable-keys rich-editor min-h-[320px] w-full px-4 py-3 text-[15px] leading-relaxed outline-none"
       />
     </div>
   );
