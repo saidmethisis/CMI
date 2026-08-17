@@ -30,9 +30,12 @@ export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?
         )}
       </div>
       <div className="p-4">
-        <div className="mb-2 flex items-center gap-2 text-xs">
-          <span className="font-semibold" style={{ color: cat?.color }}>{cat ? catName(cat) : ""}</span>
-          <span className="text-black/60 dark:text-white/65">· {a.readingMinutes} {t("common.min")}</span>
+        {/* Рубрика и время чтения. Строка переносится целиком по частям:
+            на узкой карточке «Технологии · 12 мин чтения» иначе рвалось
+            посередине фразы. */}
+        <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+          <span className="whitespace-nowrap font-semibold" style={{ color: cat?.color }}>{cat ? catName(cat) : ""}</span>
+          <span className="whitespace-nowrap text-black/60 dark:text-white/65">· {a.readingMinutes} {t("common.min")}</span>
         </div>
         {/* stretched link: makes the whole card clickable + hover styling like a link */}
         <h3 className={`line-clamp-3 font-serif font-bold leading-snug transition-colors group-hover:text-accent group-hover:underline ${large ? "text-2xl" : "text-lg"}`}>
