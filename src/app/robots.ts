@@ -19,7 +19,10 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "*", allow: "/", disallow: PRIVATE },
       { userAgent: AI_BOTS, allow: "/", disallow: PRIVATE }, // AI crawlers may read public content
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    // Две карты: обычная перечисляет весь сайт, новостная — только материалы
+    // за последние двое суток, по формату Google News. Робот новостей ходит в
+    // неё отдельно и заметно чаще.
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/news-sitemap.xml`],
     host: SITE_URL,
   };
 }
