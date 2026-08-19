@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { slugify } from "./slug";
 import { notify } from "./notifications";
 import { pingIndexing, articlePaths } from "./indexing";
+import { submitIndexNow } from "./indexnow";
 import { sanitizeHtml, looksLikeHtml, htmlToText } from "./sanitize-html";
 import type { Article, ArticleTranslations, LangCode, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
 import { categories, stories } from "./seed";
@@ -637,7 +638,11 @@ export async function deleteOwnArticle(id: string, userId: string) {
   // Удалённая статья должна уйти и из поиска, иначе читатель придёт из выдачи
   // на 404. Только для опубликованных: черновика в индексе и не было.
   if (a.status === "published") {
-    void pingIndexing(articlePaths(a.slug, Object.keys(safeTranslations(a.translations))), "URL_DELETED");
+    const paths = articlePaths(a.slug, Object.keys(safeTranslations(a.translations)));
+    void pingIndexing(paths, "URL_DELETED");
+    // Яндексу и Bing сообщаем тем же движением: у них своего интерфейса нет,
+    // зато оба принимают IndexNow.
+    void submitIndexNow(paths);
   }
   return { ok: true };
 }
@@ -655,7 +660,9 @@ export async function moderateArticle(id: string, action: string, pinned?: boole
     // Сообщаем Google о новой публикации — без этого новость ждёт обхода часами.
     // Намеренно не ждём ответа: модерация не должна зависеть от Google, а при
     // отсутствии ключей вызов сразу возвращается ни с чем.
-    void pingIndexing(articlePaths(u.slug, Object.keys(safeTranslations(u.translations))));
+    const paths = articlePaths(u.slug, Object.keys(safeTranslations(u.translations)));
+    void pingIndexing(paths);
+    void submitIndexNow(paths);
     return { id: u.id, status: u.status, pinned: u.pinned };
   }
   if (action === "pin") {
@@ -720,7 +727,9 @@ export async function updateArticleAsModerator(
   // Правка уже опубликованного материала должна дойти до поиска: иначе в
   // выдаче остаётся старая версия с ошибками, ради которых правку и делали.
   if (u.status === "published") {
-    void pingIndexing(articlePaths(u.slug, Object.keys(safeTranslations(u.translations))));
+    const paths = articlePaths(u.slug, Object.keys(safeTranslations(u.translations)));
+    void pingIndexing(paths);
+    void submitIndexNow(paths);
   }
   return { ok: true, status: u.status };
 }

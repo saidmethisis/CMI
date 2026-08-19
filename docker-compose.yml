@@ -84,6 +84,8 @@ services:
       # JSON сервисного аккаунта для мгновенной индексации в Google; без него
       # публикация работает как прежде, просто без пинга
       GOOGLE_INDEXING_CREDENTIALS: ${GOOGLE_INDEXING_CREDENTIALS:-}
+      # Уведомление Яндекса и Bing о новых материалах (IndexNow).
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
       NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
       NEXT_PUBLIC_ADSENSE_SLOT_TOP: ${NEXT_PUBLIC_ADSENSE_SLOT_TOP:-}
       NEXT_PUBLIC_ADSENSE_SLOT_SIDE: ${NEXT_PUBLIC_ADSENSE_SLOT_SIDE:-}
