@@ -22,6 +22,11 @@ const LANGS: LangCode[] = ["ru", "uz", "en"];
 const WINDOW_HOURS = 48;
 const MAX_URLS = 1000;
 
+// Время в формате W3C Datetime без долей секунды: 2026-08-19T07:21:28+00:00.
+// Миллисекунды, которые по умолчанию даёт toISOString, строгие разборщики карт
+// не принимают — на основной карте сайта Яндекс из-за них забраковал все адреса.
+const stamp = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "+00:00");
+
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -42,7 +47,7 @@ export async function GET() {
         `        <news:name>${esc(SITE_NAME)}</news:name>`,
         `        <news:language>${lang}</news:language>`,
         "      </news:publication>",
-        `      <news:publication_date>${new Date(a.createdAt).toISOString()}</news:publication_date>`,
+        `      <news:publication_date>${stamp(new Date(a.createdAt))}</news:publication_date>`,
         `      <news:title>${esc(title)}</news:title>`,
         "    </news:news>",
         a.cover ? `    <image:image><image:loc>${esc(new URL(a.cover, langUrl("ru", "/")).toString())}</image:loc></image:image>` : "",
