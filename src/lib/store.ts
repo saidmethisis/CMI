@@ -469,11 +469,22 @@ async function makeShortId(): Promise<string> {
 export async function listBreaking(take = 10): Promise<Article[]> {
   await ensureSeed();
   const now = new Date();
+  // Пометка без явного срока живёт двое суток от публикации, а не вечно.
+  //
+  // Раньше breakingUntil: null означало «показывать всегда», и в полосе висели
+  // материалы недельной давности. Срочная новость, которой шесть дней, — это
+  // не срочная новость: полоса теряет смысл, а читатель перестаёт её замечать.
+  // Явно заданный срок по-прежнему уважается как есть.
+  const IMPLICIT_HOURS = 48;
+  const cutoff = new Date(now.getTime() - IMPLICIT_HOURS * 3600_000);
   const rows = await prisma.article.findMany({
     where: {
       status: "published",
       breaking: true,
-      OR: [{ breakingUntil: null }, { breakingUntil: { gt: now } }],
+      OR: [
+        { breakingUntil: { gt: now } },
+        { AND: [{ breakingUntil: null }, { createdAt: { gt: cutoff } }] },
+      ],
     },
     orderBy: { createdAt: "desc" },
     take,
