@@ -70,6 +70,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Заголовок для разметки: Google советует укладываться в 110 знаков, иначе
+// карточка материала может не показаться в выдаче вовсе. Резать нужно по
+// границе слова: прежняя обрезка ровно на 110-м знаке разрывала слово
+// посередине, и в разметке оставался обрубок вроде «государственного бюдж».
+function shortHeadline(title: string): string {
+  if (title.length <= 110) return title;
+  const cut = title.slice(0, 110);
+  const space = cut.lastIndexOf(" ");
+  return (space > 60 ? cut.slice(0, space) : cut).replace(/[\s,;:—–-]+$/, "");
+}
+
 export default async function ArticlePage({ params, searchParams }: Props) {
   const { id: slug } = await params;
   const { preview } = await searchParams;
@@ -128,7 +139,7 @@ export default async function ArticlePage({ params, searchParams }: Props) {
     "@type": "NewsArticle",
     mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
     url: articleUrl,
-    headline: L.title.slice(0, 110), // Google обрезает headline длиннее 110 символов
+    headline: shortHeadline(L.title),
     description: L.lead,
     ...(a.cover ? { image: [a.cover.startsWith("http") ? a.cover : `${SITE_URL}${a.cover}`] } : {}),
     datePublished: a.createdAt,
