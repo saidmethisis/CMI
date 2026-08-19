@@ -43,14 +43,17 @@ export default function ArticleCard({ a, variant = "M" }: { a: Article; variant?
         </h3>
         {/* compact teaser/summary line for every article */}
         <p className="mt-2 line-clamp-2 text-sm text-black/60 transition-colors group-hover:text-black/80 dark:text-white/60 dark:group-hover:text-white/80">{a.lead}</p>
-        {/* min-w-0 + truncate на имени и shrink-0 на кнопке: без этого длинное имя
-            автора распирало строку и выдавливало «Сохранить» за край карточки. */}
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5 text-xs text-black/60 dark:text-white/65">
-            <span className="truncate font-medium">{a.company ?? a.authorName}</span>
-            <span className="shrink-0 whitespace-nowrap">· {fmtDate(a.createdAt)}</span>
+        {/* Подпись и кнопка стоят на разных строках.
+            Раньше они делили одну: кнопка «Сохранить» с текстом занимает почти
+            всю ширину узкой карточки, и на имя автора оставалось два символа —
+            читатель видел «D..». Теперь имени достаётся вся строка, а дата и
+            кнопка идут под ней. */}
+        <div className="mt-3 space-y-1.5 text-xs text-black/60 dark:text-white/65">
+          <div className="truncate font-medium">{a.company ?? a.authorName}</div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="whitespace-nowrap">{fmtDate(a.createdAt)}</span>
+            <SaveButton slug={a.slug} className="relative z-10 shrink-0" />
           </div>
-          <SaveButton slug={a.slug} className="relative z-10 shrink-0" />
         </div>
       </div>
     </article>
