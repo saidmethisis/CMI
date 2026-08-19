@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { getArticle, listPublished, listPopular, getCategories, localizedArticle, localizeList, bumpViews } from "@/lib/store";
-import { serverT, getLang, langAlternates } from "@/lib/i18n-server";
+import { serverT, getLang, langAlternates, langUrl } from "@/lib/i18n-server";
 import { localizeName } from "@/lib/dictionaries";
 import { getAuth } from "@/lib/guard";
 import { can } from "@/lib/permissions";
@@ -132,9 +132,31 @@ export default async function ArticlePage({ params, searchParams }: Props) {
     wordCount: htmlToText(L.body).split(/\s+/).filter(Boolean).length,
   };
 
+  // Путь до материала — «Главная › Рубрика › Заголовок». Поисковик показывает
+  // эту цепочку в выдаче вместо голого адреса: читатель видит раздел ещё до
+  // перехода, а рубрика получает дополнительный вес. Из четырёх изданий,
+  // с которыми сравнивали, такая разметка есть только у spot.uz.
+  const crumbs = [
+    { name: t("nav.home"), item: langUrl(lang, "/") },
+    ...(cat ? [{ name: catLabel || cat.name, item: langUrl(lang, `/category/${cat.slug}`) }] : []),
+    { name: L.title, item: langUrl(lang, `/n/${a.slug}`) },
+  ];
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.name,
+      // У последнего звена ссылки нет: это текущая страница.
+      ...(i < crumbs.length - 1 ? { item: c.item } : {}),
+    })),
+  };
+
   return (
     <div className="container-content py-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       {a.status !== "published" && (
         <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
