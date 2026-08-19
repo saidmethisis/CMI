@@ -41,14 +41,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Обложку в карточку соцсети подставляем только если она есть: пустая строка в
   // og:image заставляла мессенджер показывать ссылку голым текстом. Без обложки
   // берём нарисованную карточку с заголовком (/og/article/…).
-  const images = [a.cover || `${SITE_URL}/og/article/${a.slug}`];
+  // Размеры картинки объявляем явно: без них мессенджер не знает, что делать
+  // с изображением, пока его не скачает, и часто рисует ссылку узкой полоской
+  // вместо крупной карточки. Наша нарисованная карточка всегда 1200×630.
+  const images = a.cover
+    ? [{ url: a.cover, width: 1200, height: 630, alt: L.title }]
+    : [{ url: `${SITE_URL}/og/article/${a.slug}`, width: 1200, height: 630, alt: L.title }];
+  const ogLocale = lang === "uz" ? "uz_UZ" : lang === "en" ? "en_US" : "ru_RU";
   return {
     title: L.title,
     description: L.lead,
     openGraph: {
       title: L.title, description: L.lead, type: "article",
+      // url, siteName и locale — то, чего нам не хватало против соседей по рынку:
+      // у daryo.uz в карточке статьи 11 тегов, у kun.uz 7, у нас было 4.
+      // В Узбекистане ссылки расходятся по Telegram, и вид карточки решает,
+      // откроют её или пролистают.
+      url: `${SITE_URL}${lang === "ru" ? "" : "/" + lang}/n/${a.slug}`,
+      siteName: SITE_NAME,
+      locale: ogLocale,
       publishedTime: new Date(a.createdAt).toISOString(),
       authors: [a.company ?? a.authorName],
+      section: a.categorySlug,
       images,
     },
     twitter: { card: "summary_large_image", title: L.title, description: L.lead, images },
