@@ -43,24 +43,36 @@ export default async function HomePage() {
     }
   };
 
-  const categories = await soft(getCategories, []);
-  // курсы банков тянем на сервере (кэш 1 час) — блок виден сразу, без «прыжка» после гидрации
-  const bankRates = await soft(getBankRates, { data: {}, updatedAt: "", source: "unavailable" });
-  const stock = await soft(getStockQuotes, { data: [], updatedAt: "", source: "unavailable" });
-  // Каталоги для вкладок «Компании» и «Авторы» — критичное добавление из ТЗ:
-  // со сводного экрана должен быть вход и в бизнес-каталог, и к авторам.
-  const companies = await soft(publicCompanies, []);
-  const authors = await soft(publicAuthors, []);
-  const pinnedRaw = await soft(pinnedArticle, undefined);
+  // Все восемь источников запрашиваем разом, а не по очереди. Раньше каждый
+  // ждал предыдущего: база, потом курсы банков, потом биржа — и время до
+  // первого байта складывалось из всех задержек подряд. Запросы друг от друга
+  // не зависят, поэтому идут параллельно; страница ждёт только самый долгий.
+  // Курсы банков и котировки ходят во внешние источники — они и давали
+  // основную задержку.
+  const [categories, bankRates, stock, companies, authors, pinnedRaw, allRaw, breakingSrc] = await Promise.all([
+    soft(getCategories, []),
+    // курсы банков тянем на сервере (кэш 1 час) — блок виден сразу, без «прыжка» после
+    soft(getBankRates, { data: {}, updatedAt: "", source: "unavailable" }),
+    soft(getStockQuotes, { data: [], updatedAt: "", source: "unavailable" }),
+    // Каталоги для вкладок «Компании» и «Авторы» — критичное добавление из ТЗ:
+    // со сводного экрана должен быть вход и в бизнес-каталог, и к авторам.
+    soft(publicCompanies, []),
+    soft(publicAuthors, []),
+    soft(pinnedArticle, undefined),
+    soft(listPublished, []),
+    // Срочные — только отмеченные редакцией.
+    soft(() => listBreaking(10), []),
+  ]);
+
   // тексты — на языке интерфейса, с фолбэком на язык оригинала
   const pinned = pinnedRaw ? { ...pinnedRaw, ...localizedArticle(pinnedRaw, lang) } : pinnedRaw;
-  const all = localizeList(await soft(listPublished, []), lang);
+  const all = localizeList(allRaw, lang);
   // separate video-first articles from photo-first articles
   const videos = all.filter((a) => a.videoUrl && a.slug !== pinned?.slug).slice(0, 6);
   const feed = all.filter((a) => !a.videoUrl && a.slug !== pinned?.slug);
   // Срочные — только отмеченные редакцией. Пусто → полоса не рисуется:
   // выдавать за срочное десять последних публикаций значит обесценить её.
-  const breakingRaw = localizeList(await soft(() => listBreaking(10), []), lang);
+  const breakingRaw = localizeList(breakingSrc, lang);
   const breaking = breakingRaw.map((a) => ({ slug: a.slug, title: a.title }));
   const timeline = all.map((a) => ({ slug: a.slug, title: a.title, createdAt: a.createdAt }));
   const byViews = [...all].sort((a, b) => b.views - a.views);
