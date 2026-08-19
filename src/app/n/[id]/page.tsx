@@ -189,6 +189,16 @@ export default async function ArticlePage({ params, searchParams }: Props) {
             </div>
           </header>
 
+          {/* Материал без перевода на язык читателя показывается на языке
+              оригинала. Раньше это происходило молча: на русской версии сайта
+              открывался узбекский текст, и человек не понимал, ошибка это или
+              так задумано. Теперь сказано прямо, на каком языке текст. */}
+          {L.origLang && (
+            <p className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-800 dark:text-amber-300">
+              {t("article.noTranslation").replace("{lang}", t(`lang.name.${L.origLang}`))}
+            </p>
+          )}
+
           <LeadMedia cover={a.cover} videoUrl={a.videoUrl} title={L.title} noVideoLabel={t("ui.noVideo")} />
 
           <ArticleView a={localized} />

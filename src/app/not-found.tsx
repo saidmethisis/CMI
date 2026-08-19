@@ -1,5 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { serverT } from "@/lib/i18n-server";
+
+// Заголовок вкладки на несуществующей странице был общий, как у главной:
+// в истории браузера и в списке вкладок ошибка выглядела обычной страницей
+// издания. Теперь видно, что материал не найден, — и на языке читателя.
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await serverT();
+  return { title: t("notfound.title"), robots: { index: false, follow: true } };
+}
 
 export default async function NotFound() {
   const { t } = await serverT();

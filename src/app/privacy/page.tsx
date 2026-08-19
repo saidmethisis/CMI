@@ -1,4 +1,5 @@
 import LegalShell from "@/components/LegalShell";
+import { LEGAL_REVISED, formatLegalDate } from "@/lib/legal";
 import { ORG } from "@/lib/org";
 import { serverT } from "@/lib/i18n-server";
 
@@ -8,9 +9,9 @@ export async function generateMetadata() {
 }
 
 export default async function PrivacyPage() {
-  const { t } = await serverT();
+  const { t, lang } = await serverT();
   return (
-    <LegalShell title={t("lg.privacyTitle")} updated="__.__.2026" updatedLabel={t("ui.updatedOn")}>
+    <LegalShell title={t("lg.privacyTitle")} updated={formatLegalDate(LEGAL_REVISED.privacy, lang)} updatedLabel={t("ui.updatedOn")}>
       {process.env.NODE_ENV !== "production" && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
           {t("lg.privacyDraftA")} <code>NEXT_PUBLIC_ORG_*</code>{t("lg.privacyDraftB")}

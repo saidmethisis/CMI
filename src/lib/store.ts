@@ -179,7 +179,7 @@ function safeTranslations(t?: string): ArticleTranslations {
 
 // Возвращает title/lead/body статьи на нужном языке: если перевод заполнен — он,
 // иначе базовые (язык-фолбэк). Используется на странице статьи и в карточках.
-export function localizedArticle(a: Article, lang: LangCode): { title: string; lead: string; body: string; aiSummary: string } {
+export function localizedArticle(a: Article, lang: LangCode): { title: string; lead: string; body: string; aiSummary: string; origLang: LangCode | null } {
   const tr = a.translations?.[lang];
   const picked = tr && tr.title?.trim()
     ? { title: tr.title, lead: tr.lead?.trim() ? tr.lead : a.lead, body: tr.body?.trim() ? tr.body : a.body }
@@ -187,7 +187,18 @@ export function localizedArticle(a: Article, lang: LangCode): { title: string; l
   // Сводку собираем здесь, из уже выбранной языковой версии, а не берём из базы.
   // В базе она одна на всю статью и написана на языке оригинала — поэтому над
   // узбекским и английским текстом висела русская выжимка.
-  return { ...picked, aiSummary: buildAiSummary(picked.title, picked.lead) };
+  // Язык, на котором текст показан на самом деле. Если перевода на язык
+  // читателя нет, отдаём оригинал — но сообщаем об этом наружу, чтобы
+  // страница могла честно предупредить. Раньше русская версия молча
+  // показывала узбекский текст, и читатель не понимал, что произошло.
+  //
+  // Отдельного поля с языком оригинала в базе нет, но оно и не нужно: базовые
+  // title/lead/body копируются из основного перевода (см. normalizeTranslations),
+  // поэтому язык оригинала — тот, чей заголовок совпал с базовым.
+  const origLang: LangCode | null = tr && tr.title?.trim()
+    ? null
+    : (["ru", "uz", "en"] as LangCode[]).find((l) => a.translations?.[l]?.title === a.title) ?? null;
+  return { ...picked, aiSummary: buildAiSummary(picked.title, picked.lead), origLang: origLang === lang ? null : origLang };
 }
 
 // Применяет localizedArticle ко всему списку — для лент, рубрик, поиска и карточек.
