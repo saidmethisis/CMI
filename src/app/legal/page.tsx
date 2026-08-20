@@ -23,7 +23,7 @@ export default async function ImpressumPage() {
               таблицы — читателю кажется, что данные скрыли, а не что их пока нет. */}
           <tr><td>{t("lg.legalPubName")}</td><td>{ORG.name}</td></tr>
           {ORG.founder && <tr><td>{t("lg.legalFounder")}</td><td>{ORG.founder}</td></tr>}
-          {ORG.taxId && <tr><td>{t("lg.privacyOperTaxId")}</td><td>{ORG.taxId}</td></tr>}
+          {ORG.taxId && <tr><td>{t("lg.legalTaxId")}</td><td>{ORG.taxId}</td></tr>}
           {ORG.editor && <tr><td>{t("lg.legalEditor")}</td><td>{ORG.editor}</td></tr>}
           {ORG.address && <tr><td>{t("lg.legalAddress")}</td><td>{ORG.address}</td></tr>}
           {ORG.email && <tr><td>{t("lg.legalEmail")}</td><td>{ORG.email}</td></tr>}
