@@ -53,7 +53,8 @@ const TTL = 60 * 60 * 1000;
 const SHOW = 24;
 
 type Cache = { data: StockQuote[]; updatedAt: string; fetchedAt: number };
-const g = globalThis as unknown as { __stockCache?: Cache };
+// mutedUntil — до какого момента источник просил не беспокоить.
+const g = globalThis as unknown as { __stockCache?: Cache; __stockMutedUntil?: number };
 
 /**
  * Число из строки биржи. Разделители тут смешанные, и ошибка стоит дорого:
@@ -149,6 +150,16 @@ export async function getStockQuotes(): Promise<{ data: StockQuote[]; updatedAt:
   // Без ключа даже не ходим в сеть — вызов всё равно вернёт 401.
   if (!key) return { data: c?.data ?? [], updatedAt: c?.updatedAt ?? "", source: c ? SOURCE_NAME : "unavailable" };
 
+  // Источник сказал «лимит исчерпан, вернись через столько-то» — молчим до
+  // этого срока. Раньше мы продолжали стучаться на каждый заход читателя:
+  // сотни заведомо отказных запросов в час, которые сами же и удерживали
+  // счётчик у потолка. Отказ надо уважать, а не переспрашивать.
+  if (g.__stockMutedUntil && Date.now() < g.__stockMutedUntil) {
+    return c
+      ? { data: c.data, updatedAt: c.updatedAt, source: SOURCE_NAME }
+      : { data: [], updatedAt: "", source: "unavailable" };
+  }
+
   try {
     const res = await fetch(`${BASE}/get_stock_quotes`, {
       headers: { "X-API-Key": key, Accept: "application/json" },
@@ -156,11 +167,33 @@ export async function getStockQuotes(): Promise<{ data: StockQuote[]; updatedAt:
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(20000),
     });
-    if (!res.ok) throw new Error("uzse " + res.status);
+    if (!res.ok) {
+      // 429 — суточный лимит, 402 — кончился тариф. В обоих случаях источник
+      // называет, через сколько секунд возвращаться; берём это число, а при
+      // его отсутствии молчим час.
+      if (res.status === 429 || res.status === 402) {
+        let wait = 3600;
+        try {
+          const body = (await res.clone().json()) as { error?: { retry_after?: number } };
+          const ra = body?.error?.retry_after;
+          if (typeof ra === "number" && ra > 0) wait = Math.min(ra, 24 * 3600);
+        } catch {
+          const h = Number(res.headers.get("retry-after"));
+          if (Number.isFinite(h) && h > 0) wait = Math.min(h, 24 * 3600);
+        }
+        g.__stockMutedUntil = Date.now() + wait * 1000;
+        console.error(`Котировки биржи: источник просит подождать ${Math.round(wait / 60)} мин — до тех пор не беспокоим`);
+        return c
+          ? { data: c.data, updatedAt: c.updatedAt, source: SOURCE_NAME }
+          : { data: [], updatedAt: "", source: "unavailable" };
+      }
+      throw new Error("uzse " + res.status);
+    }
     const data = parseQuotes(await res.json());
     if (data.length === 0) throw new Error("empty parse");
     const updatedAt = new Date().toISOString();
     g.__stockCache = { data, updatedAt, fetchedAt: Date.now() };
+    g.__stockMutedUntil = undefined;
     return { data, updatedAt, source: SOURCE_NAME };
   } catch (e) {
     console.error("Котировки биржи не получены —", (e as Error).message);
