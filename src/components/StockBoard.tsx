@@ -42,7 +42,25 @@ export default function StockBoard({ initial, compact = false }: { initial?: { d
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load, offline]);
 
-  if (!rows.length) return null;
+  // Без данных в правой колонке главной блок просто не рисуем: там он один из
+  // многих, и пустая рамка среди живых показателей выглядит поломкой.
+  //
+  // А на странице «Цифры» биржа заявлена как раздел, и её молчаливое
+  // исчезновение читатель принимает за ошибку сайта — сам дважды искал.
+  // Там честно говорим, что данных сейчас нет и они вернутся.
+  if (!rows.length) {
+    if (compact) return null;
+    return (
+      <section className="card p-4" aria-label={t("stock.title")}>
+        <h2 className="font-serif text-lg font-bold">{t("stock.title")}</h2>
+        <p className="mt-2 text-sm text-black/60 dark:text-white/65">{t("stock.unavailable")}</p>
+        <p className="mt-2 text-xs text-black/50 dark:text-white/50">
+          {t("w.source")}:{" "}
+          <a href={SOURCE_URL} target="_blank" rel="noopener nofollow" className="font-semibold hover:underline">{SOURCE_NAME}</a>
+        </p>
+      </section>
+    );
+  }
 
   const fmt = (n: number | null) => (n === null ? "—" : n.toLocaleString(loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
