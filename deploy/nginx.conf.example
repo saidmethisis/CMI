@@ -54,3 +54,53 @@ server {
         proxy_read_timeout 60s;
     }
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Кэш страниц. Включён 20.08.2026 в расчёте на 6–10 тысяч читателей в сутки.
+#
+# Приложение собирает каждую страницу заново из базы, хотя для всех
+# незалогиненных читателей на одном языке она одинакова. Под всплеском — когда
+# материал расходится по мессенджерам и на одну статью приходит тысяча человек
+# разом — это упирается в предел. С кэшем при том же всплеске приложение не
+# работает вовсе: замер показал 0% процессора, отдаёт целиком nginx.
+#
+# Пропускная способность в замере выросла с 9 до 25 страниц в секунду на статье
+# и с 10 до 16 на главной.
+#
+# Что важно не сломать при правке:
+#   • ключ кэша включает cookie языка — иначе русский читатель получит
+#     узбекскую копию страницы;
+#   • Set-Cookie НЕ игнорируем: ответ, ставящий cookie, кэшировать нельзя,
+#     иначе чужая сессия уедет другому читателю;
+#   • личные разделы и запросы с сессией идут мимо кэша.
+#
+# Файл /etc/nginx/conf.d/aktiv-cache.conf:
+#   proxy_cache_path /var/cache/nginx/aktiv levels=1:2 keys_zone=aktiv:32m
+#                    max_size=1g inactive=10m use_temp_path=off;
+#
+# Внутри server-блока, перед location /:
+#   set $no_cache 0;
+#   if ($cookie_aktiv_session) { set $no_cache 1; }
+#   if ($request_method != GET) { set $no_cache 1; }
+#   if ($request_uri ~* "^/(admin|account|author-panel|company|business|notifications|login|register|forgot)") { set $no_cache 1; }
+#   if ($request_uri ~* "^/api/(auth|admin|comments)") { set $no_cache 1; }
+#   location / {
+#   # Ключ включает язык: страница без префикса отдаётся на языке из cookie,
+#   # и без этого русский читатель мог получить узбекскую копию из кэша.
+#   proxy_cache aktiv;
+#   # Next помечает динамические страницы как «не кэшировать» — это его
+#   # умолчание для любого серверного рендера, а не наше решение. Заголовок
+#   # переопределяем, но Set-Cookie НЕ трогаем: ответ, ставящий cookie,
+#   # nginx не закэширует, и чужая сессия не уедет другому читателю.
+#   proxy_ignore_headers Cache-Control Expires;
+#   proxy_cache_key "$scheme$request_method$host$request_uri|$cookie_aktiv_lang";
+#   proxy_cache_valid 200 301 302 1m;
+#   proxy_cache_valid 404 10s;
+#   proxy_cache_bypass $no_cache;
+#   proxy_no_cache $no_cache;
+#   # Пока обновляем запись, остальные читатели получают прошлую — никто не ждёт.
+#   proxy_cache_use_stale updating error timeout http_500 http_502 http_503 http_504;
+#   proxy_cache_background_update on;
+#   proxy_cache_lock on;
+#   add_header X-Cache $upstream_cache_status always;
+#   proxy_pass http://127.0.0.1:3201;
