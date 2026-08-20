@@ -254,5 +254,27 @@ export function htmlToText(input: string): string {
 
 /** Похоже ли на HTML из редактора. Старые статьи хранятся простым текстом. */
 export function looksLikeHtml(s: string): boolean {
-  return /<(p|h2|h3|ul|ol|blockquote|figure|img|strong|em)\b/i.test(s);
+  // div и br обязаны быть в списке: текст, набранный в редакторе или
+  // вставленный из Word, состоит только из них. Раньше такой материал
+  // считался простым текстом, сохранялся без обработки — и разбивка на
+  // абзацы пропадала целиком.
+  return /<(p|h2|h3|ul|ol|blockquote|figure|img|strong|em|div|br)\b/i.test(s);
 }
+
+/**
+ * Простой текст — в абзацы по переводам строки.
+ * Автор, набравший материал в блокноте, разделяет абзацы переносом. Раньше
+ * такой текст сохранялся как есть и на странице сливался в одну простыню:
+ * перевод строки в разметке ничего не значит.
+ */
+export function textToParagraphs(text: string): string {
+  const parts = String(text)
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (!parts.length) return "";
+  const esc = (s: string) =>
+    s.replace(/&(?![a-z#0-9]+;)/gi, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return parts.map((l) => `<p>${esc(l)}</p>`).join("");
+}
+

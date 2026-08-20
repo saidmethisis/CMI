@@ -7,7 +7,7 @@ import { slugify } from "./slug";
 import { notify } from "./notifications";
 import { pingIndexing, articlePaths } from "./indexing";
 import { submitIndexNow } from "./indexnow";
-import { sanitizeHtml, looksLikeHtml, htmlToText } from "./sanitize-html";
+import { sanitizeHtml, looksLikeHtml, htmlToText, textToParagraphs } from "./sanitize-html";
 import type { Article, ArticleTranslations, LangCode, Comment, AdBanner, AccreditationRequest, BusinessAccount, Category, Story } from "./types";
 import { categories, stories } from "./seed";
 
@@ -228,7 +228,9 @@ function normalizeTranslations(input: unknown): { base: { title: string; lead: s
         lead: stripTags((v.lead ?? "").trim()),
         // Текст из редактора приходит размеченным. Моем его здесь, на сервере:
         // клиент — не граница доверия, запрос можно отправить и мимо формы.
-        body: looksLikeHtml(rawBody) ? sanitizeHtml(rawBody) : rawBody,
+        // Не разметка — значит простой текст: разбиваем по переводам строки,
+        // иначе абзацы автора на странице сливаются в одну простыню.
+        body: looksLikeHtml(rawBody) ? sanitizeHtml(rawBody) : textToParagraphs(rawBody),
       };
     }
   }
