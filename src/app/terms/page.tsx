@@ -49,7 +49,15 @@ export default async function TermsPage() {
       <p>{t("lg.termsLiability")}</p>
 
       <h2>{t("lg.termsH8")}</h2>
-      <p>{ORG.name}. {t("lg.founderLabel")} {ORG.founder}. {t("lg.termsContactsLabel")} {ORG.email}, {ORG.phone}.</p>
+      {/* Собираем строку из того, что заполнено: пустые реквизиты превращали
+          её в «Asosiy Aktiv. Учредитель: —. Контакты: —, —.» */}
+      <p>
+        {[
+          ORG.name,
+          ORG.founder && `${t("lg.founderLabel")} ${ORG.founder}`,
+          (ORG.email || ORG.phone) && `${t("lg.termsContactsLabel")} ${[ORG.email, ORG.phone].filter(Boolean).join(", ")}`,
+        ].filter(Boolean).join(". ")}.
+      </p>
     </LegalShell>
   );
 }
