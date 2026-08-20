@@ -61,6 +61,14 @@ export default function Footer() {
             <a href="/feed.xml" target="_blank" rel="noopener" className="hover:underline">RSS</a>
           </div>
         </div>
+
+        {/* Выходные данные СМИ. Обязательны по закону «Об СМИ»: издание,
+            зарегистрированное как средство массовой информации, указывает номер
+            свидетельства, учредителя и адрес редакции там, где читатель их
+            заведомо найдёт, — то есть внизу каждой страницы. */}
+        <div className="container-content pb-6 text-[11px] leading-relaxed text-black/45 dark:text-white/40">
+          {t("footer.mediaNotice")}
+        </div>
       </div>
     </footer>
   );
