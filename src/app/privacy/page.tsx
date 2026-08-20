@@ -21,12 +21,18 @@ export default async function PrivacyPage() {
       <p>{t("lg.privacyIntroA")} <b>{ORG.name}</b> {t("lg.privacyIntroB")}</p>
 
       <h2>{t("lg.privacyH1")}</h2>
+      {/* Показываем только заполненные реквизиты. Раньше незаполненные выводились
+          прочерками, и список из пяти «—» читался так, будто издание скрывает,
+          кто им владеет, — хуже, чем их отсутствие. */}
       <ul>
         <li>{t("lg.privacyOperName")} {ORG.name}</li>
-        <li>{t("lg.founderLabel")} {ORG.founder}</li>
-        <li>{t("lg.privacyOperAddress")} {ORG.address}</li>
-        <li>{t("lg.privacyOperContact")} {ORG.email}, {ORG.phone}</li>
-        <li>{t("lg.privacyOperRegistry")} {ORG.pdRegistry}</li>
+        {ORG.founder && <li>{t("lg.founderLabel")} {ORG.founder}</li>}
+        {ORG.taxId && <li>{t("lg.privacyOperTaxId")} {ORG.taxId}</li>}
+        {ORG.address && <li>{t("lg.privacyOperAddress")} {ORG.address}</li>}
+        {(ORG.email || ORG.phone) && (
+          <li>{t("lg.privacyOperContact")} {[ORG.email, ORG.phone].filter(Boolean).join(", ")}</li>
+        )}
+        {ORG.pdRegistry && <li>{t("lg.privacyOperRegistry")} {ORG.pdRegistry}</li>}
       </ul>
 
       <h2>{t("lg.privacyH2")}</h2>
