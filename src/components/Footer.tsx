@@ -6,6 +6,11 @@ import LangSwitcher from "./LangSwitcher";
 import NewsletterForm from "./NewsletterForm";
 import { ORG } from "@/lib/org";
 
+// Свидетельство о регистрации СМИ. Номер взят из самого свидетельства
+// (ГУВОҲНОМА №1795236 от 20.08.2026, бессрочное). Не путать с номером
+// 45677348 — это номер решения о выдаче, другой документ.
+const MEDIA_CERT = { number: "№1795236", file: "/docs/guvohnoma-1795236.pdf" };
+
 export default function Footer() {
   const { t } = useI18n();
   const { categories } = useTaxonomy();
@@ -67,7 +72,26 @@ export default function Footer() {
             свидетельства, учредителя и адрес редакции там, где читатель их
             заведомо найдёт, — то есть внизу каждой страницы. */}
         <div className="container-content pb-6 text-[11px] leading-relaxed text-black/45 dark:text-white/40">
-          {t("footer.mediaNotice")}
+          {(() => {
+            // Номер свидетельства — ссылка на само свидетельство: читатель,
+            // регулятор или партнёр может открыть документ и убедиться, что
+            // издание зарегистрировано, не спрашивая нас.
+            const [before, after] = t("footer.mediaNotice").split("{cert}");
+            return (
+              <>
+                {before}
+                <a
+                  href={MEDIA_CERT.file}
+                  target="_blank"
+                  rel="noopener"
+                  className="underline decoration-dotted underline-offset-2 hover:text-brand dark:hover:text-white"
+                >
+                  {MEDIA_CERT.number}
+                </a>
+                {after}
+              </>
+            );
+          })()}
         </div>
       </div>
     </footer>
