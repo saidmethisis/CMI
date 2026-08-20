@@ -35,6 +35,7 @@ export async function GET() {
 
   const entries: Entry[] = [
     { path: "/", lastmod: now, changefreq: "hourly", priority: 1 },
+    { path: "/about", lastmod: now, priority: 0.7 },
     { path: "/topics", lastmod: now, priority: 0.6 },
     { path: "/for-companies", lastmod: now, priority: 0.5 },
     { path: "/search", lastmod: now, priority: 0.3 },

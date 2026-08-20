@@ -53,6 +53,7 @@ export default function Footer() {
             © {new Date().getFullYear()} {ORG.name}.
           </span>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <Link href="/about">{t("footer.about")}</Link>
             <Link href="/legal">{t("footer.imprint")}</Link>
             <Link href="/privacy">{t("footer.privacy")}</Link>
             <Link href="/terms">{t("footer.terms")}</Link>
