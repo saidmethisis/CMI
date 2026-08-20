@@ -156,6 +156,29 @@ function normalizeBlocks(html: string): string {
   return out;
 }
 
+/**
+ * Превращает блоки <div> в абзацы.
+ * Пустой <div><br></div> — это отбивка между абзацами в редакторе, она не
+ * несёт содержания и отбрасывается: интервал между абзацами задаёт вёрстка.
+ */
+function flattenDivs(html: string): string {
+  if (!/<div\b/i.test(html)) return html;
+  // Пустые обёртки-отбивки убираем целиком.
+  let s = html.replace(/<div\b[^>]*>\s*(?:<br\s*\/?>)?\s*<\/div>/gi, "");
+  let depth = 0;
+  // Каждый уровень вложенности схлопываем в один абзац: открывающий тег
+  // самого внешнего div становится <p>, внутренние исчезают.
+  s = s.replace(/<div\b[^>]*>|<\/div\s*>/gi, (tag) => {
+    if (tag[1] === "/") {
+      depth = Math.max(0, depth - 1);
+      return depth === 0 ? "</p>" : "";
+    }
+    depth += 1;
+    return depth === 1 ? "<p>" : "";
+  });
+  return s;
+}
+
 export function sanitizeHtml(input: string): string {
   if (!input) return "";
   let html = String(input);
@@ -167,6 +190,17 @@ export function sanitizeHtml(input: string): string {
     html = html.replace(new RegExp(`<${tag}\\b[\\s\\S]*?</${tag}\\s*>`, "gi"), "");
     html = html.replace(new RegExp(`<${tag}\\b[^>]*/?>`, "gi"), "");
   }
+
+  // Текст, вставленный из Word, Google Docs или набранный прямо в редакторе,
+  // приходит разбитым на <div>, а не на абзацы: так устроены браузеры. Тега
+  // div в списке разрешённых нет, и раньше он просто исчезал вместе с
+  // границами блоков — интервью схлопывалось в один абзац, где вопрос и
+  // ответ слипались: «— Вопрос?— Ответ.»
+  //
+  // Поэтому превращаем div в абзац до разбора. Вложенные div сначала
+  // распрямляем: <div><div>текст</div></div> должен дать один абзац, а не
+  // абзац внутри абзаца — такая вложенность недопустима в разметке.
+  html = flattenDivs(html);
 
   const open: string[] = [];
   let out = "";
